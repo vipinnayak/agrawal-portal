@@ -25,7 +25,7 @@ export default function Login() {
     EA: "ea123",
 
     "ADMIN(MD)": "admin123",
-     "rajeshagrawal123@gmail.com": "rajesh123",
+     "rajeshagrawal123@gmail.com": "md123",
 
     "harshmittal123@gmail.com": "harsh123",
     "harshsharma123@gmail.com": "harsh123",
