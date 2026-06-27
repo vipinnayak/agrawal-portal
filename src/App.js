@@ -98,6 +98,38 @@ import DailyAttendanceVedant from "./pages/DailyAttedanceVedant";
 import DailyAttendanceVipin from "./pages/DailyAttedanceVipin";
 import DailyAttendanceVikas from "./pages/DailyAttedanceVikas";
 import DailyAttendanceYash from "./pages/DailyAttedanceYash";
+import DiptiVerma from "./pages/DiptiVerma";
+import SikhaGupta from "./pages/SikhaGupta";
+import YanaGendle from "./pages/YanaGendle";
+import TarunRathi from "./pages/TarunRathi";
+import AryamanDhar from "./pages/AryamanDhar";
+import VikasSonwani from "./pages/VikasSonwani";
+import PiyushVerma from "./pages/PiyushVerma";
+import AnkitSingh from "./pages/AnkitSingh";
+import PoorvaSharma from "./pages/PoorvaSharma";
+import SimranPatnaik from "./pages/SimranPatnaik";
+import PrakharVaid from "./pages/PrakharVaid";
+import AdityaRaj from "./pages/AdityaRaj";
+import ChetnaAgrawal from "./pages/ChetnaAgrawal";
+import SaniaDalwani from "./pages/SaniaDalwani";
+import AnirudhAgrawal from "./pages/AnirudhAgrawal";
+import PalakDodani from "./pages/PalakDodani";
+import HarshGupta from "./pages/HarshGupta";
+import NikhilDawani from "./pages/NikhilDawani";
+import AkshitaAgrawal from "./pages/AkshitaAgrawal";
+import SarthakJain from "./pages/SarthakJain";
+import MahakJain from "./pages/MahakJain";
+import PihuAgrawal from "./pages/PihuAgrawal";
+import SonalMeghani from "./pages/SonalMeghani";
+import DeevyaVerma from "./pages/DeevyaVerma";
+import YogeshSonkar from "./pages/YogeshSonkar";
+import MuktiPathak from "./pages/MuktiPathak";
+import ShushantTiwari from "./pages/ShushantTiwari";
+import DevDilip from "./pages/DevDilip";
+import ShubhamVerma from "./pages/ShubhamVerma";
+import SanidhyaNahar from "./pages/SanidhyaNahar";
+import PoojaGupta from "./pages/PoojaGupta";
+import SimranSingh from "./pages/SimranSingh";
 
 
 function App() {
@@ -117,6 +149,134 @@ function App() {
         <Route
           path="/daharshmittal"
           element={<DailyAttendanceHarshMittal/>}
+        />
+         <Route
+          path="/dipti"
+          element={<DiptiVerma/>}
+        />
+        <Route
+          path="/sikha"
+          element={<SikhaGupta/>}
+        />
+        <Route
+          path="/yana"
+          element={<YanaGendle/>}
+        />
+        <Route
+          path="/tarun"
+          element={<TarunRathi/>}
+        />
+        <Route
+          path="/aryamandhar"
+          element={<AryamanDhar/>}
+        />
+        <Route
+          path="/vikas-sonwani"
+          element={<VikasSonwani/>}
+        />
+        <Route
+          path="/piyush"
+          element={<PiyushVerma/>}
+        />
+        <Route
+          path="/ankit-singh"
+          element={<AnkitSingh/>}
+        />
+        <Route
+          path="/poorva"
+          element={<PoorvaSharma/>}
+        />
+        <Route
+          path="/simran-patnaik"
+          element={<SimranPatnaik/>}
+        />
+        <Route
+          path="/shubham-verma"
+          element={<ShubhamVerma/>}
+        />
+        <Route
+          path="/sanidhya"
+          element={<SanidhyaNahar/>}
+        />
+        <Route
+          path="/pooja-gupta"
+          element={<PoojaGupta/>}
+        />
+        <Route
+          path="/simran-singh"
+          element={<SimranSingh/>}
+        />
+        <Route
+          path="/prakhar"
+          element={<PrakharVaid/>}
+        />
+        <Route
+          path="/adityaraj"
+          element={<AdityaRaj/>}
+        />
+        <Route
+          path="/chetna"
+          element={<ChetnaAgrawal/>}
+        />
+        <Route
+          path="/sania"
+          element={<SaniaDalwani/>}
+        />
+        <Route
+          path="/anirudh"
+          element={<AnirudhAgrawal/>}
+        />
+        <Route
+          path="/palak"
+          element={<PalakDodani/>}
+        />
+        <Route
+          path="/harsh-gupta"
+          element={<HarshGupta/>}
+        />
+        <Route
+          path="/nikhil"
+          element={<NikhilDawani/>}
+        />
+        <Route
+          path="/akshita"
+          element={<AkshitaAgrawal/>}
+        />
+        <Route
+          path="/sarthak"
+          element={<SarthakJain/>}
+        />
+        <Route
+          path="/mahak"
+          element={<MahakJain/>}
+        />
+        <Route
+          path="/pihu"
+          element={<PihuAgrawal/>}
+        />
+        <Route
+          path="/sonal"
+          element={<SonalMeghani/>}
+        />
+        <Route
+          path="/deevya"
+          element={<DeevyaVerma/>}
+        />
+        <Route
+          path="/yogesh"
+          element={<YogeshSonkar/>}
+        />
+        <Route
+          path="/mukti"
+          element={<MuktiPathak/>}
+        />
+        <Route
+          path="/shushant"
+          element={<ShushantTiwari/>}
+        />
+        <Route
+          path="/devdilip"
+          element={<DevDilip/>}
         />
         <Route
           path="/daharshsharma"

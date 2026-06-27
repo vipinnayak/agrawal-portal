@@ -74,6 +74,36 @@ export default function Login() {
     "dayalu123@gmail.com":"dayalu123",
     "nitish123@gmail.com":"nitish123",
     "jeetu123@gmail.com":"jeetu123",
+    "diptiverma123@gmail.com":"dipti123",
+    "sikhagupta123@gmail.com":"sikha123",
+    "yanagendle123@gmail.com":"yana123",
+    "tarunrathi123@gmail.com":"tarun123",
+    "aryamandhar123@gmail.com":"aryaman123",
+    "vikassonwani123@gmail.com":"vikas123",
+    "piyuverma123@gmail.com":"piyush123",
+    "simranpatnaik123@gmail.com":"simran123",
+    "shubhamverma123@gmail.com":"shubham123",
+    "sanidhyanahar123@gmail.com":"sanidhya123",
+    "poojagupta123@gmail.com":"pooja123",
+    "simransingh123@gmail.com":"simran123",
+    "prakharvaid123@gmail.com":"prakhar123",
+    "adityaraj123@gmail.com":"aditya123",
+    "chetnaagrawal123@gmail.com":"chetna123",
+    "saniadalwani123@gmail.com":"sania123",
+    "anirudhagrawal123@gmail.com":"anirudh123",
+    "palakdodani123@gmail.com":"palak123",
+    "harshgupta123@gmail.com":"harsh123",
+    "nikhildawani123@gmail.com":"nikhil123",
+    "akshitaagrawal123@gmail.com":"akshita123",
+    "sarthakjain123@gmail.com":"sarthak123",
+    "mahakjain123@gmail.com":"mahak123",
+    "pihuagrawal123@gmail.com":"pihu123",
+    "sonalmeghani123@gmail.com":"sonalmeghani123",
+    "deevyaverma123@gmail.com":"deevya123",
+    "yogeshsonkar123@gmail.com":"yogesh123",
+    "muktipathak123@gmail.com":"mukti123",
+    "shushanttiwari123@gmail.com":"shushant123",
+    "devdilip123@gmail.com":"dev123",
 
   };
 
@@ -196,6 +226,70 @@ export default function Login() {
         navigate("/jeetu");
       }else if (emp === "nitish123@gmail.com") {
         navigate("/nitish");
+      }else if (emp === "diptiverma123@gmail.com") {
+        navigate("/dipti");
+      }else if (emp === "sikhagupta123@gmail.com") {
+        navigate("/sikha");
+      }else if (emp === "yanagendle123@gmail.com") {
+        navigate("/yana");
+      }else if (emp === "tarunrathi123@gmail.com") {
+        navigate("/tarun");
+      }else if (emp === "aryamandhar123@gmail.com") {
+        navigate("/aryaman");
+      }else if (emp === "vikassonwani123@gmail.com") {
+        navigate("/vikas-sonwani");
+      }else if (emp === "piyushverma123@gmail.com") {
+        navigate("/piyush");
+      }else if (emp === "ankitsingh123@gmail.com") {
+        navigate("/ankit-singh");
+      }else if (emp === "poorvasharma123@gmail.com") {
+        navigate("/poorva");
+      }else if (emp === "simranpatnaik123@gmail.com") {
+        navigate("/simran-patnaik");
+      }else if (emp === "shubhamverma123@gmail.com") {
+        navigate("/shubham-verma");
+      }else if (emp === "sanidhyanahar123@gmail.com") {
+        navigate("/sanidhya");
+      }else if (emp === "poojagupta123@gmail.com") {
+        navigate("/pooja-gupta");
+      }else if (emp === "simransingh123@gmail.com") {
+        navigate("/simran-singh");
+      }else if (emp === "prakharvaid123@gmail.com") {
+        navigate("/prakhar");
+      }else if (emp === "adityaraj123@gmail.com") {
+        navigate("/adityaraj");
+      }else if (emp === "chetnaagrawal123@gmail.com") {
+        navigate("/chetna");
+      }else if (emp === "saniadalwani123@gmail.com") {
+        navigate("/sania");
+      }else if (emp === "anirudhagrawal123@gmail.com") {
+        navigate("/anirudh");
+      }else if (emp === "palakdodani123@gmail.com") {
+        navigate("/palak");
+      }else if (emp === "harshgupta123@gmail.com") {
+        navigate("/harsh-gupta");
+      }else if (emp === "nikhildawani123@gmail.com") {
+        navigate("/nikhil");
+      }else if (emp === "akshitaagrawal123@gmail.com") {
+        navigate("/akshita");
+      }else if (emp === "sarthakjain123@gmail.com") {
+        navigate("/sarthak");
+      }else if (emp === "mahakjain123@gmail.com") {
+        navigate("/mahak");
+      }else if (emp === "pihuagrawal123@gmail.com") {
+        navigate("/pihu");
+      }else if (emp === "sonalmeghani123@gmail.com") {
+        navigate("/sonal");
+      }else if (emp === "deevyaverma123@gmail.com") {
+        navigate("/deevya");
+      }else if (emp === "yogeshsonkar123@gmail.com") {
+        navigate("/yogesh");
+      }else if (emp === "muktipathak123@gmail.com") {
+        navigate("/mukti");
+      }else if (emp === "shushanttiwari123@gmail.com") {
+        navigate("/shushant");
+      }else if (emp === "devdilip123@gmail.com") {
+        navigate("/devdilip");
       }
 
     } else {
