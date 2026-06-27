@@ -14,7 +14,7 @@ function DailyAttendanceYash() {
   useEffect(() => {
 
     fetch(
-      "https://script.google.com/macros/s/AKfycbyRyobXH5eSv4pmwaM3FjVZVVZWXzRNrlr5ql72RSJKsPxzNp3XwbfHJm7slxQkWB-j/exec"
+      "https://script.google.com/macros/s/AKfycbwLiOBvQqbsI3gd5lNfD9ymOEQM6Yj_dupr2DQiIsU5e3LGT6Kd5RZ_7wfKWKRyO-xF/exec"
     )
 
       .then((res) => res.json())
