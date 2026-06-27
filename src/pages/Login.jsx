@@ -25,6 +25,7 @@ export default function Login() {
     EA: "ea123",
 
     "ADMIN(MD)": "admin123",
+     "rajeshagrawal123@gmail.com": "rajesh123",
 
     "harshmittal123@gmail.com": "harsh123",
     "harshsharma123@gmail.com": "harsh123",
@@ -290,6 +291,8 @@ export default function Login() {
         navigate("/shushant");
       }else if (emp === "devdilip123@gmail.com") {
         navigate("/devdilip");
+      }else if (emp === "rajeshagrawal123@gmail.com") {
+        navigate("/rajesh-agrawal");
       }
 
     } else {
