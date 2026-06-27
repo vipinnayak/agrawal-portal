@@ -16,7 +16,7 @@ export default function Login() {
     "PC(1)": "pc123",
     "PC(2)": "pc456",
 
-    "Naresh Prajapati": "naresh123",
+    "naresh123@gmail.com": "naresh123",
 
     ACCOUNTANT: "acc123",
 
@@ -97,7 +97,7 @@ export default function Login() {
         navigate("/ea");
       } else if (emp === "ADMIN(MD)") {
         navigate("/admin-md");
-      } else if (emp === "Naresh Prajapati") {
+      } else if (emp === "naresh123@gmail.com") {
         navigate("/naresh-prajapati");
       } else if (emp === "CA HARSH MITTAL") {
         navigate("/ca-harsh-mittal");

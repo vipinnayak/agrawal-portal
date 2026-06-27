@@ -11,7 +11,7 @@ function DailyWorkingKanha() {
   useEffect(() => {
 
     fetch(
-      "https://script.google.com/macros/s/AKfycbxChm2tuSBdFiwLATUq4THD01CMfytH0S8KJuXGobPPkxEJCbeSs7y_tVCD9rMJ2cr2Rw/exec"
+      "https://script.google.com/macros/s/AKfycbyAL7GvQCTErLbQmSFt6WeUDzmZkEyuEB6L8JQWpjyPXeOMrSLxDD0ADxBBxiv4-_M/exec"
     )
 
       .then((res) => res.json())

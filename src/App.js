@@ -86,6 +86,18 @@ import KisanYadav from "./pages/KisanYadav";
 import DayaluDewangan from "./pages/DayaluDewangan";
 import JituTati from "./pages/JituTati";
 import NitishShende from "./pages/NitishShende";
+import DailyAttendanceHarshMittal from "./pages/DailyAttedanceHarshMittal";
+import DailyAttendanceChandan from "./pages/DailyAttedanceChandan";
+import DailyAttendanceDrishti from "./pages/DailyAttedanceDrishti";
+import DailyAttendanceHarshSharma from "./pages/DailyAttedanceHarshSharma";
+import DailyAttendanceKanha from "./pages/DailyAttedanceKanha";
+import DailyAttendancePankaj from "./pages/DailyAttedancePankaj";
+import DailyAttendancePratibha from "./pages/DailyAttedancePratibha";
+import DailyAttendancePriyaDhani from "./pages/DailyAttedancePriyaDhani";
+import DailyAttendanceVedant from "./pages/DailyAttedanceVedant";
+import DailyAttendanceVipin from "./pages/DailyAttedanceVipin";
+import DailyAttendanceVikas from "./pages/DailyAttedanceVikas";
+import DailyAttendanceYash from "./pages/DailyAttedanceYash";
 
 
 function App() {
@@ -101,6 +113,54 @@ function App() {
         <Route
           path="/"
           element={<Login />}
+        />
+        <Route
+          path="/daharshmittal"
+          element={<DailyAttendanceHarshMittal/>}
+        />
+        <Route
+          path="/daharshsharma"
+          element={<DailyAttendanceHarshSharma/>}
+        />
+        <Route
+          path="/dapankaj"
+          element={<DailyAttendancePankaj/>}
+        />
+        <Route
+          path="/dapratibha"
+          element={<DailyAttendancePratibha/>}
+        />
+        <Route
+          path="/dadrishti"
+          element={<DailyAttendanceDrishti/>}
+        />
+        <Route
+          path="/davikas"
+          element={<DailyAttendanceVikas/>}
+        />
+        <Route
+          path="/dachandan"
+          element={<DailyAttendanceChandan/>}
+        />
+        <Route
+          path="/dakanha"
+          element={<DailyAttendanceKanha/>}
+        />
+        <Route
+          path="/davedant"
+          element={<DailyAttendanceVedant/>}
+        />
+        <Route
+          path="/dapriya"
+          element={<DailyAttendancePriyaDhani/>}
+        />
+        <Route
+          path="/dayash"
+          element={<DailyAttendanceYash/>}
+        />
+        <Route
+          path="/davipin"
+          element={<DailyAttendanceVipin/>}
         />
         <Route
           path="/trdewangan"
