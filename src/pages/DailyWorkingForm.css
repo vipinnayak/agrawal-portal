@@ -1,0 +1,474 @@
+/* PAGE */
+
+.dw-page{
+  min-height:100vh;
+  padding:40px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #edf2f7,
+      #dfe7ef
+    );
+
+  font-family:Inter,sans-serif;
+}
+
+/* MAIN CARD */
+
+.dw-form{
+
+  background:#f7f8fc;
+
+  border-radius:32px;
+
+  padding:40px;
+
+  box-shadow:
+    0 15px 40px rgba(0,0,0,0.06);
+
+}
+
+/* TOP HEADER */
+
+.top-header{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:flex-start;
+
+  margin-bottom:35px;
+
+  gap:20px;
+
+  flex-wrap:wrap;
+
+}
+
+.logo-box img{
+
+  width:150px;
+
+  object-fit:contain;
+
+}
+
+.live-date{
+
+  margin-top:10px;
+
+  font-size:18px;
+
+  font-weight:600;
+
+  color:#006d77;
+
+}
+
+.company-info{
+
+  text-align:right;
+
+}
+
+.company-info h1{
+
+  margin:0;
+
+  font-size:58px;
+
+  font-weight:900;
+
+  color:#005f73;
+
+}
+
+.company-info p{
+
+  margin-top:8px;
+
+  font-size:22px;
+
+  color:#334155;
+
+}
+
+/* COMMON FIELDS */
+
+.common-grid{
+
+  display:grid;
+
+  grid-template-columns:
+    repeat(3,1fr);
+
+  gap:30px;
+
+  margin-bottom:35px;
+
+}
+
+.common-grid label{
+
+  display:block;
+
+  margin-bottom:10px;
+
+  font-size:18px;
+
+  font-weight:700;
+
+  color:#0f172a;
+
+}
+
+.common-grid input,
+.common-grid select{
+
+  width:100%;
+
+  height:60px;
+
+  border-radius:14px;
+
+  border:1px solid #cbd5e1;
+
+  padding:0 18px;
+
+  font-size:20px;
+
+  background:white;
+
+  outline:none;
+
+}
+
+/* TABLE */
+
+.multi-table{
+
+  width:100%;
+
+  overflow-x:auto;
+
+}
+
+/* HEADER */
+
+.multi-head{
+
+  display:grid;
+
+  grid-template-columns:
+    1.2fr
+    1.3fr
+    1fr
+    1fr
+    1.5fr
+    1fr
+    .8fr;
+
+  gap:12px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #38bdf8,
+      #fbcfe8,
+      #38bdf8
+    );
+
+  padding:14px;
+
+  border-radius:14px 14px 0 0;
+
+  min-width:1300px;
+
+}
+
+.multi-head div{
+
+  font-size:20px;
+
+  font-weight:800;
+
+  color:#1e293b;
+
+}
+
+/* ROW */
+
+.multi-row{
+
+  display:grid;
+
+  grid-template-columns:
+    1.2fr
+    1.3fr
+    1fr
+    1fr
+    1.5fr
+    1fr
+    .8fr;
+
+  gap:12px;
+
+  padding:18px 14px;
+
+  background:#f8fafc;
+
+  border-bottom:1px solid #e2e8f0;
+
+  min-width:1300px;
+
+}
+
+.multi-row select,
+.multi-row input{
+
+  width:100%;
+
+  height:52px;
+
+  border-radius:10px;
+
+  border:1px solid #cbd5e1;
+
+  padding:0 14px;
+
+  font-size:18px;
+
+  background:white;
+
+  outline:none;
+
+}
+
+/* TIME */
+
+.time-box{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:8px;
+
+}
+
+.time-box select{
+
+  width:80px;
+
+}
+
+/* BUTTONS */
+
+.remove-btn{
+
+  border:none;
+
+  background:#f87171;
+
+  color:white;
+
+  font-size:18px;
+
+  font-weight:700;
+
+  border-radius:10px;
+
+  cursor:pointer;
+
+  height:52px;
+
+}
+
+.remove-btn:hover{
+
+  background:#ef4444;
+
+}
+
+.bottom-btns{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:16px;
+
+  margin-top:24px;
+
+  flex-wrap:wrap;
+
+}
+
+.add-row-btn{
+
+  border:none;
+
+  background:#0891b2;
+
+  color:white;
+
+  padding:14px 28px;
+
+  font-size:22px;
+
+  font-weight:700;
+
+  border-radius:12px;
+
+  cursor:pointer;
+
+}
+
+.submit-btn{
+
+  border:none;
+
+  background:#0ea5e9;
+
+  color:white;
+
+  padding:14px 28px;
+
+  font-size:22px;
+
+  font-weight:700;
+
+  border-radius:12px;
+
+  cursor:pointer;
+
+}
+
+.submit-btn:disabled{
+
+  opacity:.5;
+
+  cursor:not-allowed;
+
+}
+
+/* TOTAL TIME */
+
+.total-time{
+
+  margin-top:24px;
+
+  background:#ecfeff;
+
+  width:max-content;
+
+  padding:18px 22px;
+
+  border-radius:14px;
+
+  font-size:22px;
+
+  font-weight:800;
+
+  color:#0f766e;
+
+}
+
+/* MOBILE */
+
+@media(max-width:1200px){
+
+  .common-grid{
+
+    grid-template-columns:1fr 1fr;
+
+  }
+
+}
+
+@media(max-width:768px){
+
+  .dw-page{
+
+    padding:16px;
+
+  }
+
+  .dw-form{
+
+    padding:20px;
+
+  }
+
+  .company-info{
+
+    text-align:left;
+
+  }
+
+  .company-info h1{
+
+    font-size:34px;
+
+  }
+
+  .company-info p{
+
+    font-size:18px;
+
+  }
+
+  .common-grid{
+
+    grid-template-columns:1fr;
+
+    gap:20px;
+
+  }
+
+  .common-grid input,
+  .common-grid select{
+
+    height:54px;
+
+    font-size:17px;
+
+  }
+
+  .multi-head div{
+
+    font-size:16px;
+
+  }
+
+  .multi-row select,
+  .multi-row input{
+
+    font-size:16px;
+
+    height:48px;
+
+  }
+
+  .add-row-btn,
+  .submit-btn{
+
+    width:100%;
+
+    font-size:18px;
+
+  }
+
+  .total-time{
+
+    width:100%;
+
+    text-align:center;
+
+    font-size:18px;
+
+  }
+
+}
