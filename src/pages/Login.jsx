@@ -26,8 +26,8 @@ export default function Login() {
 
     "ADMIN(MD)": "admin123",
 
-    "CA HARSH MITTAL": "harsh123",
-    "CA HARSH SHARMA": "harsh123",
+    "harshmittal123@gmail.com": "harsh123",
+    "harshsharma123@gmail.com": "harsh123",
     "kanhakediaajc@gmail.com": "kanha123",
     "pankajagrawalajc@gmail.com": "pankaj123",
     "drishtichandnaniajc@gmail.com": "drishti123",
@@ -129,9 +129,9 @@ export default function Login() {
         navigate("/admin-md");
       } else if (emp === "naresh123@gmail.com") {
         navigate("/naresh-prajapati");
-      } else if (emp === "CA HARSH MITTAL") {
+      } else if (emp === "harshmittal123@gmail.com") {
         navigate("/ca-harsh-mittal");
-      } else if (emp === "CA HARSH SHARMA") {
+      } else if (emp === "harshsharma123@gmail.com") {
         navigate("/ca-harsh-sharma");
       }else if (emp === "kanhakediaajc@gmail.com") {
         navigate("/ca-kanha");
