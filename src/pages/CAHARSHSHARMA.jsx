@@ -97,7 +97,7 @@ export default function CAHARSHSHARMA() {
         >
           <h2 style={styles.cardTitle}>Internal-Audit-FMS</h2>
           <p style={styles.cardText}>
-            Check today attendance status(123)
+            Check today attendance status
           </p>
         </div>
 
