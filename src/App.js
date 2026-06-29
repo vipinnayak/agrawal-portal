@@ -560,7 +560,7 @@ function App() {
           element={<CAPANKAJ />}
         />
         <Route
-          path="/ca-pankaj"
+          path="/ca-vikas"
           element={<CAVIKAS />}
         />
         <Route
