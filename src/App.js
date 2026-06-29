@@ -131,6 +131,7 @@ import SanidhyaNahar from "./pages/SanidhyaNahar";
 import PoojaGupta from "./pages/PoojaGupta";
 import SimranSingh from "./pages/SimranSingh";
 import MDSIR from "./pages/MDSIR";
+import AttendanceReport from "./pages/AttendanceReport";
 
 
 function App() {
@@ -154,6 +155,10 @@ function App() {
         <Route
           path="/rajesh-agrawal"
           element={<MDSIR/>}
+        />
+        <Route
+          path="/attendance-report"
+          element={<AttendanceReport/>}
         />
          <Route
           path="/dipti"
