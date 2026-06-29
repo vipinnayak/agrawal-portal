@@ -82,6 +82,8 @@ export default function Login() {
     "aryamandhar123@gmail.com":"aryaman123",
     "vikassonwani123@gmail.com":"vikas123",
     "piyuverma123@gmail.com":"piyush123",
+    "ankitsingh123@gmail.com":"ankit123",
+    "poorvasharma123@gmail.com":"poorva123",
     "simranpatnaik123@gmail.com":"simran123",
     "shubhamverma123@gmail.com":"shubham123",
     "sanidhyanahar123@gmail.com":"sanidhya123",
@@ -293,6 +295,10 @@ export default function Login() {
         navigate("/devdilip");
       }else if (emp === "rajeshagrawal123@gmail.com") {
         navigate("/rajesh-agrawal");
+      }else if (emp === "ankitsingh123@gmail.com") {
+        navigate("/ankit-singh");
+      }else if (emp === "poorvasharma123@gmail.com") {
+        navigate("/poorva-sharma");
       }
 
     } else {

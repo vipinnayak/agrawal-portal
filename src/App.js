@@ -188,7 +188,7 @@ function App() {
           element={<AnkitSingh/>}
         />
         <Route
-          path="/poorva"
+          path="/poorva-sharma"
           element={<PoorvaSharma/>}
         />
         <Route
