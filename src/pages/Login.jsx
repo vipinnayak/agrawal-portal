@@ -81,7 +81,7 @@ export default function Login() {
     "tarunrathi123@gmail.com":"tarun123",
     "aryamandhar123@gmail.com":"aryaman123",
     "vikassonwani123@gmail.com":"vikas123",
-    "piyuverma123@gmail.com":"piyush123",
+    "piyushverma123@gmail.com":"piyush123",
     "ankitsingh123@gmail.com":"ankit123",
     "poorvasharma123@gmail.com":"poorva123",
     "simranpatnaik123@gmail.com":"simran123",
