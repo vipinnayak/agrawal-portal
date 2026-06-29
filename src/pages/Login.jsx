@@ -246,7 +246,7 @@ export default function Login() {
       }else if (emp === "ankitsingh123@gmail.com") {
         navigate("/ankit-singh");
       }else if (emp === "poorvasharma123@gmail.com") {
-        navigate("/poorva");
+        navigate("/poorva-sharma");
       }else if (emp === "simranpatnaik123@gmail.com") {
         navigate("/simran-patnaik");
       }else if (emp === "shubhamverma123@gmail.com") {
@@ -295,10 +295,6 @@ export default function Login() {
         navigate("/devdilip");
       }else if (emp === "rajeshagrawal123@gmail.com") {
         navigate("/rajesh-agrawal");
-      }else if (emp === "ankitsingh123@gmail.com") {
-        navigate("/ankit-singh");
-      }else if (emp === "poorvasharma123@gmail.com") {
-        navigate("/poorva-sharma");
       }
 
     } else {
