@@ -75,7 +75,7 @@ export default function NareshPrajapati() {
 
         {/* CHECKLIST */}
 
-        <div style={{...styles.card, background:"#ea580c"}}>
+        {/* <div style={{...styles.card, background:"#ea580c"}}>
 
           <h2 style={styles.cardTitle}>
             Checklist
@@ -85,10 +85,10 @@ export default function NareshPrajapati() {
             Complete assigned checklists
           </p>
 
-        </div>
+        </div> */}
 
         {/* PENDING CL */}
-
+{/* 
         <div style={{...styles.card, background:"#dc2626"}}>
 
           <h2 style={styles.cardTitle}>
@@ -99,7 +99,7 @@ export default function NareshPrajapati() {
             View pending client tasks
           </p>
 
-        </div>
+        </div> */}
 
         {/* LEAVE FORM */}
 
@@ -136,7 +136,7 @@ export default function NareshPrajapati() {
 
         {/* REPORTS */}
 
-        <div style={{...styles.card, background:"#1e293b"}}>
+        {/* <div style={{...styles.card, background:"#1e293b"}}>
 
           <h2 style={styles.cardTitle}>
             Reports
@@ -146,11 +146,11 @@ export default function NareshPrajapati() {
             View MIS & performance reports
           </p>
 
-        </div>
+        </div> */}
 
         {/* CLIENT MANAGEMENT */}
 
-        <div style={{...styles.card, background:"#c2410c"}}>
+        {/* <div style={{...styles.card, background:"#c2410c"}}>
 
           <h2 style={styles.cardTitle}>
             Client Management
@@ -160,7 +160,7 @@ export default function NareshPrajapati() {
             Manage client records & updates
           </p>
 
-        </div>
+        </div> */}
 
         {/* NOTIFICATIONS */}
 
@@ -178,7 +178,7 @@ export default function NareshPrajapati() {
 
         {/* TASK STATUS */}
 
-        <div style={{...styles.card, background:"#be123c"}}>
+        {/* <div style={{...styles.card, background:"#be123c"}}>
 
           <h2 style={styles.cardTitle}>
             Task Status
@@ -188,7 +188,7 @@ export default function NareshPrajapati() {
             Track assigned daily tasks
           </p>
 
-        </div>
+        </div> */}
 
         {/* MEETINGS */}
 

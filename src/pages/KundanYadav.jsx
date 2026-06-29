@@ -56,20 +56,20 @@ export default function KundanYadav() {
             Manage delegated tasks
           </p>
         </div>
-
+{/* 
         <div style={styles.card}>
           <h2 style={styles.cardTitle}>Checklist</h2>
           <p style={styles.cardText}>
             Complete assigned checklists
           </p>
-        </div>
+        </div> */}
 
-        <div style={styles.card}>
+        {/* <div style={styles.card}>
           <h2 style={styles.cardTitle}>Pending CL</h2>
           <p style={styles.cardText}>
             View pending client tasks
           </p>
-        </div>
+        </div> */}
 
         <div
           style={styles.card}
@@ -93,12 +93,12 @@ export default function KundanYadav() {
 
         
 
-        <div style={styles.card}>
+        {/* <div style={styles.card}>
           <h2 style={styles.cardTitle}>Client Management</h2>
           <p style={styles.cardText}>
             Manage client records & updates
           </p>
-        </div>
+        </div> */}
 
         <div style={styles.card}>
           <h2 style={styles.cardTitle}>Notifications</h2>
@@ -107,12 +107,12 @@ export default function KundanYadav() {
           </p>
         </div>
 
-        <div style={styles.card}>
+        {/* <div style={styles.card}>
           <h2 style={styles.cardTitle}>Task Status</h2>
           <p style={styles.cardText}>
             Track assigned daily tasks
           </p>
-        </div>
+        </div> */}
 
         <div style={styles.card}>
           <h2 style={styles.cardTitle}>Meetings</h2>

@@ -89,7 +89,7 @@ export default function Sarikahr() {
 
         {/* PENDING CL */}
 
-        <div style={{...styles.card, background:"#dc2626"}}>
+        {/* <div style={{...styles.card, background:"#dc2626"}}>
 
           <h2 style={styles.cardTitle}>
             Pending CL
@@ -99,7 +99,7 @@ export default function Sarikahr() {
             View pending client tasks
           </p>
 
-        </div>
+        </div> */}
 
         {/* LEAVE FORM */}
 
@@ -151,7 +151,7 @@ export default function Sarikahr() {
 
         {/* CLIENT MANAGEMENT */}
 
-        <div style={{...styles.card, background:"#c2410c"}}>
+        {/* <div style={{...styles.card, background:"#c2410c"}}>
 
           <h2 style={styles.cardTitle}>
             Client Management
@@ -161,7 +161,7 @@ export default function Sarikahr() {
             Manage client records & updates
           </p>
 
-        </div>
+        </div> */}
 
         {/* NOTIFICATIONS */}
 
@@ -179,7 +179,7 @@ export default function Sarikahr() {
 
         {/* TASK STATUS */}
 
-        <div style={{...styles.card, background:"#be123c"}}>
+        {/* <div style={{...styles.card, background:"#be123c"}}>
 
           <h2 style={styles.cardTitle}>
             Task Status
@@ -189,7 +189,7 @@ export default function Sarikahr() {
             Track assigned daily tasks
           </p>
 
-        </div>
+        </div> */}
 
         {/* MEETINGS */}
 
