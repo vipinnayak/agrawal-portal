@@ -61,17 +61,16 @@ export default function Pranjali() {
 
         {/* DELEGATION */}
 
-        <div style={{...styles.card, background:"#7c3aed"}}>
-
-          <h2 style={styles.cardTitle}>
-            Delegation
-          </h2>
-
-          <p style={styles.cardText}>
-            Manage delegated tasks
-          </p>
-
+       <div
+          style={styles.card}
+          onClick={() => navigate("/DelegationDashboard")}
+        >
+          <h2 style={styles.cardTitle}>Delegation</h2>
+          {/* <p style={styles.cardText}>
+            Apply for leave requests
+          </p> */}
         </div>
+
 
         {/* CHECKLIST */}
 

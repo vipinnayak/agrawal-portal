@@ -89,7 +89,7 @@ export default function Meenu() {
 
         {/* PENDING CL */}
 
-        <div style={{...styles.card, background:"#dc2626"}}>
+        {/* <div style={{...styles.card, background:"#dc2626"}}>
 
           <h2 style={styles.cardTitle}>
             Pending CL
@@ -99,7 +99,7 @@ export default function Meenu() {
             View pending client tasks
           </p>
 
-        </div>
+        </div> */}
 
         {/* LEAVE FORM */}
 
@@ -150,14 +150,18 @@ export default function Meenu() {
 
         {/* CLIENT MANAGEMENT */}
 
-        <div style={{...styles.card, background:"#c2410c"}}>
+        <div
+          style={{...styles.card, background:"#0891b2"}}
+
+          onClick={() => navigate("/client-master")}
+        >
 
           <h2 style={styles.cardTitle}>
             Client Management
           </h2>
 
           <p style={styles.cardText}>
-            Manage client records & updates
+            Apply for leave requestsA
           </p>
 
         </div>
@@ -178,7 +182,7 @@ export default function Meenu() {
 
         {/* TASK STATUS */}
 
-        <div style={{...styles.card, background:"#be123c"}}>
+        {/* <div style={{...styles.card, background:"#be123c"}}>
 
           <h2 style={styles.cardTitle}>
             Task Status
@@ -188,7 +192,7 @@ export default function Meenu() {
             Track assigned daily tasks
           </p>
 
-        </div>
+        </div> */}
 
         {/* MEETINGS */}
 

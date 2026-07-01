@@ -132,6 +132,8 @@ import PoojaGupta from "./pages/PoojaGupta";
 import SimranSingh from "./pages/SimranSingh";
 import MDSIR from "./pages/MDSIR";
 import AttendanceReport from "./pages/AttendanceReport";
+import AddClient from "./pages/AddClient";
+import ClientMaster from "./pages/ClientMaster";
 
 
 function App() {
@@ -164,6 +166,8 @@ function App() {
           path="/dipti"
           element={<DiptiVerma/>}
         />
+        <Route path="/client-master" element={<ClientMaster/>}/>
+        <Route path="/add-client" element={<AddClient/>}/>
         <Route
           path="/sikha"
           element={<SikhaGupta/>}

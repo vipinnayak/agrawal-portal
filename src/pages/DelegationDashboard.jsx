@@ -46,27 +46,30 @@ const navigate = useNavigate();
 
       <div className="delegation-header">
 
-        <div>
+  <div>
+    <h1>Delegation Dashboard</h1>
+    <p>Agrawal Jain & Co.</p>
+  </div>
 
-          <h1>
-            Delegation Dashboard
-          </h1>
+  <div className="header-buttons">
 
-          <p>
-            Agrawal Jain & Co.
-          </p>
+    <button
+      className="delegation-btn"
+      onClick={() => navigate("/delegation-form")}
+    >
+      Open Delegation Form
+    </button>
 
-        </div>
-<button
-  className="delegation-btn"
-  onClick={() =>
-    navigate("/delegation-form")
-  }
->
-  Open Delegation Form
-</button>
+    <button
+      className="view-btn"
+      onClick={() => navigate("/view-delegation")}
+    >
+      View Delegation
+    </button>
 
-      </div>
+  </div>
+
+</div>
 
       {/* SUMMARY */}
 

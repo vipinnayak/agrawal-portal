@@ -50,11 +50,14 @@ export default function CACHANDAN() {
           </p>
         </div>
 
-        <div style={styles.card}>
+      <div
+          style={styles.card}
+          onClick={() => navigate("/DelegationDashboard")}
+        >
           <h2 style={styles.cardTitle}>Delegation</h2>
-          <p style={styles.cardText}>
-            Manage delegated tasks
-          </p>
+          {/* <p style={styles.cardText}>
+            Apply for leave requests
+          </p> */}
         </div>
 
         <div style={styles.card}>
