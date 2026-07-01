@@ -14,7 +14,7 @@ function DailyAttendanceHarshSharma() {
   useEffect(() => {
 
     fetch(
-      "https://script.google.com/macros/s/AKfycbxjU4nrZYnBfug4vqBtlVm-GOhqO0nj7mRcIKYGwt9_lJ3oiEjWSS48iz0mZ8WU83ka/exec"
+      "https://script.google.com/macros/s/AKfycbw1EDr9C52pQT4WdywDMDQ4SAvR4FM3IeNM5CkDlxu8b-mpbg3XVsb5LrSnh5c2-Wrd/exec"
     )
 
       .then((res) => res.json())

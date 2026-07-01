@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import "./DailyAttendance.css";
 
-function DailyAttendanceDrishti() {
+function DailyAttendanceMDSIR() {
 
   const navigate = useNavigate();
 
@@ -14,7 +14,7 @@ function DailyAttendanceDrishti() {
   useEffect(() => {
 
     fetch(
-      "https://script.google.com/macros/s/AKfycbzBZTauLLFsib7G1nkqyAbrK5a1B337Y-_IsNFFg3DpWmC623x7OMnKdbCOBKO7Conu5w/exec"
+      "https://script.google.com/macros/s/AKfycbwitJwDYovg7Q61ObEi4EeIjxAT4FrMeHdv4YG48UluHu1ThvxPMrI_CKlJYxTiIDI7/exec"
     )
 
       .then((res) => res.json())
@@ -237,4 +237,4 @@ function DailyAttendanceDrishti() {
 
 }
 
-export default DailyAttendanceDrishti;
+export default DailyAttendanceMDSIR;

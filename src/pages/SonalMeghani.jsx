@@ -42,7 +42,7 @@ export default function SonalMeghani() {
 
         <div
           style={styles.card}
-          onClick={() => navigate("/daily-working-harsh-sharma")}
+          onClick={() => navigate("/dasonal")}
         >
           <h2 style={styles.cardTitle}>Daily Working</h2>
           <p style={styles.cardText}>

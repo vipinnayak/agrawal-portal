@@ -134,6 +134,9 @@ import MDSIR from "./pages/MDSIR";
 import AttendanceReport from "./pages/AttendanceReport";
 import AddClient from "./pages/AddClient";
 import ClientMaster from "./pages/ClientMaster";
+import DAKUNDAN from "./pages/DAKUNDAN";
+import DASONAL from "./pages/DASONAL";
+import DailyAttendanceMDSIR from "./pages/DailyAttedanceMDSIR";
 
 
 function App() {
@@ -151,8 +154,20 @@ function App() {
           element={<Login />}
         />
         <Route
+          path="/dakundan"
+          element={<DAKUNDAN/>}
+        />
+        <Route
+          path="/dasonal"
+          element={<DASONAL/>}
+        />
+        <Route
           path="/daharshmittal"
           element={<DailyAttendanceHarshMittal/>}
+        />
+        <Route
+          path="/dailyMDSIR"
+          element={<DailyAttendanceMDSIR/>}
         />
         <Route
           path="/rajesh-agrawal"

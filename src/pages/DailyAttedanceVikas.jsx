@@ -14,7 +14,7 @@ function DailyAttendanceVikas() {
   useEffect(() => {
 
     fetch(
-      "https://script.google.com/macros/s/AKfycbxjU4nrZYnBfug4vqBtlVm-GOhqO0nj7mRcIKYGwt9_lJ3oiEjWSS48iz0mZ8WU83ka/exec"
+      "https://script.google.com/macros/s/AKfycbz3e4-gQSyv9Mq9IY4O-uPDQNi3uS-rtUMMUrWPo2mckvlUpwjLwxx9P0pZUQlCwjyM/exec"
     )
 
       .then((res) => res.json())

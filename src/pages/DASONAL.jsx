@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./DailyWorking.css";
 
-function DailyWorkingPriya() {
+function DASONAL() {
 
   const navigate = useNavigate();
 
@@ -11,7 +11,7 @@ function DailyWorkingPriya() {
   useEffect(() => {
 
     fetch(
-      "https://script.google.com/macros/s/AKfycbxcmMeGLQDjvNrJ-aqhfQE5Dh6Lrrc_fSxJVmeGt5Dn0bPDQAd3aGa3Pb6X4XB0VwB7/exec"
+      "https://script.google.com/macros/s/AKfycbyTot4Sp6XYzZX7JHqD_OPI2jRGedjsY--C6DEDkU6R8lQ9_g17NmqLC9XJTpUCLkeQRg/exec"
     )
 
       .then((res) => res.json())
@@ -298,4 +298,4 @@ function DailyWorkingPriya() {
 
 }
 
-export default DailyWorkingPriya;
+export default DASONAL;

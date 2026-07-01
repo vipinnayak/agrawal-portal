@@ -11,7 +11,7 @@ function DailyWorkingVedant() {
   useEffect(() => {
 
     fetch(
-      "https://script.google.com/macros/s/AKfycbxChm2tuSBdFiwLATUq4THD01CMfytH0S8KJuXGobPPkxEJCbeSs7y_tVCD9rMJ2cr2Rw/exec"
+      "https://script.google.com/macros/s/AKfycbyUxDPA82rgVqoUIbkaPlJ-eOt4Yptn_2sauyk-MASDGXjDnpYfNlfb3WQ2GRKgS06eNg/exec"
     )
 
       .then((res) => res.json())
