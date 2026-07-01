@@ -29,7 +29,7 @@ export default function Babitahr() {
         {/* DAILY ATTENDANCE */}
 
         <div style={{...styles.card, background:"#2563eb"}}
-        onClick={() => navigate("/daily-attendance")}>
+        onClick={() => navigate("/dababita")}>
 
           <h2 style={styles.cardTitle}>
             Daily Attendance

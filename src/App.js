@@ -137,6 +137,15 @@ import ClientMaster from "./pages/ClientMaster";
 import DAKUNDAN from "./pages/DAKUNDAN";
 import DASONAL from "./pages/DASONAL";
 import DailyAttendanceMDSIR from "./pages/DailyAttedanceMDSIR";
+import DaAryaman from "./pages/DaAryaman";
+import DaAnkitSingh from "./pages/DaAnkitSingh";
+import DaAkshita from "./pages/DaAkshita";
+import DaAdityaRaj from "./pages/DaAdityaRaj";
+import DaAnirudh from "./pages/DaAnirudh";
+import DaAkashYadav from "./pages/DaAkashYadav";
+import Dababita from "./pages/Dababita";
+import DaBhavika from "./pages/DaBhavika";
+import DaChetna from "./pages/DaChetna";
 
 
 function App() {
@@ -158,9 +167,46 @@ function App() {
           element={<DAKUNDAN/>}
         />
         <Route
+          path="/daaditya"
+          element={<DaAdityaRaj/>}
+        />
+        <Route
+          path="/dachetna"
+          element={<DaChetna/>}
+        />
+        <Route
+          path="/daakash"
+          element={<DaAkashYadav/>}
+        />
+         <Route
+          path="/dabhavika"
+          element={<DaBhavika/>}
+        />
+        <Route
+          path="/daakshita"
+          element={<DaAkshita/>}
+        />
+        <Route
+          path="/daankitsingh"
+          element={<DaAnkitSingh/>}
+        />
+        <Route
+          path="/daanirudh"
+          element={<DaAnirudh/>}
+        />
+        <Route
+          path="/daaryaman"
+          element={<DaAryaman/>}
+        />
+        <Route
           path="/dasonal"
           element={<DASONAL/>}
         />
+        <Route
+          path="/dababita"
+          element={<Dababita/>}
+        />
+
         <Route
           path="/daharshmittal"
           element={<DailyAttendanceHarshMittal/>}

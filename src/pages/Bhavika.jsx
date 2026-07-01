@@ -29,7 +29,7 @@ export default function Bhavika() {
         {/* DAILY ATTENDANCE */}
 
         <div style={{...styles.card, background:"#2563eb"}}
-        onClick={() => navigate("/daily-attendance")}>
+        onClick={() => navigate("/dabhavika")}>
 
           <h2 style={styles.cardTitle}>
             Daily Attendance
