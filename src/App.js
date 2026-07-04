@@ -242,7 +242,7 @@ function App() {
           element={<TarunRathi/>}
         />
         <Route
-          path="/aryamandhar"
+          path="/aryaman"
           element={<AryamanDhar/>}
         />
         <Route
