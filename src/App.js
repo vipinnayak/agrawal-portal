@@ -146,6 +146,7 @@ import DaAkashYadav from "./pages/DaAkashYadav";
 import Dababita from "./pages/Dababita";
 import DaBhavika from "./pages/DaBhavika";
 import DaChetna from "./pages/DaChetna";
+import ManojGoyal from "./pages/ManojGoyal";
 
 
 function App() {
@@ -169,6 +170,10 @@ function App() {
         <Route
           path="/daaditya"
           element={<DaAdityaRaj/>}
+        />
+        <Route
+          path="/manoj-goyal"
+          element={<ManojGoyal/>}
         />
         <Route
           path="/dachetna"
