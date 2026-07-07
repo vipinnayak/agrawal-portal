@@ -98,12 +98,17 @@ export default function Supriya() {
         </div>
 
         {/* Reports */}
-        <div style={styles.card}>
-          <h2 style={styles.cardTitle}>Reports</h2>
+        <div style={{...styles.card, background:"#2563eb"}}
+        onClick={() => navigate("/reports")}>
+
+          <h2 style={styles.cardTitle}>
+            Reports
+          </h2>
 
           <p style={styles.cardText}>
-            View MIS & Performance Reports
+            Check today attendance status
           </p>
+
         </div>
 
         {/* Client Management */}
