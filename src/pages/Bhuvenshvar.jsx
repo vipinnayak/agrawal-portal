@@ -13,7 +13,7 @@ export default function Bhuvenshvar() {
       <div style={styles.header}>
 
         <h1 style={styles.heading}>
-          Tushar Sahu
+          Bhuneshwar Sahu
         </h1>
 
         <p style={styles.subHeading}>
