@@ -28,6 +28,7 @@ export default function Login() {
      "rajeshagrawal123@gmail.com": "md123",
      "manojgoyal123@gmail.com": "manoj123",
      "bhuneshvar123@gmail.com": "bhunesh123",
+     "sanchitaagrawal123@gmail.com": "sanchita123",
 
     "harshmittal123@gmail.com": "harsh123",
     "harshsharma123@gmail.com": "harsh123",
@@ -301,6 +302,8 @@ export default function Login() {
         navigate("/manoj-goyal");
       }else if (emp === "bhuneshvar123@gmail.com") {
         navigate("/bhuneshvar");
+      }else if (emp === "sanchitaagrawal123@gmail.com") {
+        navigate("/sanchita-agrawal");
       }
 
     } else {

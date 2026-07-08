@@ -148,6 +148,7 @@ import DaBhavika from "./pages/DaBhavika";
 import DaChetna from "./pages/DaChetna";
 import ManojGoyal from "./pages/ManojGoyal";
 import Bhuvenshvar from "./pages/Bhuvenshvar";
+import SanchitaAgarwal from "./pages/SanchitaAgrawal";
 
 
 function App() {
@@ -167,6 +168,10 @@ function App() {
         <Route
           path="/dakundan"
           element={<DAKUNDAN/>}
+        />
+         <Route
+          path="/sanchita-agrawal"
+          element={<SanchitaAgarwal/>}
         />
         <Route
           path="/bhuneshvar"
