@@ -110,6 +110,7 @@ export default function Login() {
     "muktipathak123@gmail.com":"mukti123",
     "shushanttiwari123@gmail.com":"shushant123",
     "devdilip123@gmail.com":"dev123",
+    "amitchandrakar123@gmail.com":"amit123",
 
   };
 
@@ -304,6 +305,8 @@ export default function Login() {
         navigate("/bhuneshvar");
       }else if (emp === "sanchitaagrawal123@gmail.com") {
         navigate("/sanchita-agrawal");
+      }else if (emp === "amitchandrakar123@gmail.com") {
+        navigate("/amit-chandrakar");
       }
 
     } else {

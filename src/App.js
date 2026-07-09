@@ -149,7 +149,7 @@ import DaChetna from "./pages/DaChetna";
 import ManojGoyal from "./pages/ManojGoyal";
 import Bhuvenshvar from "./pages/Bhuvenshvar";
 import SanchitaAgarwal from "./pages/SanchitaAgrawal";
-
+import AmitChandrakar from "./pages/AmitChandrakar";
 
 function App() {
 
@@ -164,6 +164,10 @@ function App() {
         <Route
           path="/"
           element={<Login />}
+        />
+        <Route
+          path="/amit-chandrakar"
+          element={<AmitChandrakar/>}
         />
         <Route
           path="/dakundan"
