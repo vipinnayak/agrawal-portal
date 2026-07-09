@@ -111,6 +111,7 @@ export default function Login() {
     "shushanttiwari123@gmail.com":"shushant123",
     "devdilip123@gmail.com":"dev123",
     "amitchandrakar123@gmail.com":"amit123",
+    "shyamnarayan123@gmail.com":"shyam123",
 
   };
 
@@ -307,6 +308,8 @@ export default function Login() {
         navigate("/sanchita-agrawal");
       }else if (emp === "amitchandrakar123@gmail.com") {
         navigate("/amit-chandrakar");
+      }else if (emp === "shyamnarayan123@gmail.com") {
+        navigate("/shyam-narayan");
       }
 
     } else {
