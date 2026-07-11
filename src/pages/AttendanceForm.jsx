@@ -109,115 +109,121 @@ function AttendanceForm() {
 
   // FETCH DEVICE LOCATION + MAP
 
-  useEffect(() => {
+  // FETCH EXACT DEVICE LOCATION
 
-    if (navigator.geolocation) {
+const LOCATIONIQ_KEY = "pk.4b816825619bf4730ddc78ce1a4ee200";
 
-      navigator.geolocation.getCurrentPosition(
+useEffect(() => {
 
-        async (position) => {
+  if (!navigator.geolocation) {
+    setLocation("Geolocation not supported");
+    return;
+  }
 
-          const lat =
-            position.coords.latitude;
+  navigator.geolocation.getCurrentPosition(
 
-          const lng =
-            position.coords.longitude;
+    async (position) => {
 
-          // MAP URL
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
 
-          setMapUrl(
-            `https://www.google.com/maps?q=${lat},${lng}&z=18&output=embed`
-          );
+      setMapUrl(
+        `https://www.google.com/maps?q=${lat},${lng}&z=19&output=embed`
+      );
 
-          try {
+      try {
 
-            const response =
-              await fetch(
-                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
-              );
+        // Reverse Address
 
-            const data =
-              await response.json();
+        const reverse = await fetch(
+          `https://us1.locationiq.com/v1/reverse?key=${LOCATIONIQ_KEY}&lat=${lat}&lon=${lng}&format=json`
+        );
 
-            console.log(data);
+        const addressData = await reverse.json();
 
-            const house =
-              data.address.house_number || "";
+        console.log(addressData);
 
-            const road =
-              data.address.road || "";
+        // Nearest Landmark
 
-            const suburb =
-              data.address.suburb ||
-              data.address.neighbourhood ||
-              data.address.residential ||
-              "";
+        const overpass = await fetch(
 
-            const area =
-              data.address.city_district ||
-              data.address.county ||
-              "";
+`https://overpass-api.de/api/interpreter?data=[out:json];node(around:100,${lat},${lng})["amenity"];out;`
 
-            const city =
-              data.address.city ||
-              data.address.town ||
-              data.address.village ||
-              "";
+        );
 
-            const state =
-              data.address.state || "";
+        const landmarkData = await overpass.json();
 
-            const finalLocation = `
+        console.log(landmarkData);
 
-${house ? house + ", " : ""}
-${road ? road + ", " : ""}
-${suburb ? suburb + ", " : ""}
-${area ? area + ", " : ""}
-${city ? city + ", " : ""}
-${state}
+        let landmark = "";
 
-            `;
+        if (
+          landmarkData.elements &&
+          landmarkData.elements.length > 0
+        ) {
 
-            setLocation(
-              finalLocation
-                .replace(/\n/g, "")
-                .trim()
-            );
-
-          } catch (error) {
-
-            console.log(error);
-
-            setLocation(
-              "Location Not Found"
-            );
-
-          }
-
-        },
-
-        () => {
-
-          setLocation(
-            "Location Permission Denied"
-          );
-
-        },
-
-        {
-
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0
+          landmark =
+            landmarkData.elements[0].tags.name || "";
 
         }
 
-      );
+        const a = addressData.address;
+
+        const finalAddress = [
+
+          landmark ? `Near ${landmark}` : "",
+
+          a.house_number,
+
+          a.road,
+
+          a.suburb,
+
+          a.neighbourhood,
+
+          a.city,
+
+          a.state,
+
+          a.postcode
+
+        ]
+
+          .filter(Boolean)
+
+          .join(", ");
+
+        setLocation(finalAddress);
+
+      } catch (err) {
+
+        console.log(err);
+
+        setLocation("Unable to fetch address");
+
+      }
+
+    },
+
+    () => {
+
+      setLocation("Permission Denied");
+
+    },
+
+    {
+
+      enableHighAccuracy: true,
+
+      timeout: 15000,
+
+      maximumAge: 0
 
     }
 
-  }, []);
+  );
 
+}, []);
   // HANDLE INPUT
 
   const handleChange = (e) => {

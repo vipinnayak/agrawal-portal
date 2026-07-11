@@ -151,6 +151,9 @@ import Bhuvenshvar from "./pages/Bhuvenshvar";
 import SanchitaAgarwal from "./pages/SanchitaAgrawal";
 import AmitChandrakar from "./pages/AmitChandrakar";
 import Shyam from "./pages/Shyam";
+import EmployeeCard from "./pages/EmployeeCard";
+import EmployeeMaster from "./pages/EmployeeMaster";
+import AddEmployeeForm from "./pages/AddEmployeeForm";
 
 function App() {
 
@@ -170,6 +173,11 @@ function App() {
           path="/amit-chandrakar"
           element={<AmitChandrakar/>}
         />
+         <Route
+          path="/employee-card"
+          element={<EmployeeCard/>}
+        />
+        <Route path="/addemployeeform" element={<AddEmployeeForm />} />
         <Route
           path="/dakundan"
           element={<DAKUNDAN/>}
@@ -178,6 +186,10 @@ function App() {
           path="/shyam-narayan"
           element={<Shyam/>}
         />
+        <Route
+  path="/employeemaster"
+  element={<EmployeeMaster />}
+/>
          <Route
           path="/sanchita-agrawal"
           element={<SanchitaAgarwal/>}

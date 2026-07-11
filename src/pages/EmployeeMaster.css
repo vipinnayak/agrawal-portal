@@ -1,0 +1,554 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+html,
+body,
+#root{
+    width:100%;
+    min-height:100%;
+    background:#eef5ff;
+}
+
+.emp-page{
+
+    min-height:100vh;
+
+    padding:35px;
+
+    background:#eef5ff;
+
+}
+
+/* ===================================== */
+/* HEADER */
+/* ===================================== */
+
+.emp-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:30px;
+
+}
+
+.emp-title h1{
+
+    font-size:48px;
+
+    font-weight:800;
+
+    color:#1e293b;
+
+}
+
+.emp-title p{
+
+    margin-top:8px;
+
+    font-size:18px;
+
+    color:#64748b;
+
+}
+
+/* ===================================== */
+/* ADD BUTTON */
+/* ===================================== */
+
+.add-btn{
+
+    padding:16px 30px;
+
+    border:none;
+
+    border-radius:16px;
+
+    cursor:pointer;
+
+    color:white;
+
+    font-size:17px;
+
+    font-weight:700;
+
+    background:linear-gradient(
+        135deg,
+        #22c55e,
+        #16a34a
+    );
+
+    box-shadow:0 15px 35px rgba(34,197,94,.25);
+
+    transition:.3s;
+
+}
+
+.add-btn:hover{
+
+    transform:translateY(-4px);
+
+}
+
+/* ===================================== */
+/* SUMMARY CARD */
+/* ===================================== */
+
+.emp-summary{
+
+    width:360px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:20px;
+
+    padding:28px;
+
+    margin-bottom:30px;
+
+    border-radius:22px;
+
+    background:linear-gradient(
+        135deg,
+        #4f46e5,
+        #2563eb,
+        #06b6d4
+    );
+
+    color:white;
+
+    box-shadow:0 20px 40px rgba(37,99,235,.25);
+
+}
+
+.emp-summary-icon{
+
+    width:80px;
+
+    height:80px;
+
+    border-radius:18px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:40px;
+
+    background:rgba(255,255,255,.18);
+
+}
+
+.emp-summary h4{
+
+    font-size:20px;
+
+    font-weight:500;
+
+}
+
+.emp-summary h2{
+
+    font-size:56px;
+
+    font-weight:800;
+
+    margin-top:6px;
+
+}
+/* ===================================== */
+/* FILTER */
+/* ===================================== */
+
+.emp-filter{
+
+    display:flex;
+
+    gap:20px;
+
+    margin-bottom:30px;
+
+    flex-wrap:wrap;
+
+}
+
+.emp-filter input{
+
+    flex:1;
+
+    min-width:350px;
+
+    padding:18px 20px;
+
+    border:none;
+
+    outline:none;
+
+    border-radius:16px;
+
+    background:white;
+
+    font-size:16px;
+
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+
+    transition:.3s;
+
+}
+
+.emp-filter input:focus{
+
+    box-shadow:0 0 0 4px rgba(37,99,235,.15);
+
+}
+
+.emp-filter input::placeholder{
+
+    color:#94a3b8;
+
+}
+
+.emp-filter select{
+
+    width:260px;
+
+    padding:18px;
+
+    border:none;
+
+    outline:none;
+
+    border-radius:16px;
+
+    background:white;
+
+    font-size:16px;
+
+    cursor:pointer;
+
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+
+    transition:.3s;
+
+}
+
+.emp-filter select:focus{
+
+    box-shadow:0 0 0 4px rgba(37,99,235,.15);
+
+}
+
+/* ===================================== */
+/* TABLE CARD */
+/* ===================================== */
+
+.emp-table{
+
+    background:white;
+
+    border-radius:22px;
+
+    overflow:auto;
+
+    box-shadow:0 15px 35px rgba(0,0,0,.08);
+
+    border:1px solid #e2e8f0;
+
+}
+
+/* Scrollbar */
+
+.emp-table::-webkit-scrollbar{
+
+    height:10px;
+
+}
+
+.emp-table::-webkit-scrollbar-track{
+
+    background:#e2e8f0;
+
+}
+
+.emp-table::-webkit-scrollbar-thumb{
+
+    background:#2563eb;
+
+    border-radius:20px;
+
+}
+
+.emp-table::-webkit-scrollbar-thumb:hover{
+
+    background:#1d4ed8;
+
+}
+/* ===================================== */
+/* TABLE */
+/* ===================================== */
+
+.emp-table table{
+
+    width:100%;
+
+    min-width:1200px;
+
+    border-collapse:collapse;
+
+}
+
+.emp-table thead{
+
+    background:linear-gradient(
+        90deg,
+        #4f46e5,
+        #2563eb,
+        #06b6d4
+    );
+
+}
+
+.emp-table thead th{
+
+    padding:18px;
+
+    color:white;
+
+    text-align:left;
+
+    font-size:15px;
+
+    font-weight:700;
+
+    white-space:nowrap;
+
+}
+
+.emp-table tbody td{
+
+    padding:18px;
+
+    color:#334155;
+
+    font-size:15px;
+
+    border-bottom:1px solid #e5e7eb;
+
+    vertical-align:middle;
+
+}
+
+.emp-table tbody tr:nth-child(even){
+
+    background:#f8fbff;
+
+}
+
+.emp-table tbody tr:hover{
+
+    background:#eef5ff;
+
+    transition:.3s;
+
+}
+
+/* ===================================== */
+/* EDIT BUTTON */
+/* ===================================== */
+
+.edit-btn{
+
+    width:42px;
+
+    height:42px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#22c55e;
+
+    color:white;
+
+    font-size:18px;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.edit-btn:hover{
+
+    background:#16a34a;
+
+    transform:scale(1.08);
+
+}
+
+/* ===================================== */
+/* LOADING */
+/* ===================================== */
+
+.loading{
+
+    padding:60px;
+
+    text-align:center;
+
+    color:#64748b;
+
+    font-size:18px;
+
+    font-weight:600;
+
+}
+
+/* ===================================== */
+/* RESPONSIVE */
+/* ===================================== */
+
+@media(max-width:992px){
+
+.emp-page{
+
+    padding:20px;
+
+}
+
+.emp-header{
+
+    flex-direction:column;
+
+    align-items:flex-start;
+
+    gap:20px;
+
+}
+
+.emp-title h1{
+
+    font-size:36px;
+
+}
+
+.add-btn{
+
+    width:100%;
+
+}
+
+.emp-summary{
+
+    width:100%;
+
+}
+
+.emp-filter{
+
+    flex-direction:column;
+
+}
+
+.emp-filter input{
+
+    min-width:100%;
+
+}
+
+.emp-filter select{
+
+    width:100%;
+
+}
+
+.emp-table table{
+
+    min-width:1000px;
+
+}
+
+}
+
+@media(max-width:600px){
+
+.emp-page{
+
+    padding:15px;
+
+}
+
+.emp-title h1{
+
+    font-size:30px;
+
+}
+
+.emp-title p{
+
+    font-size:15px;
+
+}
+
+.emp-summary{
+
+    padding:22px;
+
+}
+
+.emp-summary-icon{
+
+    width:65px;
+
+    height:65px;
+
+    font-size:34px;
+
+}
+
+.emp-summary h2{
+
+    font-size:42px;
+
+}
+
+.emp-table thead th{
+
+    font-size:13px;
+
+    padding:14px;
+
+}
+
+.emp-table tbody td{
+
+    font-size:13px;
+
+    padding:14px;
+
+}
+
+.edit-btn{
+
+    width:36px;
+
+    height:36px;
+
+    font-size:16px;
+
+}
+
+}
