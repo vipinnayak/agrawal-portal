@@ -154,6 +154,8 @@ import Shyam from "./pages/Shyam";
 import EmployeeCard from "./pages/EmployeeCard";
 import EmployeeMaster from "./pages/EmployeeMaster";
 import AddEmployeeForm from "./pages/AddEmployeeForm";
+import ExitEmployeeForm from "./pages/ExitEmployeeForm";
+import MIS2Delegation from "./pages/MIS2Delegation";
 
 function App() {
 
@@ -173,9 +175,20 @@ function App() {
           path="/amit-chandrakar"
           element={<AmitChandrakar/>}
         />
+          <Route
+    path="/exitemployee/:id"
+    element={<ExitEmployeeForm />}
+  />
+
+
          <Route
           path="/employee-card"
           element={<EmployeeCard/>}
+        />
+
+         <Route
+          path="/mis2delegation"
+          element={<MIS2Delegation/>}
         />
         <Route path="/addemployeeform" element={<AddEmployeeForm />} />
         <Route

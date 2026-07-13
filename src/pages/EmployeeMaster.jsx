@@ -143,14 +143,16 @@ export default function EmployeeMaster() {
 
           <thead>
             <tr>
+              <th>EmployeeID</th>
               <th>Name</th>
               <th>Mobile</th>
               <th>Department</th>
               <th>Joining Date</th>
               <th>Salary</th>
               <th>Address</th>
-              <th>Account No</th>
-              <th>Edit</th>
+              {/* <th>Account No</th> */}
+             
+              <th>Exit</th>
             </tr>
           </thead>
 
@@ -176,45 +178,55 @@ export default function EmployeeMaster() {
 
               filtered.map((emp, index) => (
 
-                <tr key={index}>
+  <tr key={index}>
 
-                  <td>{emp.Name}</td>
+  <td>{emp.EmployeeID}</td>
 
-                  <td>{emp.Mobile}</td>
+  <td>{emp.Name}</td>
 
-                  <td>{emp.Department}</td>
+  <td>{emp.Mobile}</td>
 
-                  <td>
-                    {emp.JoiningDate
-                      ? new Date(emp.JoiningDate).toLocaleDateString(
-                          "en-GB",
-                          {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          }
-                        )
-                      : ""}
-                  </td>
+  <td>{emp.Department}</td>
 
-                  <td>{emp.Salary}</td>
+  <td>
+    {emp.JoiningDate
+      ? new Date(emp.JoiningDate).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })
+      : ""}
+  </td>
 
-                  <td>{emp.Address}</td>
+  <td>{emp.Salary}</td>
 
-                  <td>{emp.AccountNo}</td>
+  <td>{emp.Address}</td>
 
-                  <td>
-                    <button
-                      className="edit-btn"
-                      onClick={() =>
-                        navigate(`/editemployee/${emp.EmployeeID}`)
-                      }
-                    >
-                      ✏️
-                    </button>
-                  </td>
+  {/* <td>{emp.AccountNo}</td> */}
 
-                </tr>
+  {/* <td>
+    <button
+      className="edit-btn"
+      onClick={() =>
+        navigate(`/editemployee/${emp.EmployeeID}`)
+      }
+    >
+      ✏️
+    </button>
+  </td> */}
+
+  <td>
+    <button
+      className="exit-btn"
+      onClick={() =>
+        navigate(`/exitemployee/${emp.EmployeeID}`)
+      }
+    >
+      🚪
+    </button>
+  </td>
+
+</tr>
 
               ))
 

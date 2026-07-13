@@ -61,14 +61,15 @@ export default function VipinNayak() {
 
         {/* DELEGATION */}
 
-        <div style={{...styles.card, background:"#7c3aed"}}>
+        <div style={{...styles.card, background:"#2563eb"}}
+        onClick={() => navigate("/mis2delegation")}>
 
           <h2 style={styles.cardTitle}>
             Delegation
           </h2>
 
           <p style={styles.cardText}>
-            Manage delegated tasks
+            Check today attendance status
           </p>
 
         </div>
