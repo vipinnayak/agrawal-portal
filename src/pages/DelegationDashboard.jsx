@@ -32,7 +32,7 @@ const navigate = useNavigate();
       .then(res => res.json())
       .then(data => {
 
-        setDelegationData(data);
+        // setDelegationData(data);
 
       });
 
