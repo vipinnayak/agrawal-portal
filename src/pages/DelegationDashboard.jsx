@@ -10,7 +10,7 @@ function DelegationDashboard() {
     late:0,
   });
 
-  const [delegationData,setDelegationData] = useState([]);
+
 const navigate = useNavigate();
   useEffect(() => {
 
