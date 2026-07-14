@@ -121,120 +121,28 @@ const navigate = useNavigate();
 
       {/* TABLE */}
 
-      <div className="table-card">
+      {/* LOOKER STUDIO DASHBOARD */}
 
-        <div className="table-top">
+<div className="table-card">
 
-          <h2>
-            Delegation Reports
-          </h2>
+  <div className="table-top">
+    <h2>Delegation Dashboard Report</h2>
+  </div>
 
-        </div>
+  <iframe
+    title="Delegation Dashboard"
+    src="https://datastudio.google.com/embed/reporting/624c83c3-93cb-4fc6-af8f-fabc111f036e/page/VQveF"
+    width="100%"
+    height="900"
+    frameBorder="0"
+    style={{
+      border: 0,
+      borderRadius: "20px"
+    }}
+    allowFullScreen
+  ></iframe>
 
-        <div className="table-wrapper">
-
-          <table>
-
-            <thead>
-
-              <tr>
-
-                <th>
-                  Delegation ID
-                </th>
-
-                <th>
-                  Employee Name
-                </th>
-
-                <th>
-                  Task
-                </th>
-
-                <th>
-                  Assigned Date
-                </th>
-
-                <th>
-                  Deadline
-                </th>
-
-                <th>
-                  Status
-                </th>
-
-              </tr>
-
-            </thead>
-
-            <tbody>
-
-              {
-                delegationData.length > 0
-                ? delegationData.map((item,index) => (
-
-                    <tr key={index}>
-
-                      <td>
-                        {item.id}
-                      </td>
-
-                      <td>
-                        {item.employee}
-                      </td>
-
-                      <td>
-                        {item.task}
-                      </td>
-
-                      <td>
-                        {item.assignedDate}
-                      </td>
-
-                      <td>
-                        {item.deadline}
-                      </td>
-
-                      <td>
-
-                        <span
-                          className={
-                            item.status === "Completed"
-                            ? "status-green"
-                            : "status-red"
-                          }
-                        >
-
-                          {item.status}
-
-                        </span>
-
-                      </td>
-
-                    </tr>
-
-                  ))
-                : (
-                  <tr>
-
-                    <td
-                      colSpan="6"
-                      className="no-data"
-                    >
-                      No Delegation Data
-                    </td>
-
-                  </tr>
-                )
-              }
-
-            </tbody>
-
-          </table>
-
-        </div>
-
-      </div>
+</div>
 
     </div>
 
