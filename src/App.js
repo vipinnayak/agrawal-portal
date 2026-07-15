@@ -156,6 +156,15 @@ import EmployeeMaster from "./pages/EmployeeMaster";
 import AddEmployeeForm from "./pages/AddEmployeeForm";
 import ExitEmployeeForm from "./pages/ExitEmployeeForm";
 import MIS2Delegation from "./pages/MIS2Delegation";
+import CDHarshMittal from "./pages/Checklist&Delegation/CDHarshMittal";
+import CDChandanSingh from "./pages/Checklist&Delegation/CDChandhanSingh";
+import CDDrishtiChandnani from "./pages/Checklist&Delegation/CDDrishtiChandnani";
+import CDHarshSHarma from "./pages/Checklist&Delegation/CDHarshSharma";
+import CDPankajAgrawal from "./pages/Checklist&Delegation/CDPankajAgrawal";
+import CDPratibhaAgrawal from "./pages/Checklist&Delegation/CDPratibhaAgrawal";
+import CDPriyaDhani from "./pages/Checklist&Delegation/CDPriyaDhani";
+import CDVedant from "./pages/Checklist&Delegation/CDVedant";
+import CDVikasGoyal from "./pages/Checklist&Delegation/CDVikasGoyal";
 
 function App() {
 
@@ -179,6 +188,46 @@ function App() {
     path="/exitemployee/:id"
     element={<ExitEmployeeForm />}
   />
+  <Route
+          path="/cdharshmittal"
+          element={<CDHarshMittal/>}
+        />
+         <Route
+          path="/cdharshsharma"
+          element={<CDHarshSHarma/>}
+        />
+         <Route
+          path="/cdchandansingh"
+          element={<CDChandanSingh/>}
+        />
+         <Route
+          path="/cddrishtichandnani"
+          element={<CDDrishtiChandnani/>}
+        />
+         <Route
+          path="/cdpankajagrawal"
+          element={<CDPankajAgrawal/>}
+        />
+         <Route
+          path="/cdharshmittal"
+          element={<CDHarshMittal/>}
+        />
+         <Route
+          path="/cdpratibhaagrawal"
+          element={<CDPratibhaAgrawal/>}
+        />
+         <Route
+          path="/cdpriyadhani"
+          element={<CDPriyaDhani/>}
+        />
+         <Route
+          path="/cdvedant"
+          element={<CDVedant/>}
+        />
+         <Route
+          path="/cdvikasgoyal"
+          element={<CDVikasGoyal/>}
+        />
 
 
          <Route

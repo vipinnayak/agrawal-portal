@@ -52,20 +52,20 @@ export default function CAVEDANT() {
 
        <div
           style={styles.card}
-          onClick={() => navigate("/DelegationDashboard")}
+          onClick={() => navigate("/cavedant")}
         >
-          <h2 style={styles.cardTitle}>Delegation</h2>
+          <h2 style={styles.cardTitle}>Checklist & Delegation</h2>
           {/* <p style={styles.cardText}>
             Apply for leave requests
           </p> */}
         </div>
 
-        <div style={styles.card}>
+        {/* <div style={styles.card}>
           <h2 style={styles.cardTitle}>Checklist</h2>
           <p style={styles.cardText}>
             Complete assigned checklists
           </p>
-        </div>
+        </div> */}
 
         <div style={styles.card}>
           <h2 style={styles.cardTitle}>Pending CL</h2>
