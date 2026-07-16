@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./ClientMasterFMS.css";
 
 const API =
-"https://script.google.com/macros/s/AKfycbwa3w45l2ruqW7G11pJk9uyEbkmHgHQ02LbVbyQXoLBLwhrCI3UogWnZPWPM_LpJoyy/exec";
+"https://script.google.com/macros/s/AKfycbw7UK0M1fdNV0hDg7szPUcN8HyzlVXTe5JTiC0j6Bv580nkUEXEQGHR1S4gbgfwSoGh/exec";
 
 export default function ClientMasterFMS() {
 

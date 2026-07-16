@@ -11,7 +11,7 @@ body{
     background:#eef5ff;
 }
 
-/* PAGE */
+/* ================= PAGE ================= */
 
 .client-page{
     min-height:100vh;
@@ -19,7 +19,7 @@ body{
     background:#eef5ff;
 }
 
-/* HEADER */
+/* ================= HEADER ================= */
 
 .client-header{
     display:flex;
@@ -31,18 +31,16 @@ body{
 }
 
 .client-header h1{
-    font-size:38px;
+    font-size:52px;
     font-weight:700;
-    color:#1e3a8a;
+    color:#21409a;
 }
 
 .client-header p{
-    margin-top:6px;
+    margin-top:8px;
+    font-size:18px;
     color:#64748b;
-    font-size:16px;
 }
-
-/* BUTTONS */
 
 .header-buttons{
     display:flex;
@@ -53,8 +51,8 @@ body{
 .add-client-btn,
 .view-client-btn{
     border:none;
-    padding:13px 22px;
-    border-radius:10px;
+    padding:14px 24px;
+    border-radius:12px;
     color:#fff;
     font-size:15px;
     font-weight:600;
@@ -68,7 +66,6 @@ body{
 
 .add-client-btn:hover{
     background:#1d4ed8;
-    transform:translateY(-2px);
 }
 
 .view-client-btn{
@@ -77,22 +74,22 @@ body{
 
 .view-client-btn:hover{
     background:#0f766e;
-    transform:translateY(-2px);
 }
 
-/* DASHBOARD */
+/* ================= DASHBOARD ================= */
 
 .stats{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
-    gap:20px;
+    grid-template-columns:repeat(4,1fr);
+    gap:22px;
     margin-bottom:30px;
 }
 
 .stat-card{
     background:#fff;
-    border-radius:18px;
-    padding:28px;
+    border-radius:22px;
+    padding:30px;
+    min-height:170px;
     box-shadow:0 10px 25px rgba(0,0,0,.08);
     transition:.3s;
 }
@@ -103,30 +100,31 @@ body{
 
 .stat-card h3{
     color:#64748b;
-    font-size:17px;
+    font-size:18px;
     margin-bottom:12px;
 }
 
 .stat-card h2{
-    font-size:42px;
     color:#2563eb;
+    font-size:48px;
     font-weight:700;
 }
 
-/* SEARCH */
+/* ================= SEARCH ================= */
 
 .search-box{
     margin-bottom:25px;
 }
 
 .search-box input{
-    width:100%;
-    padding:15px 20px;
-    border-radius:12px;
+    width:380px;
+    max-width:100%;
+    padding:16px 22px;
     border:1px solid #dbeafe;
-    outline:none;
-    font-size:16px;
+    border-radius:14px;
     background:#fff;
+    font-size:16px;
+    outline:none;
     transition:.3s;
 }
 
@@ -135,37 +133,41 @@ body{
     box-shadow:0 0 0 4px rgba(37,99,235,.15);
 }
 
-/* TABLE */
+/* ================= TABLE ================= */
 
 .table-box{
+    width:100%;
     background:#fff;
-    border-radius:18px;
+    border-radius:24px;
     overflow:hidden;
     box-shadow:0 10px 25px rgba(0,0,0,.08);
+    overflow-x:auto;
 }
 
 .client-table{
     width:100%;
     border-collapse:collapse;
+    table-layout:fixed;
 }
 
 .client-table thead{
-    background:#2563eb;
+    background:linear-gradient(90deg,#4f46e5,#2563eb,#06b6d4);
 }
 
 .client-table th{
     color:#fff;
-    padding:18px;
     text-align:left;
-    font-size:15px;
-    font-weight:600;
+    padding:20px;
+    font-size:16px;
+    font-weight:700;
 }
 
 .client-table td{
-    padding:18px;
-    border-bottom:1px solid #edf2f7;
+    padding:20px;
     font-size:15px;
     color:#334155;
+    border-bottom:1px solid #edf2f7;
+    word-break:break-word;
 }
 
 .client-table tbody tr:nth-child(even){
@@ -173,33 +175,59 @@ body{
 }
 
 .client-table tbody tr:hover{
-    background:#eaf3ff;
+    background:#eef6ff;
+}
+
+/* Column Width */
+
+.client-table th:nth-child(1),
+.client-table td:nth-child(1){
+    width:18%;
+}
+
+.client-table th:nth-child(2),
+.client-table td:nth-child(2){
+    width:28%;
+}
+
+.client-table th:nth-child(3),
+.client-table td:nth-child(3){
+    width:34%;
+}
+
+.client-table th:nth-child(4),
+.client-table td:nth-child(4){
+    width:20%;
 }
 
 .no-data{
     text-align:center;
-    padding:30px;
+    padding:35px;
     color:#64748b;
     font-weight:600;
 }
 
-/* SCROLL */
-
-.table-box{
-    overflow-x:auto;
-}
+/* ================= SCROLLBAR ================= */
 
 ::-webkit-scrollbar{
-    width:8px;
     height:8px;
+    width:8px;
 }
 
 ::-webkit-scrollbar-thumb{
-    background:#b7c9f5;
+    background:#b8c8ff;
     border-radius:20px;
 }
 
-/* RESPONSIVE */
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:1200px){
+
+.stats{
+    grid-template-columns:repeat(2,1fr);
+}
+
+}
 
 @media(max-width:768px){
 
@@ -213,7 +241,11 @@ body{
 }
 
 .client-header h1{
-    font-size:30px;
+    font-size:36px;
+}
+
+.client-header p{
+    font-size:15px;
 }
 
 .header-buttons{
@@ -230,9 +262,17 @@ body{
     grid-template-columns:1fr;
 }
 
+.search-box input{
+    width:100%;
+}
+
+.client-table{
+    min-width:700px;
+}
+
 .client-table th,
 .client-table td{
-    padding:14px;
+    padding:15px;
     font-size:14px;
 }
 

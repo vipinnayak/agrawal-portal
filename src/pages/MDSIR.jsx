@@ -101,11 +101,20 @@ export default function MDSIR() {
           </p>
         </div>
 
-        <div style={styles.card}>
-          <h2 style={styles.cardTitle}>Client Management</h2>
+        <div
+          style={{...styles.card, background:"#0891b2"}}
+
+          onClick={() => navigate("/client-master")}
+        >
+
+          <h2 style={styles.cardTitle}>
+            Client Management
+          </h2>
+
           <p style={styles.cardText}>
-            Manage client records & updates
+            Apply for leave requests
           </p>
+
         </div>
 
         <div style={styles.card}>
