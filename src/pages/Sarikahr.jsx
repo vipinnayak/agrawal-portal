@@ -180,18 +180,21 @@ export default function Sarikahr() {
 
         {/* TASK STATUS */}
 
-        <div style={{...styles.card, background:"#be123c"}}>
+         <div
+          style={{...styles.card, background:"#0891b2"}}
+
+          onClick={() => navigate("/client-master")}
+        >
 
           <h2 style={styles.cardTitle}>
-            Task Status
+            Client Management
           </h2>
 
           <p style={styles.cardText}>
-            Track assigned daily tasks
+            Apply for leave requestsA
           </p>
 
         </div>
-
         {/* MEETINGS */}
 
         <div style={{...styles.card, background:"#4d7c0f"}}>
