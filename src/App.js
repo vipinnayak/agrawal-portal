@@ -165,7 +165,8 @@ import CDPratibhaAgrawal from "./pages/Checklist&Delegation/CDPratibhaAgrawal";
 import CDPriyaDhani from "./pages/Checklist&Delegation/CDPriyaDhani";
 import CDVedant from "./pages/Checklist&Delegation/CDVedant";
 import CDVikasGoyal from "./pages/Checklist&Delegation/CDVikasGoyal";
-
+import  ClientMasterFMS  from "./pages/ClientMasterFMS";
+import ClientAction from "./pages/ClientAction";
 function App() {
 
   return (
@@ -184,6 +185,15 @@ function App() {
           path="/amit-chandrakar"
           element={<AmitChandrakar/>}
         />
+        <Route
+          path="/client-action"
+          element={<ClientAction/>}
+        />
+        <Route
+          path="/client-master-fms"
+          element={<ClientMasterFMS/>}
+        />
+        
           <Route
     path="/exitemployee/:id"
     element={<ExitEmployeeForm />}
