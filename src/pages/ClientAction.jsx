@@ -120,6 +120,7 @@ export default function ClientAction() {
                 <option value="">Select Action</option>
                 <option value="Delete Client">Delete Client</option>
                 <option value="Reject Approval">Reject Approval</option>
+                <option value="Approve Client">Approve Client</option>
               </select>
 
             </div>

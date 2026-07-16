@@ -232,35 +232,20 @@ filtered.map((item,index)=>(
 : "-"}
 
 </td>
-
 <td>
-
-{item.Status==="YES" ? (
-
-<span className="approved">
-
-🟢 Approved
-
-</span>
-
-) : item.Status==="NO" || item.Status==="CANCELLED" ? (
-
-<span className="rejected">
-
-🔴 Rejected
-
-</span>
-
-) : (
-
-<span className="pending">
-
-🟡 Pending
-
-</span>
-
-)}
-
+  {item.Status === "YES" ? (
+    <span className="status-approved">
+      🟢 Approved
+    </span>
+  ) : item.Status === "NO" || item.Status === "CANCELLED" ? (
+    <span className="status-rejected">
+      🔴 Rejected
+    </span>
+  ) : (
+    <span className="status-pending">
+      🟡 Pending
+    </span>
+  )}
 </td>
 
 <td>

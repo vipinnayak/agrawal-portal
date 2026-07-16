@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-export default function Rajni() {
+export default function Meenu() {
 
   const navigate = useNavigate();
 
@@ -13,7 +13,7 @@ export default function Rajni() {
       <div style={styles.header}>
 
         <h1 style={styles.heading}>
-         Rajni Barvekar
+          PC Rajni Barvekar
         </h1>
 
         <p style={styles.subHeading}>
@@ -61,16 +61,17 @@ export default function Rajni() {
 
         {/* DELEGATION */}
 
-        <div
-          style={styles.card}
-          onClick={() => navigate("/DelegationDashboard")}
-        >
-          <h2 style={styles.cardTitle}>Delegation</h2>
-          {/* <p style={styles.cardText}>
-            Apply for leave requests
-          </p> */}
-        </div>
+        <div style={{...styles.card, background:"#7c3aed"}}>
 
+          <h2 style={styles.cardTitle}>
+            Delegation
+          </h2>
+
+          <p style={styles.cardText}>
+            Manage delegated tasks
+          </p>
+
+        </div>
 
         {/* CHECKLIST */}
 
@@ -88,7 +89,7 @@ export default function Rajni() {
 
         {/* PENDING CL */}
 
-        <div style={{...styles.card, background:"#dc2626"}}>
+        {/* <div style={{...styles.card, background:"#dc2626"}}>
 
           <h2 style={styles.cardTitle}>
             Pending CL
@@ -98,7 +99,7 @@ export default function Rajni() {
             View pending client tasks
           </p>
 
-        </div>
+        </div> */}
 
         {/* LEAVE FORM */}
 
@@ -181,7 +182,7 @@ export default function Rajni() {
 
         {/* TASK STATUS */}
 
-        <div style={{...styles.card, background:"#be123c"}}>
+        {/* <div style={{...styles.card, background:"#be123c"}}>
 
           <h2 style={styles.cardTitle}>
             Task Status
@@ -191,7 +192,7 @@ export default function Rajni() {
             Track assigned daily tasks
           </p>
 
-        </div>
+        </div> */}
 
         {/* MEETINGS */}
 
