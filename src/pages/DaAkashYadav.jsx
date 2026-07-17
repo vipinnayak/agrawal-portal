@@ -62,18 +62,35 @@ function DaAkashYadav() {
 
           <div className="dw-card-scroll">
 
-            {pendingAttendance.length > 0 ? (
-              pendingAttendance.map((item, index) => (
-                <div
-                  key={index}
-                  className="dw-scroll-item"
-                >
-                  {new Date(item).toLocaleDateString("en-GB")}
-                </div>
-              ))
-            ) : (
-              <div className="dw-scroll-item">0</div>
-            )}
+           {pendingAttendance.length > 0 ? (
+  pendingAttendance.map((item, index) => {
+    let value = item;
+
+    // Excel serial number
+    if (!isNaN(item) && item !== "") {
+      value = new Date((Number(item) - 25569) * 86400 * 1000)
+        .toLocaleDateString("en-GB");
+    }
+
+    // Date string
+    else if (!isNaN(Date.parse(item))) {
+      value = new Date(item).toLocaleDateString("en-GB");
+    }
+
+    // Text (No Pending Attendance)
+    else {
+      value = item;
+    }
+
+    return (
+      <div key={index} className="dw-scroll-item">
+        {value}
+      </div>
+    );
+  })
+) : (
+  <div className="dw-scroll-item">No Pending Attendance</div>
+)}
 
           </div>
 

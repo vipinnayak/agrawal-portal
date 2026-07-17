@@ -168,6 +168,14 @@ import CDVikasGoyal from "./pages/Checklist&Delegation/CDVikasGoyal";
 import  ClientMasterFMS  from "./pages/ClientMasterFMS";
 import ClientAction from "./pages/ClientAction";
 import DaDeevya from "./pages/Juniorsandplant/DaDeevya";
+import DaDevdipil from "./pages/Juniorsandplant/DaDevdipil";
+import DaDipti from "./pages/Juniorsandplant/DaDipti";
+import DaFulesh from "./pages/Juniorsandplant/DaFulesh";
+import DaGauri from "./pages/Juniorsandplant/DaGauri";
+import DaHarshKumarGupta from "./pages/Juniorsandplant/DaHarshKumarGupta";
+import Dakundan from "./pages/Juniorsandplant/Dakundan";
+import DaDayalu from "./pages/Juniorsandplant/DaDayalu";
+import DaJituTati from "./pages/Juniorsandplant/DaJituTati";
 function App() {
 
   return (
@@ -195,8 +203,40 @@ function App() {
           element={<DaDeevya/>}
         />
         <Route
+          path="/dajitutati"
+          element={<DaJituTati/>}
+        />
+        <Route
           path="/client-master-fms"
           element={<ClientMasterFMS/>}
+        />
+        <Route
+          path="/dadayalu"
+          element={<DaDayalu/>}
+        />
+        <Route
+          path="/dadevdipil"
+          element={<DaDevdipil/>}
+        />
+        <Route
+          path="/dadipti"
+          element={<DaDipti/>}
+        />
+        <Route
+          path="/dafulesh"
+          element={<DaFulesh/>}
+        />
+        <Route
+          path="/dagauri"
+          element={<DaGauri/>}
+        />
+        <Route
+          path="/daharshkumargupta"
+          element={<DaHarshKumarGupta/>}
+        />
+        <Route
+          path="/dakundan"
+          element={<Dakundan/>}
         />
         <Route
           path="/dachandan"

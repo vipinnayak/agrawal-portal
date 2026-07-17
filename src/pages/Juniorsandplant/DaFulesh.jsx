@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./da.css";
+import "../da.css";
 
-function DaAkshita() {
+function DaFulesh() {
   const navigate = useNavigate();
 
   const [attendanceData, setAttendanceData] = useState([]);
 
   useEffect(() => {
     fetch(
-      "https://script.google.com/macros/s/AKfycbwE9AbF8wlCFgzC5_n8aI0rInfL4YuS8UDJwW7PjRFvdejMz4NilnctY2hAf_1iFu0D7Q/exec"
+      "https://script.google.com/macros/s/AKfycbw01dQsAXW3FbBle-zNtLjkMNUYiMRR1WkH0UMK3tzQK53-VCRSo9O5R2kMzM9c09LwHg/exec"
     )
       .then((res) => res.json())
       .then((data) => {
@@ -62,7 +62,7 @@ function DaAkshita() {
 
           <div className="dw-card-scroll">
 
-            {pendingAttendance.length > 0 ? (
+           {pendingAttendance.length > 0 ? (
   pendingAttendance.map((item, index) => {
     let value = item;
 
@@ -91,6 +91,7 @@ function DaAkshita() {
 ) : (
   <div className="dw-scroll-item">No Pending Attendance</div>
 )}
+
           </div>
 
           <p>Pending Attendance</p>
@@ -151,4 +152,4 @@ function DaAkshita() {
   );
 }
 
-export default DaAkshita;
+export default DaFulesh;
