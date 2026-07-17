@@ -32,7 +32,7 @@ export default function DeevyaVerma() {
 
         <div
           style={styles.card}
-          onClick={() => navigate("/daily-attendance")}
+          onClick={() => navigate("/dadeevya")}
         >
           <h2 style={styles.cardTitle}>Daily Attendance</h2>
           <p style={styles.cardText}>

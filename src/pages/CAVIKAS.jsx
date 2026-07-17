@@ -32,7 +32,7 @@ export default function CAVIKAS() {
 
         <div
           style={styles.card}
-          onClick={() => navigate("/daily-attendance")}
+          onClick={() => navigate("/davikas")}
         >
           <h2 style={styles.cardTitle}>Daily Attendance</h2>
           <p style={styles.cardText}>

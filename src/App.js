@@ -167,6 +167,7 @@ import CDVedant from "./pages/Checklist&Delegation/CDVedant";
 import CDVikasGoyal from "./pages/Checklist&Delegation/CDVikasGoyal";
 import  ClientMasterFMS  from "./pages/ClientMasterFMS";
 import ClientAction from "./pages/ClientAction";
+import DaDeevya from "./pages/Juniorsandplant/DaDeevya";
 function App() {
 
   return (
@@ -190,10 +191,61 @@ function App() {
           element={<ClientAction/>}
         />
         <Route
+          path="/dadeevya"
+          element={<DaDeevya/>}
+        />
+        <Route
           path="/client-master-fms"
           element={<ClientMasterFMS/>}
         />
-        
+        <Route
+          path="/dachandan"
+          element={<DailyAttendanceChandan/>}
+        />
+         <Route
+          path="/dadrishti"
+          element={<DailyAttendanceDrishti/>}
+        />
+         <Route
+          path="/davipin"
+          element={<DailyAttendanceVipin/>}
+        />
+         <Route
+          path="/daharshmittal"
+          element={<DailyAttendanceHarshMittal/>}
+        />
+         <Route
+          path="/daharshsharma"
+          element={<DailyAttendanceHarshSharma/>}
+        />
+         <Route
+          path="/dakanha"
+          element={<DailyAttendanceKanha/>}
+        />
+         <Route
+          path="/damdsir"
+          element={<DailyAttendanceMDSIR/>}
+        />
+         <Route
+          path="/dapankaj"
+          element={<DailyAttendancePankaj/>}
+        />
+         <Route
+          path="/dapratibha"
+          element={<DailyAttendancePratibha/>}
+        />
+         <Route
+          path="/dapriyadhani"
+          element={<DailyAttendancePriyaDhani/>}
+        />
+         <Route
+          path="/davedant"
+          element={<DailyAttendanceVedant/>}
+        />
+         <Route
+          path="/davikas"
+          element={<DailyAttendanceVikas/>}
+        />
           <Route
     path="/exitemployee/:id"
     element={<ExitEmployeeForm />}

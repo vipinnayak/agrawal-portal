@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./da.css";
+import "../da.css";
 
-function DailyAttendanceYash() {
+function DaDeevya() {
   const navigate = useNavigate();
 
   const [attendanceData, setAttendanceData] = useState([]);
 
   useEffect(() => {
     fetch(
-      "https://script.google.com/macros/s/AKfycbwLiOBvQqbsI3gd5lNfD9ymOEQM6Yj_dupr2DQiIsU5e3LGT6Kd5RZ_7wfKWKRyO-xF/exec"
+      "https://script.google.com/macros/s/AKfycbwMHOwqab9znI-E27r2ZAVNS0BJdq3HUp0ByrhyJHY5HyukdUNmAJMYEzgeTbyM1ru8mg/exec"
     )
       .then((res) => res.json())
       .then((data) => {
@@ -135,4 +135,4 @@ function DailyAttendanceYash() {
   );
 }
 
-export default DailyAttendanceYash;
+export default DaDeevya;

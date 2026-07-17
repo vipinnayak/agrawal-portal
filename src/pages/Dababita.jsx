@@ -1,240 +1,138 @@
 import React, { useEffect, useState } from "react";
-
 import { useNavigate } from "react-router-dom";
-
-import "./DailyAttendance.css";
+import "./da.css";
 
 function Dababita() {
-
   const navigate = useNavigate();
 
-  const [attendanceData, setAttendanceData] =
-    useState([]);
+  const [attendanceData, setAttendanceData] = useState([]);
 
   useEffect(() => {
-
     fetch(
       "https://script.google.com/macros/s/AKfycbyeTnCo2lX7anAKHxHVjql5j6FneqNetBBa09SOluQpAox_-N6pyMX7U-vhIG_bgQ9Cwg/exec"
     )
-
       .then((res) => res.json())
-
       .then((data) => {
-
         console.log(data);
-
-        setAttendanceData(
-          data.data || []
-        );
-
+        setAttendanceData(data.data || []);
       })
-
-      .catch((err) => {
-
-        console.log(err);
-
-      });
-
+      .catch((err) => console.log(err));
   }, []);
 
-  // MAP DATA
+  const pendingAttendance = attendanceData
+    .map((item) => item["Pending Attendance"])
+    .filter(Boolean);
 
-  const pendingAttendance =
-    attendanceData
-      .map(item => item["Pending Attendance"])
-      .filter(Boolean);
+  const leaveData = attendanceData
+    .map((item) => item["Leave"])
+    .filter(Boolean);
 
-  const leaveData =
-    attendanceData
-      .map(item => item["Leave"])
-      .filter(Boolean);
+  const halfDayData = attendanceData
+    .map((item) => item["Half Day"])
+    .filter(Boolean);
 
-  const halfDayData =
-    attendanceData
-      .map(item => item["Half Day"])
-      .filter(Boolean);
-
-  const lateDaysData =
-    attendanceData
-      .map(item => item["Late Days"])
-      .filter(Boolean);
+  const lateDaysData = attendanceData
+    .map((item) => item["Late Days"])
+    .filter(Boolean);
 
   return (
+    <div className="dw-page">
 
-    <div className="daily-page">
-
-      {/* HEADER */}
-
-      <div className="daily-header">
+      <div className="dw-header">
 
         <div>
-
-          <h1>
-            Daily Attendance
-          </h1>
-
-          <p>
-            Agrawal Jain & Co.
-          </p>
-
+          <h1>Daily Attendance</h1>
+          <p>Agrawal Jain & Co.</p>
         </div>
 
         <button
-          className="attendance-btn"
-          onClick={() =>
-            navigate("/attendance-form")
-          }
+          className="dw-attendance-btn"
+          onClick={() => navigate("/attendance-form")}
         >
           Mark Attendance
         </button>
 
       </div>
 
-      {/* CARDS */}
+      <div className="dw-four-grid">
 
-      <div className="four-grid">
+        {/* Pending Attendance */}
 
-        {/* PENDING */}
+        <div className="dw-stat-card dw-blue">
 
-       {/* PENDING */}
+          <div className="dw-card-scroll">
 
-<div className="stat-card blue">
-
-  <div className="card-scroll">
-
-    {
-      pendingAttendance.length > 0
-        ? pendingAttendance.map(
-            (item, index) => (
-
-              <div
-                key={index}
-                className="scroll-item"
-              >
-
-                {
-                  new Date(item)
-                    .toLocaleDateString(
-                      "en-GB"
-                    )
-                }
-
-              </div>
-
-            )
-          )
-        : "0"
-    }
-
-  </div>
-
-  <p>
-    Pending Attendance
-  </p>
-
-</div>
-
-{/* LEAVE */}
-
-<div className="stat-card purple">
-
-  <div className="card-center">
-
-    <h2 className="big-number">
-      {
-        leaveData.length > 0
-          ? leaveData[0]
-          : 0
-      }
-    </h2>
-
-  </div>
-
-  <p>
-    Leave
-  </p>
-
-</div>
-
-{/* HALF DAY */}
-
-<div className="stat-card orange">
-
-  <div className="card-center">
-
-    <h2 className="big-number">
-      {
-        halfDayData.length > 0
-          ? halfDayData[0]
-          : 0
-      }
-    </h2>
-
-  </div>
-
-  <p>
-    Half Day
-  </p>
-
-</div>
-
-{/* LATE DAYS */}
-
-<div className="stat-card red">
-
-  <div className="card-center">
-
-    <h2 className="big-number">
-      {
-        lateDaysData.length > 0
-          ? lateDaysData[0]
-          : 0
-      }
-    </h2>
-
-  </div>
-
-  <p>
-    Late Days
-  </p>
-
-</div>
-
-        {/* LATE DAYS */}
-
-        {/* <div className="stat-card red">
-
-          <div className="card-scroll">
-
-            {
-              lateDaysData.length > 0
-                ? lateDaysData.map(
-                    (item, index) => (
-                      <div
-                        key={index}
-                        className="scroll-item"
-                      >
-                        {item}
-                      </div>
-                    )
-                  )
-                : "0"
-            }
+            {pendingAttendance.length > 0 ? (
+              pendingAttendance.map((item, index) => (
+                <div
+                  key={index}
+                  className="dw-scroll-item"
+                >
+                  {new Date(item).toLocaleDateString("en-GB")}
+                </div>
+              ))
+            ) : (
+              <div className="dw-scroll-item">0</div>
+            )}
 
           </div>
 
-          <p>
-            Late Days
-          </p>
+          <p>Pending Attendance</p>
 
-        </div> */}
+        </div>
+
+        {/* Leave */}
+
+        <div className="dw-stat-card dw-purple">
+
+          <div className="dw-card-center">
+
+            <h2 className="dw-big-number">
+              {leaveData.length > 0 ? leaveData[0] : 0}
+            </h2>
+
+          </div>
+
+          <p>Leave</p>
+
+        </div>
+
+        {/* Half Day */}
+
+        <div className="dw-stat-card dw-orange">
+
+          <div className="dw-card-center">
+
+            <h2 className="dw-big-number">
+              {halfDayData.length > 0 ? halfDayData[0] : 0}
+            </h2>
+
+          </div>
+
+          <p>Half Day</p>
+
+        </div>
+
+        {/* Late Days */}
+
+        <div className="dw-stat-card dw-red">
+
+          <div className="dw-card-center">
+
+            <h2 className="dw-big-number">
+              {lateDaysData.length > 0 ? lateDaysData[0] : 0}
+            </h2>
+
+          </div>
+
+          <p>Late Days</p>
+
+        </div>
 
       </div>
 
     </div>
-
   );
-
 }
 
 export default Dababita;
