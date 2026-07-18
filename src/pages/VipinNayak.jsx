@@ -29,7 +29,7 @@ export default function VipinNayak() {
         {/* DAILY ATTENDANCE */}
 
         <div style={{...styles.card, background:"#2563eb"}}
-        onClick={() => navigate("/davipin")}>
+        onClick={() => navigate("/daily-attendance")}>
 
           <h2 style={styles.cardTitle}>
             Daily Attendance
@@ -137,17 +137,19 @@ export default function VipinNayak() {
 
         {/* REPORTS */}
 
-        <div style={{...styles.card, background:"#1e293b"}}>
+       <div style={{...styles.card, background:"#2563eb"}}
+        onClick={() => navigate("/reports")}>
 
           <h2 style={styles.cardTitle}>
             Reports
           </h2>
 
           <p style={styles.cardText}>
-            View MIS & performance reports
+            Check today attendance status
           </p>
 
         </div>
+
 
         {/* CLIENT MANAGEMENT */}
 
