@@ -189,6 +189,7 @@ import DaNayanpreetSaluja from "./pages/Juniorsandplant/DaNayanpreetSaluja";
 import DaNikhilDawani from "./pages/Juniorsandplant/DaNikhilDawani";
 import DaNitishSindhe from "./pages/Juniorsandplant/DaNitishSindhe";
 import Bhawani from "./pages/Bhawani";
+import AshuGupta from "./pages/AshuGupta";
 function App() {
 
   return (
@@ -226,6 +227,10 @@ function App() {
         <Route
           path="/bhawani"
           element={<Bhawani/>}
+        />
+         <Route
+          path="/ashu-gupta"
+          element={<AshuGupta/>}
         />
         <Route
           path="/dakhushboojain"
