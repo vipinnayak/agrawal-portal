@@ -32,7 +32,7 @@ export default function NitishShende() {
 
         <div
           style={styles.card}
-          onClick={() => navigate("/daily-attendance")}
+          onClick={() => navigate("/danitishsindhe")}
         >
           <h2 style={styles.cardTitle}>Daily Attendance</h2>
           <p style={styles.cardText}>

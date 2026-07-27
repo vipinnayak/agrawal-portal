@@ -176,6 +176,19 @@ import DaHarshKumarGupta from "./pages/Juniorsandplant/DaHarshKumarGupta";
 import Dakundan from "./pages/Juniorsandplant/Dakundan";
 import DaDayalu from "./pages/Juniorsandplant/DaDayalu";
 import DaJituTati from "./pages/Juniorsandplant/DaJituTati";
+import DaJitendraYadav from "./pages/Juniorsandplant/DaJitendraYadav";
+import DaKhemlalSahu from "./pages/Juniorsandplant/DaKhemlalSahu";
+import DaKhushbooJain from "./pages/Juniorsandplant/DaKhushbooJain";
+import DaKishanYadav from "./pages/Juniorsandplant/DaKishanYadav";
+import DaLuckySahu from "./pages/Juniorsandplant/DaLuckySahu";
+import DaMahakJain from "./pages/Juniorsandplant/DaMahakJain";
+import DaMeenuPatel from "./pages/Juniorsandplant/DaMeenuPatel";
+import DaMuktiPathak from "./pages/Juniorsandplant/DaMuktiPathak";
+import DaNareshPrajapati from "./pages/Juniorsandplant/DaNareshPrajapati";
+import DaNayanpreetSaluja from "./pages/Juniorsandplant/DaNayanpreetSaluja";
+import DaNikhilDawani from "./pages/Juniorsandplant/DaNikhilDawani";
+import DaNitishSindhe from "./pages/Juniorsandplant/DaNitishSindhe";
+import Bhawani from "./pages/Bhawani";
 function App() {
 
   return (
@@ -201,6 +214,58 @@ function App() {
         <Route
           path="/dadeevya"
           element={<DaDeevya/>}
+        />
+        <Route
+          path="/dajitendrayadav"
+          element={<DaJitendraYadav/>}
+        />
+        <Route
+          path="/dakhemlalsahu"
+          element={<DaKhemlalSahu/>}
+        />
+        <Route
+          path="/bhawani"
+          element={<Bhawani/>}
+        />
+        <Route
+          path="/dakhushboojain"
+          element={<DaKhushbooJain/>}
+        />
+        <Route
+          path="/dakishanyadav"
+          element={<DaKishanYadav/>}
+        />
+        <Route
+          path="/daluckysahu"
+          element={<DaLuckySahu/>}
+        />
+        <Route
+          path="/damahakjain"
+          element={<DaMahakJain/>}
+        />
+        <Route
+          path="/dameenupatel"
+          element={<DaMeenuPatel/>}
+        />
+        <Route
+          path="/damuktipathak"
+          element={<DaMuktiPathak/>}
+        />
+        <Route
+          path="/danaresh"
+          element={<DaNareshPrajapati/>}
+        />
+        <Route
+          path="/danayanpreet"
+          element={<DaNayanpreetSaluja/>}
+        />
+        <Route
+          path="/danikhildawani"
+          element={<DaNikhilDawani/>}
+        />
+        <Route
+          path="/danitishsindhe"
+          element={<DaNitishSindhe/>}
         />
         <Route
           path="/dajitutati"

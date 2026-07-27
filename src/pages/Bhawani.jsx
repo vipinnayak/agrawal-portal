@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-export default function Bhavika() {
+export default function Bhawani() {
 
   const navigate = useNavigate();
 
@@ -13,7 +13,7 @@ export default function Bhavika() {
       <div style={styles.header}>
 
         <h1 style={styles.heading}>
-          Bhavika Namdev
+          Bhawani Choudhary
         </h1>
 
         <p style={styles.subHeading}>
