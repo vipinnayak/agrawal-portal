@@ -29,7 +29,7 @@ export default function Login() {
      "manojgoyal123@gmail.com": "manoj123",
      "bhuneshvar123@gmail.com": "bhunesh123",
      "sanchitaagrawal123@gmail.com": "sanchita123",
-"bhawani123@gmail.com": "bhawani123",
+     "bhawani123@gmail.com": "bhawani123",
     "harshmittal123@gmail.com": "harsh123",
     "harshsharma123@gmail.com": "harsh123",
     "kanhakediaajc@gmail.com": "kanha123",
@@ -43,7 +43,7 @@ export default function Login() {
     "ankitkumargargajc@gmail.com":"ankit123",
     "mukul.c@mail.ca.in":"mukul123",
     "rupeshvaid123@gmail.com":"rupesh123",
-    "vipinnayak754@gmail.com":"Vipin@#1999",
+    "akshita1007@gmail.com":"akshita1007",
     "yash123@gmail.com":"yash123",
     "supriya123@gmail.com" :"supriya123",
     "meenu123@gmail.com":"meenu123",
@@ -112,7 +112,9 @@ export default function Login() {
     "devdilip123@gmail.com":"dev123",
     "amitchandrakar123@gmail.com":"amit123",
     "shyamnarayan123@gmail.com":"shyam123",
-    "ashugupta123@gmail.com":"ashu123"
+    "ashugupta123@gmail.com":"ashu123",
+    "manviroy123@gmail.com":"manvi123",
+    "radhikasingh123@gmail.com":"radhika123"
 
   };
 
@@ -165,8 +167,8 @@ export default function Login() {
         navigate("/ca-mukul");
       }else if (emp === "rupeshvaid123@gmail.com") {
         navigate("/ca-rupesh");
-      }else if (emp === "vipinnayak754@gmail.com") {
-        navigate("/vipin");
+      }else if (emp === "akshita1007@gmail.com") {
+        navigate("/akshita");
       }else if (emp === "yash123@gmail.com") {
         navigate("/yash");
       }else if (emp === "supriya123@gmail.com") {
@@ -315,6 +317,10 @@ export default function Login() {
         navigate("/bhawani");
       }else if (emp === "ashugupta123@gmail.com") {
         navigate("/ashu-gupta");
+      }else if (emp === "manviroy123@gmail.com") {
+        navigate("/manvi-roy");
+      }else if (emp === "radhikasingh123@gmail.com") {
+        navigate("/radhika-singh");
       }
 
     } else {

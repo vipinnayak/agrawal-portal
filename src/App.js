@@ -98,6 +98,9 @@ import DailyAttendanceVedant from "./pages/DailyAttedanceVedant";
 import DailyAttendanceVipin from "./pages/DailyAttedanceVipin";
 import DailyAttendanceVikas from "./pages/DailyAttedanceVikas";
 import DailyAttendanceYash from "./pages/DailyAttedanceYash";
+import DailyAttendanceAkshita from "./pages/DailyAttendanceAkshita";
+import DailyAttendanceRadhikaSingh from "./pages/DailyAttendanceRadhikaSingh";
+
 import DiptiVerma from "./pages/DiptiVerma";
 import SikhaGupta from "./pages/SikhaGupta";
 import YanaGendle from "./pages/YanaGendle";
@@ -190,6 +193,10 @@ import DaNikhilDawani from "./pages/Juniorsandplant/DaNikhilDawani";
 import DaNitishSindhe from "./pages/Juniorsandplant/DaNitishSindhe";
 import Bhawani from "./pages/Bhawani";
 import AshuGupta from "./pages/AshuGupta";
+import Akshita from "./pages/Akshita";
+import ManviRoy from "./pages/ManviRoy";
+import RadhikaSinghBhaitan from "./pages/RadhikaSinghBhaitan";
+import DailyAttendanceManviRoy from "./pages/DailyAttendanceManviRoy";
 function App() {
 
   return (
@@ -355,6 +362,14 @@ function App() {
          <Route
           path="/davikas"
           element={<DailyAttendanceVikas/>}
+        />
+         <Route
+          path="/daakshita"
+          element={<DailyAttendanceAkshita/>}
+        />
+         <Route
+          path="/daradhika"
+          element={<DailyAttendanceRadhikaSingh/>}
         />
           <Route
     path="/exitemployee/:id"
@@ -584,7 +599,7 @@ function App() {
           element={<NikhilDawani/>}
         />
         <Route
-          path="/akshita"
+          path="/akshitaA"
           element={<AkshitaAgrawal/>}
         />
         <Route
@@ -622,6 +637,10 @@ function App() {
         <Route
           path="/devdilip"
           element={<DevDilip/>}
+        />
+        <Route
+          path="/radhika-singh"
+          element={<RadhikaSinghBhaitan/>}
         />
         <Route
           path="/daharshsharma"
@@ -666,6 +685,10 @@ function App() {
         <Route
           path="/davipin"
           element={<DailyAttendanceVipin/>}
+        />
+        <Route
+          path="/damanviroy"
+          element={<DailyAttendanceManviRoy/>}
         />
         <Route
           path="/trdewangan"
@@ -810,10 +833,19 @@ function App() {
           path="/rajni"
           element={<Rajni />}
         />
+         <Route
+          path="/akshita"
+          element={<Akshita/>}
+        />
+         <Route
+          path="/manvi-roy"
+          element={<ManviRoy/>}
+        />
         <Route
           path="/mis1"
           element={<MIS1 />}
         />
+       
 
         {/* ADMIN MD */}
 
@@ -915,10 +947,7 @@ function App() {
           path="/ca-drishti"
           element={<CADRISHTI />}
         />
-        <Route
-          path="/vipin"
-          element={<VipinNayak />}
-        />
+      
   <Route
           path="/DelegationDashboard"
           element={<DelegationDashboard />}
