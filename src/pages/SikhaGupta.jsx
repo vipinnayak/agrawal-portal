@@ -107,10 +107,10 @@ export default function SikhaGupta() {
           </p>
         </div>
 
-        <div style={styles.card}>
-          <h2 style={styles.cardTitle}>Task Status</h2>
+        <div style={styles.card} onClick={() => navigate("/forms")}>
+          <h2 style={styles.cardTitle}>Form Section</h2>
           <p style={styles.cardText}>
-            Track assigned daily tasks
+            Fill your forms & check status
           </p>
         </div>
 

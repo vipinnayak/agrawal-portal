@@ -178,13 +178,19 @@ export default function AshuGupta() {
 
         </div>
 
-        {/* TASK STATUS */}
+        {/* FORM STATUS */}
 
-        <div style={{...styles.card, background:"#be123c"}}>
+        <div style={{...styles.card, background:"#be123c"}} onClick={() => navigate("/forms")}>
 
           <h2 style={styles.cardTitle}>
-            Task Status
+            Form Section
           </h2>
+
+          <p style={styles.cardText}>
+            Fill your forms & check status
+          </p>
+
+          
 
           <p style={styles.cardText}>
             Track assigned daily tasks

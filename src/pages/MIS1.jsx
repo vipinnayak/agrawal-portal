@@ -203,6 +203,23 @@ export default function MIS1() {
 
         </div>
 
+        {/* ALL FORMS */}
+
+        <div
+          style={{...styles.card, background:"#8a765d"}}
+          onClick={() => navigate("/forms")}
+        >
+
+          <h2 style={styles.cardTitle}>
+            All Forms
+          </h2>
+
+          <p style={styles.cardText}>
+            Access all company forms & registers
+          </p>
+
+        </div>
+
       </div>
 
     </div>

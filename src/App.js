@@ -50,7 +50,7 @@ import DailyWorkingMukul from "./pages/DailyWorkingMukul";
 import CARUPESH from "./pages/CARUPESH";
 import DailyWorkingRupesh from "./pages/DailyWorkingRupesh";
 // import VipinNayak from "./pages/VipinNayak";
-// import DailyWorkingVipin from "./pages/DailyWorkingVipin";
+import DailyWorkingVipin from "./pages/DailyWorkingVipin";
 import Rajni from "./pages/Rajni";
 import YashJairaj from "./pages/YashJairaj";
 import Yogita from "./pages/Yogita";
@@ -197,6 +197,7 @@ import Akshita from "./pages/Akshita";
 import ManviRoy from "./pages/ManviRoy";
 import RadhikaSinghBhaitan from "./pages/RadhikaSinghBhaitan";
 import DailyAttendanceManviRoy from "./pages/DailyAttendanceManviRoy";
+import Forms from "./pages/Forms";
 function App() {
 
   return (
@@ -210,6 +211,10 @@ function App() {
         <Route
           path="/"
           element={<Login />}
+        />
+        <Route
+          path="/forms"
+          element={<Forms />}
         />
         <Route
           path="/amit-chandrakar"

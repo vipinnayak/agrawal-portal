@@ -108,9 +108,9 @@ export default function PoojaGupta() {
         </div>
 
         <div style={styles.card}>
-          <h2 style={styles.cardTitle}>Task Status</h2>
+          <h2 style={styles.cardTitle}>Form Section</h2>
           <p style={styles.cardText}>
-            Track assigned daily tasks
+            Fill your forms & check status
           </p>
         </div>
 
