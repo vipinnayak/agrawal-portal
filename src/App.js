@@ -50,7 +50,7 @@ import DailyWorkingMukul from "./pages/DailyWorkingMukul";
 import CARUPESH from "./pages/CARUPESH";
 import DailyWorkingRupesh from "./pages/DailyWorkingRupesh";
 // import VipinNayak from "./pages/VipinNayak";
-import DailyWorkingVipin from "./pages/DailyWorkingVipin";
+// import DailyWorkingVipin from "./pages/DailyWorkingVipin";
 import Rajni from "./pages/Rajni";
 import YashJairaj from "./pages/YashJairaj";
 import Yogita from "./pages/Yogita";
