@@ -178,14 +178,14 @@ export default function Nayanpreet() {
 
         {/* TASK STATUS */}
 
-        <div style={{...styles.card, background:"#be123c"}}>
+        <div style={{...styles.card, background:"#be123c"}} onClick={() => navigate("/forms")}>
 
           <h2 style={styles.cardTitle}>
-            Task Status
+            Form Section
           </h2>
 
           <p style={styles.cardText}>
-            Track assigned daily tasks
+            Fill your forms & check status
           </p>
 
         </div>

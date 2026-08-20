@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-export default function SonalMeghani() {
+export default function LakhanLal() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -14,7 +14,7 @@ export default function SonalMeghani() {
       <div style={styles.header}>
         <div style={styles.headerTop}>
           <div>
-            <h1 style={styles.heading}>Sonal Meghani</h1>
+            <h1 style={styles.heading}>Lakhan Lal</h1>
             <p style={styles.subHeading}>Agrawal Jain & Co.</p>
           </div>
 
@@ -32,7 +32,7 @@ export default function SonalMeghani() {
 
         <div
           style={styles.card}
-          onClick={() => navigate("/daily-attendance")}
+          onClick={() => navigate("/dalakhanLal")}
         >
           <h2 style={styles.cardTitle}>Daily Attendance</h2>
           <p style={styles.cardText}>
@@ -42,7 +42,7 @@ export default function SonalMeghani() {
 
         <div
           style={styles.card}
-          onClick={() => navigate("/dasonal")}
+          onClick={() => navigate("/dalakhanlal")}
         >
           <h2 style={styles.cardTitle}>Daily Working</h2>
           <p style={styles.cardText}>

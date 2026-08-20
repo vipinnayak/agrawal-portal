@@ -178,7 +178,7 @@ export default function Sarikahr() {
 
         </div>
 
-        {/* TASK STATUS */}
+        {/* CLIENT STATUS */}
 
          <div
           style={{...styles.card, background:"#0891b2"}}
@@ -192,6 +192,20 @@ export default function Sarikahr() {
 
           <p style={styles.cardText}>
             Apply for leave requestsA
+          </p>
+
+        </div>
+
+        {/* FORM SECTION */}
+        <div style={{...styles.card, background:"#2563eb"}}
+        onClick={() => navigate("/forms")}>
+
+          <h2 style={styles.cardTitle}>
+            Form Section
+          </h2>
+
+          <p style={styles.cardText}>
+            Fill your forms & check status
           </p>
 
         </div>

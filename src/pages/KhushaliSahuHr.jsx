@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-export default function Meenu() {
+export default function KhushaliSahuHr() {
 
   const navigate = useNavigate();
 
@@ -13,7 +13,7 @@ export default function Meenu() {
       <div style={styles.header}>
 
         <h1 style={styles.heading}>
-          PC Rajni Barvekar
+           Khushali Sahu
         </h1>
 
         <p style={styles.subHeading}>
@@ -29,7 +29,7 @@ export default function Meenu() {
         {/* DAILY ATTENDANCE */}
 
         <div style={{...styles.card, background:"#2563eb"}}
-        onClick={() => navigate("/daily-attendance")}>
+        onClick={() => navigate("/dakhushali")}>
 
           <h2 style={styles.cardTitle}>
             Daily Attendance
@@ -89,7 +89,7 @@ export default function Meenu() {
 
         {/* PENDING CL */}
 
-        {/* <div style={{...styles.card, background:"#dc2626"}}>
+        <div style={{...styles.card, background:"#dc2626"}}>
 
           <h2 style={styles.cardTitle}>
             Pending CL
@@ -99,7 +99,7 @@ export default function Meenu() {
             View pending client tasks
           </p>
 
-        </div> */}
+        </div>
 
         {/* LEAVE FORM */}
 
@@ -136,32 +136,30 @@ export default function Meenu() {
 
         {/* REPORTS */}
 
-        <div style={{...styles.card, background:"#1e293b"}}>
+       <div style={{...styles.card, background:"#2563eb"}}
+        onClick={() => navigate("/reports")}>
 
           <h2 style={styles.cardTitle}>
             Reports
           </h2>
 
           <p style={styles.cardText}>
-            View MIS & performance reports
+            Check today attendance status
           </p>
 
         </div>
 
+
         {/* CLIENT MANAGEMENT */}
 
-        <div
-          style={{...styles.card, background:"#0891b2"}}
-
-          onClick={() => navigate("/client-master")}
-        >
+        <div style={{...styles.card, background:"#c2410c"}}>
 
           <h2 style={styles.cardTitle}>
             Client Management
           </h2>
 
           <p style={styles.cardText}>
-            Apply for leave requestsA
+            Manage client records & updates
           </p>
 
         </div>
@@ -180,7 +178,7 @@ export default function Meenu() {
 
         </div>
 
-        {/* TASK STATUS */}
+        {/* FORM STATUS */}
 
         <div style={{...styles.card, background:"#be123c"}} onClick={() => navigate("/forms")}>
 

@@ -49,7 +49,7 @@ import CAMUKUL from "./pages/CAMUKUL";
 import DailyWorkingMukul from "./pages/DailyWorkingMukul";
 import CARUPESH from "./pages/CARUPESH";
 import DailyWorkingRupesh from "./pages/DailyWorkingRupesh";
-import VipinNayak from "./pages/VipinNayak";
+// import VipinNayak from "./pages/VipinNayak";
 import DailyWorkingVipin from "./pages/DailyWorkingVipin";
 import Rajni from "./pages/Rajni";
 import YashJairaj from "./pages/YashJairaj";
@@ -100,7 +100,8 @@ import DailyAttendanceVikas from "./pages/DailyAttedanceVikas";
 import DailyAttendanceYash from "./pages/DailyAttedanceYash";
 import DailyAttendanceAkshita from "./pages/DailyAttendanceAkshita";
 import DailyAttendanceRadhikaSingh from "./pages/DailyAttendanceRadhikaSingh";
-
+import DaLakhanLal from "./pages/DaLakhanLal";
+import DaKhushali from "./pages/DaKhushali";
 import DiptiVerma from "./pages/DiptiVerma";
 import SikhaGupta from "./pages/SikhaGupta";
 import YanaGendle from "./pages/YanaGendle";
@@ -197,6 +198,9 @@ import Akshita from "./pages/Akshita";
 import ManviRoy from "./pages/ManviRoy";
 import RadhikaSinghBhaitan from "./pages/RadhikaSinghBhaitan";
 import DailyAttendanceManviRoy from "./pages/DailyAttendanceManviRoy";
+import KhushaliSahuHr from "./pages/KhushaliSahuHr";
+import LakhanLal from "./pages/LakhanLal";
+import Forms from "./pages/Forms";
 function App() {
 
   return (
@@ -210,6 +214,10 @@ function App() {
         <Route
           path="/"
           element={<Login />}
+        />
+        <Route
+          path="/forms"
+          element={<Forms />}
         />
         <Route
           path="/amit-chandrakar"
@@ -371,6 +379,11 @@ function App() {
           path="/daradhika"
           element={<DailyAttendanceRadhikaSingh/>}
         />
+         <Route
+          path="/dakhushali"
+          element={<DaKhushali/>}
+        />
+
           <Route
     path="/exitemployee/:id"
     element={<ExitEmployeeForm />}
@@ -635,6 +648,14 @@ function App() {
           element={<ShushantTiwari/>}
         />
         <Route
+          path="/lakhanlal"
+          element={<LakhanLal/>}
+        />
+        <Route
+          path="/dalakhanlal"
+          element={<DaLakhanLal/>}
+        />
+        <Route
           path="/devdilip"
           element={<DevDilip/>}
         />
@@ -844,6 +865,11 @@ function App() {
         <Route
           path="/mis1"
           element={<MIS1 />}
+        />
+
+        <Route
+          path="/khushali-sahu"
+          element={<KhushaliSahuHr />} 
         />
        
 
