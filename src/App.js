@@ -95,7 +95,7 @@ import DailyAttendancePankaj from "./pages/DailyAttedancePankaj";
 import DailyAttendancePratibha from "./pages/DailyAttedancePratibha";
 import DailyAttendancePriyaDhani from "./pages/DailyAttedancePriyaDhani";
 import DailyAttendanceVedant from "./pages/DailyAttedanceVedant";
-import DailyAttendanceVipin from "./pages/DailyAttedanceVipin";
+// import DailyAttendanceVipin from "./pages/DailyAttedanceVipin";
 import DailyAttendanceVikas from "./pages/DailyAttedanceVikas";
 import DailyAttendanceYash from "./pages/DailyAttedanceYash";
 import DailyAttendanceAkshita from "./pages/DailyAttendanceAkshita";
@@ -331,10 +331,10 @@ function App() {
           path="/dadrishti"
           element={<DailyAttendanceDrishti/>}
         />
-         <Route
+         {/* <Route
           path="/davipin"
           element={<DailyAttendanceVipin/>}
-        />
+        /> */}
          <Route
           path="/daharshmittal"
           element={<DailyAttendanceHarshMittal/>}
@@ -703,10 +703,10 @@ function App() {
           path="/dayash"
           element={<DailyAttendanceYash/>}
         />
-        <Route
+        {/* <Route
           path="/davipin"
           element={<DailyAttendanceVipin/>}
-        />
+        /> */}
         <Route
           path="/damanviroy"
           element={<DailyAttendanceManviRoy/>}
@@ -980,10 +980,10 @@ function App() {
         />
         {/* DAILY WORKING NARESH */}
 
-        <Route
+        {/* <Route
           path="/daily-working-vipin"
           element={<DailyWorkingVipin />}
-        />
+        /> */}
         <Route
           path="/daily-working-naresh"
           element={<DailyWorkingNaresh />}
