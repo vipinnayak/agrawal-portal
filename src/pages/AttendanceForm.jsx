@@ -38,43 +38,16 @@ function AttendanceForm() {
 
   });
 
-  // AUTO DATE + TIME
+  // AUTO DATE + CURRENT TIME
 
   useEffect(() => {
 
-    const now = new Date();
-
-    const date =
-      now.toLocaleDateString("en-GB");
-
-    const time =
-      now.toLocaleTimeString([], {
-
-        hour: "2-digit",
-        minute: "2-digit"
-
-      });
-
-    setFormData({
-
-      date,
-      employeeName: "",
-      time,
-      attendanceType:
-        getAttendanceType(),
-      clientPlace: ""
-
-    });
-
-  }, []);
-
-  // LIVE CURRENT TIME
-
-  useEffect(() => {
-
-    const updateCurrentTime = () => {
+    const updateDateTime = () => {
 
       const now = new Date();
+
+      const date =
+        now.toLocaleDateString("en-GB");
 
       const hours =
         String(now.getHours()).padStart(2, "0");
@@ -82,16 +55,28 @@ function AttendanceForm() {
       const minutes =
         String(now.getMinutes()).padStart(2, "0");
 
-      setCurrentTime(
-        `${hours}:${minutes}`
-      );
+      const time =
+        `${hours}:${minutes}`;
+
+      setCurrentTime(time);
+
+      setFormData((prev) => ({
+
+        ...prev,
+
+        date,
+        time,
+        attendanceType:
+          getAttendanceType()
+
+      }));
 
     };
 
-    updateCurrentTime();
+    updateDateTime();
 
     const timer = setInterval(
-      updateCurrentTime,
+      updateDateTime,
       1000
     );
 
@@ -268,100 +253,32 @@ ${state}
 
   };
 
-  // CHECK TIME
-  // ONLY CURRENT TIME OR PREVIOUS 5 MINUTES
-
-  const isTimeValid = (selectedTime) => {
-
-    if (!selectedTime) {
-      return false;
-    }
-
-    // ACTUAL CURRENT DEVICE TIME
-    const now = new Date();
-
-    const currentMinutes =
-      now.getHours() * 60 +
-      now.getMinutes();
-
-    // SELECTED TIME
-    const [hours, minutes] =
-      selectedTime
-        .split(":")
-        .map(Number);
-
-    const selectedMinutes =
-      hours * 60 +
-      minutes;
-
-    // ONLY 5 MINUTES BACK ALLOWED
-    const minimumAllowedTime =
-      currentMinutes - 5;
-
-    return (
-      selectedMinutes >= minimumAllowedTime &&
-      selectedMinutes <= currentMinutes
-    );
-
-  };
-
-  // GET MINIMUM ALLOWED TIME
-
-  const getMinimumTime = () => {
-
-    if (!currentTime) {
-      return "";
-    }
-
-    const [hours, minutes] =
-      currentTime
-        .split(":")
-        .map(Number);
-
-    const totalMinutes =
-      hours * 60 +
-      minutes -
-      5;
-
-    const minimumHours =
-      Math.floor(totalMinutes / 60);
-
-    const minimumMinutes =
-      totalMinutes % 60;
-
-    return (
-      `${String(minimumHours).padStart(2, "0")}:` +
-      `${String(minimumMinutes).padStart(2, "0")}`
-    );
-
-  };
-
   // SUBMIT FORM
 
   const handleSubmit = async (e) => {
 
     e.preventDefault();
 
-    // CHECK TIME BEFORE SUBMIT
-
-    if (!isTimeValid(formData.time)) {
-
-      alert(
-        "Invalid Time!\n\n" +
-        "You can only select the current time or up to 5 minutes back.\n\n" +
-        "Example: If current time is 10:30,\n" +
-        "the earliest allowed time is 10:25."
-      );
-
-      return;
-
-    }
-
     setLoading(true);
+
+    // TAKE ACTUAL CURRENT TIME AT SUBMISSION
+
+    const now = new Date();
+
+    const currentHour =
+      String(now.getHours()).padStart(2, "0");
+
+    const currentMinute =
+      String(now.getMinutes()).padStart(2, "0");
+
+    const actualCurrentTime =
+      `${currentHour}:${currentMinute}`;
 
     const finalData = {
 
       ...formData,
+
+      time: actualCurrentTime,
 
       location
 
@@ -492,7 +409,7 @@ ${state}
 
           </div>
 
-          {/* TIME */}
+          {/* TIME - LOCKED CURRENT TIME */}
 
           <div className="input-group">
 
@@ -503,11 +420,9 @@ ${state}
             <input
               type="time"
               name="time"
-              value={formData.time}
-              min={getMinimumTime()}
-              max={currentTime}
-              onChange={handleChange}
-              required
+              value={currentTime}
+              disabled
+              tabIndex="-1"
             />
 
           </div>
