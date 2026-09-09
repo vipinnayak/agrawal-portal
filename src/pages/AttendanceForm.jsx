@@ -14,25 +14,29 @@ function AttendanceForm() {
 
   const [loading, setLoading] =
     useState(false);
-    const getAttendanceType = () => {
 
-  const hour = new Date().getHours();
+  const [currentTime, setCurrentTime] =
+    useState("");
 
-  return hour >= 16
-    ? "OUT"
-    : "IN";
+  const getAttendanceType = () => {
 
-};
+    const hour = new Date().getHours();
 
- const [formData, setFormData] = useState({
+    return hour >= 16
+      ? "OUT"
+      : "IN";
 
-  date: "",
-  employeeName: "",
-  time: "",
-  attendanceType: "IN",
-  clientPlace: ""
+  };
 
-});
+  const [formData, setFormData] = useState({
+
+    date: "",
+    employeeName: "",
+    time: "",
+    attendanceType: "IN",
+    clientPlace: ""
+
+  });
 
   // AUTO DATE + TIME
 
@@ -51,16 +55,47 @@ function AttendanceForm() {
 
       });
 
-   setFormData({
+    setFormData({
 
-  date,
-  employeeName: "",
-  time,
-  attendanceType:
-    getAttendanceType(),
-  clientPlace: ""
+      date,
+      employeeName: "",
+      time,
+      attendanceType:
+        getAttendanceType(),
+      clientPlace: ""
 
-});
+    });
+
+  }, []);
+
+  // LIVE CURRENT TIME
+
+  useEffect(() => {
+
+    const updateCurrentTime = () => {
+
+      const now = new Date();
+
+      const hours =
+        String(now.getHours()).padStart(2, "0");
+
+      const minutes =
+        String(now.getMinutes()).padStart(2, "0");
+
+      setCurrentTime(
+        `${hours}:${minutes}`
+      );
+
+    };
+
+    updateCurrentTime();
+
+    const timer = setInterval(
+      updateCurrentTime,
+      1000
+    );
+
+    return () => clearInterval(timer);
 
   }, []);
 
@@ -233,11 +268,94 @@ ${state}
 
   };
 
+  // CHECK TIME
+  // ONLY CURRENT TIME OR PREVIOUS 5 MINUTES
+
+  const isTimeValid = (selectedTime) => {
+
+    if (!selectedTime) {
+      return false;
+    }
+
+    // ACTUAL CURRENT DEVICE TIME
+    const now = new Date();
+
+    const currentMinutes =
+      now.getHours() * 60 +
+      now.getMinutes();
+
+    // SELECTED TIME
+    const [hours, minutes] =
+      selectedTime
+        .split(":")
+        .map(Number);
+
+    const selectedMinutes =
+      hours * 60 +
+      minutes;
+
+    // ONLY 5 MINUTES BACK ALLOWED
+    const minimumAllowedTime =
+      currentMinutes - 5;
+
+    return (
+      selectedMinutes >= minimumAllowedTime &&
+      selectedMinutes <= currentMinutes
+    );
+
+  };
+
+  // GET MINIMUM ALLOWED TIME
+
+  const getMinimumTime = () => {
+
+    if (!currentTime) {
+      return "";
+    }
+
+    const [hours, minutes] =
+      currentTime
+        .split(":")
+        .map(Number);
+
+    const totalMinutes =
+      hours * 60 +
+      minutes -
+      5;
+
+    const minimumHours =
+      Math.floor(totalMinutes / 60);
+
+    const minimumMinutes =
+      totalMinutes % 60;
+
+    return (
+      `${String(minimumHours).padStart(2, "0")}:` +
+      `${String(minimumMinutes).padStart(2, "0")}`
+    );
+
+  };
+
   // SUBMIT FORM
 
   const handleSubmit = async (e) => {
 
     e.preventDefault();
+
+    // CHECK TIME BEFORE SUBMIT
+
+    if (!isTimeValid(formData.time)) {
+
+      alert(
+        "Invalid Time!\n\n" +
+        "You can only select the current time or up to 5 minutes back.\n\n" +
+        "Example: If current time is 10:30,\n" +
+        "the earliest allowed time is 10:25."
+      );
+
+      return;
+
+    }
 
     setLoading(true);
 
@@ -252,13 +370,13 @@ ${state}
     try {
 
       const response =
-       await fetch(
-  "https://script.google.com/macros/s/AKfycbzyUfuwt9rjd7yAR4_2moI9dl0n13MOy08OAOq_Te_B7SMOxJx29mk_PXthY7vIXR56/exec",
-  {
-    method: "POST",
-    body: JSON.stringify(finalData)
-  }
-);
+        await fetch(
+          "https://script.google.com/macros/s/AKfycbzyUfuwt9rjd7yAR4_2moI9dl0n13MOy08OAOq_Te_B7SMOxJx29mk_PXthY7vIXR56/exec",
+          {
+            method: "POST",
+            body: JSON.stringify(finalData)
+          }
+        );
 
       const result =
         await response.json();
@@ -386,46 +504,63 @@ ${state}
               type="time"
               name="time"
               value={formData.time}
+              min={getMinimumTime()}
+              max={currentTime}
               onChange={handleChange}
+              required
             />
+
+          </div>
+
+          {/* ATTENDANCE TYPE */}
+
+          <div className="input-group">
+
+            <label>
+              Attendance Type
+            </label>
+
+            <div className="attendance-type">
+
+              <button
+                type="button"
+                className={
+                  formData.attendanceType === "IN"
+                    ? "active"
+                    : ""
+                }
+                onClick={() =>
+                  setFormData({
+                    ...formData,
+                    attendanceType: "IN",
+                  })
+                }
+              >
+                IN
+              </button>
+
+              <button
+                type="button"
+                className={
+                  formData.attendanceType === "OUT"
+                    ? "active"
+                    : ""
+                }
+                onClick={() =>
+                  setFormData({
+                    ...formData,
+                    attendanceType: "OUT",
+                  })
+                }
+              >
+                OUT
+              </button>
+
             </div>
 
-{/* ATTENDANCE TYPE */}
+          </div>
 
-<div className="input-group">
-  <label>Attendance Type</label>
-
-  <div className="attendance-type">
-
-    <button
-      type="button"
-      className={formData.attendanceType === "IN" ? "active" : ""}
-      onClick={() =>
-        setFormData({
-          ...formData,
-          attendanceType: "IN",
-        })
-      }
-    >
-      IN
-    </button>
-
-    <button
-      type="button"
-      className={formData.attendanceType === "OUT" ? "active" : ""}
-      onClick={() =>
-        setFormData({
-          ...formData,
-          attendanceType: "OUT",
-        })
-      }
-    >
-      OUT
-    </button>
-
-  </div>
-</div>
-<div className="input-group">
+          <div className="input-group">
 
           </div>
 
@@ -467,7 +602,9 @@ ${state}
 
           <button
             type="submit"
-            className={`submit-btn ${loading ? "loading-btn" : ""}`}
+            className={`submit-btn ${
+              loading ? "loading-btn" : ""
+            }`}
             disabled={loading}
           >
 
