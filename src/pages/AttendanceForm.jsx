@@ -25,7 +25,6 @@ function AttendanceForm() {
     return hour >= 16
       ? "OUT"
       : "IN";
-
   };
 
   const [formData, setFormData] = useState({
@@ -38,16 +37,41 @@ function AttendanceForm() {
 
   });
 
-  // AUTO DATE + CURRENT TIME
+  // AUTO DATE + TIME
 
   useEffect(() => {
 
-    const updateDateTime = () => {
+    const now = new Date();
+
+    const date =
+      now.toLocaleDateString("en-GB");
+
+    const time =
+      now.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+    setFormData({
+
+      date,
+      employeeName: "",
+      time,
+      attendanceType:
+        getAttendanceType(),
+      clientPlace: ""
+
+    });
+
+  }, []);
+
+  // LIVE CURRENT TIME
+
+  useEffect(() => {
+
+    const updateCurrentTime = () => {
 
       const now = new Date();
-
-      const date =
-        now.toLocaleDateString("en-GB");
 
       const hours =
         String(now.getHours()).padStart(2, "0");
@@ -55,28 +79,16 @@ function AttendanceForm() {
       const minutes =
         String(now.getMinutes()).padStart(2, "0");
 
-      const time =
-        `${hours}:${minutes}`;
-
-      setCurrentTime(time);
-
-      setFormData((prev) => ({
-
-        ...prev,
-
-        date,
-        time,
-        attendanceType:
-          getAttendanceType()
-
-      }));
+      setCurrentTime(
+        `${hours}:${minutes}`
+      );
 
     };
 
-    updateDateTime();
+    updateCurrentTime();
 
     const timer = setInterval(
-      updateDateTime,
+      updateCurrentTime,
       1000
     );
 
@@ -253,33 +265,145 @@ ${state}
 
   };
 
+  // CHECK TIME
+  // IN = CURRENT TIME OR PREVIOUS 2 MINUTES
+  // OUT = CURRENT TIME ONLY
+
+  const isTimeValid = (selectedTime) => {
+
+    if (!selectedTime) {
+      return false;
+    }
+
+    // ACTUAL CURRENT DEVICE TIME
+
+    const now = new Date();
+
+    const currentMinutes =
+      now.getHours() * 60 +
+      now.getMinutes();
+
+    // SELECTED TIME
+
+    const [hours, minutes] =
+      selectedTime
+        .split(":")
+        .map(Number);
+
+    const selectedMinutes =
+      hours * 60 +
+      minutes;
+
+    // OUT = CURRENT TIME EXACTLY
+    // NOT EARLIER AND NOT LATER
+
+    if (
+      formData.attendanceType === "OUT"
+    ) {
+
+      return (
+        selectedMinutes ===
+        currentMinutes
+      );
+
+    }
+
+    // IN = CURRENT TIME OR UP TO 2 MINUTES BACK
+
+    const minimumAllowedTime =
+      currentMinutes - 2;
+
+    return (
+      selectedMinutes >=
+        minimumAllowedTime &&
+      selectedMinutes <=
+        currentMinutes
+    );
+
+  };
+
+  // GET MINIMUM ALLOWED TIME
+
+  const getMinimumTime = () => {
+
+    if (!currentTime) {
+      return "";
+    }
+
+    // OUT = CURRENT TIME ONLY
+
+    if (
+      formData.attendanceType === "OUT"
+    ) {
+
+      return currentTime;
+
+    }
+
+    // IN = 2 MINUTES BACK
+
+    const [hours, minutes] =
+      currentTime
+        .split(":")
+        .map(Number);
+
+    const totalMinutes =
+      hours * 60 +
+      minutes -
+      2;
+
+    const minimumHours =
+      Math.floor(totalMinutes / 60);
+
+    const minimumMinutes =
+      totalMinutes % 60;
+
+    return (
+      `${String(minimumHours).padStart(2, "0")}:` +
+      `${String(minimumMinutes).padStart(2, "0")}`
+    );
+
+  };
+
   // SUBMIT FORM
 
   const handleSubmit = async (e) => {
 
     e.preventDefault();
 
+    // CHECK TIME BEFORE SUBMIT
+
+    if (!isTimeValid(formData.time)) {
+
+      if (
+        formData.attendanceType === "OUT"
+      ) {
+
+        alert(
+          "Invalid Time!\n\n" +
+          "For OUT attendance, you can only select the exact current time."
+        );
+
+      } else {
+
+        alert(
+          "Invalid Time!\n\n" +
+          "For IN attendance, you can only select the current time or up to 2 minutes back.\n\n" +
+          "Example: If current time is 10:30,\n" +
+          "the earliest allowed time is 10:28."
+        );
+
+      }
+
+      return;
+
+    }
+
     setLoading(true);
-
-    // TAKE ACTUAL CURRENT TIME AT SUBMISSION
-
-    const now = new Date();
-
-    const currentHour =
-      String(now.getHours()).padStart(2, "0");
-
-    const currentMinute =
-      String(now.getMinutes()).padStart(2, "0");
-
-    const actualCurrentTime =
-      `${currentHour}:${currentMinute}`;
 
     const finalData = {
 
       ...formData,
-
-      time: actualCurrentTime,
-
       location
 
     };
@@ -288,11 +412,19 @@ ${state}
 
       const response =
         await fetch(
+
           "https://script.google.com/macros/s/AKfycbzyUfuwt9rjd7yAR4_2moI9dl0n13MOy08OAOq_Te_B7SMOxJx29mk_PXthY7vIXR56/exec",
+
           {
+
             method: "POST",
-            body: JSON.stringify(finalData)
+
+            body: JSON.stringify(
+              finalData
+            )
+
           }
+
         );
 
       const result =
@@ -403,13 +535,15 @@ ${state}
               type="text"
               name="clientPlace"
               placeholder="Enter Client Place Name"
-              value={formData.clientPlace || ""}
+              value={
+                formData.clientPlace || ""
+              }
               onChange={handleChange}
             />
 
           </div>
 
-          {/* TIME - LOCKED CURRENT TIME */}
+          {/* TIME */}
 
           <div className="input-group">
 
@@ -420,9 +554,11 @@ ${state}
             <input
               type="time"
               name="time"
-              value={currentTime}
-              disabled
-              tabIndex="-1"
+              value={formData.time}
+              min={getMinimumTime()}
+              max={currentTime}
+              onChange={handleChange}
+              required
             />
 
           </div>
@@ -446,8 +582,11 @@ ${state}
                 }
                 onClick={() =>
                   setFormData({
+
                     ...formData,
-                    attendanceType: "IN",
+
+                    attendanceType: "IN"
+
                   })
                 }
               >
@@ -463,8 +602,11 @@ ${state}
                 }
                 onClick={() =>
                   setFormData({
+
                     ...formData,
-                    attendanceType: "OUT",
+
+                    attendanceType: "OUT"
+
                   })
                 }
               >
@@ -476,7 +618,6 @@ ${state}
           </div>
 
           <div className="input-group">
-
           </div>
 
           {/* LOCATION */}
@@ -518,7 +659,9 @@ ${state}
           <button
             type="submit"
             className={`submit-btn ${
-              loading ? "loading-btn" : ""
+              loading
+                ? "loading-btn"
+                : ""
             }`}
             disabled={loading}
           >
