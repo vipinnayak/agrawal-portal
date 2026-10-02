@@ -207,7 +207,7 @@ export default function Login() {
         navigate("/tushar");
       }else if (emp === "lucky123@gmail.com") {
         navigate("/lucky");
-      }else if (emp === "trdewandan123@gmail.com") {
+      }else if (emp === "trdewangan123@gmail.com") {
         navigate("/trdewangan");
       }else if (emp === "khemlal123@gmail.com") {
         navigate("/khemlalsahu");
