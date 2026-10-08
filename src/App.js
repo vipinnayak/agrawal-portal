@@ -55,7 +55,7 @@ import Rajni from "./pages/Rajni";
 import YashJairaj from "./pages/YashJairaj";
 import Yogita from "./pages/Yogita";
 import Supriya from "./pages/Supriya";
-import Pranjali from "./pages/Pranjali";
+import VanshAgrawal from "./pages/VanshAgrawal";
 import Bhavika from "./pages/Bhavika";
 import Babitahr from "./pages/Babitahr";
 import Sarikahr from "./pages/Sarikahr";
@@ -827,8 +827,8 @@ function App() {
           element={<Meenu />}
         />
         <Route
-          path="/pranjali"
-          element={<Pranjali />}
+          path="/vansh"
+          element={<VanshAgrawal />}
         />
         <Route
           path="/yogita"

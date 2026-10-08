@@ -47,7 +47,7 @@ export default function Login() {
     "yash123@gmail.com":"yash123",
     "supriya123@gmail.com" :"supriya123",
     "meenu123@gmail.com":"meenu123",
-    "pranjali123@gmail.com":"pranjali123",
+    "vanshagrawal123@gmail.com":"vansh123",
     "babita123@gmail.com":"babita123",
     "bhavika123@gmail.com":"bhavika123",
     "yogita123@gmail.com":"yogita123",
@@ -175,8 +175,8 @@ export default function Login() {
         navigate("/yash");
       }else if (emp === "supriya123@gmail.com") {
         navigate("/supriya");
-      }else if (emp === "pranjali123@gmail.com") {
-        navigate("/pranjali");
+      }else if (emp === "vanshagrawal123@gmail.com") {
+        navigate("/vansh");
       }else if (emp === "bhavika123@gmail.com") {
         navigate("/bhavika");
       }else if (emp === "babita123@gmail.com") {
