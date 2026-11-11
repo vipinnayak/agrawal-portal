@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import DailyWorkingChatbot from "../components/DailyWorkingChatbot";
 
 export default function Vaishali() {
 
@@ -44,20 +45,24 @@ export default function Vaishali() {
         {/* DAILY WORKING */}
 
        <div
-  style={{...styles.card, background:"#059669"}}
+          style={{ ...styles.card, background: "linear-gradient(135deg, #065f46 0%, #059669 100%)" }}
+          onClick={() => navigate("/daily-working")}
+        >
+          <h2 style={styles.cardTitle}>Daily Working Analysis</h2>
+          <p style={styles.cardText}>
+            Firm-wide work analytics, logs &amp; defaulters
+          </p>
+        </div>
 
-  onClick={() => navigate("/daily-working-vipin")}
->
-
-  <h2 style={styles.cardTitle}>
-    Daily Working
-  </h2>
-
-  <p style={styles.cardText}>
-    Submit daily work updates
-  </p>
-
-</div>
+        <div
+          style={{ ...styles.card, background: "#059669" }}
+          onClick={() => navigate("/employee-daily-working/Vaishali%20Karla")}
+        >
+          <h2 style={styles.cardTitle}>My Daily Working</h2>
+          <p style={styles.cardText}>
+            Submit your personal work updates
+          </p>
+        </div>
 
         {/* DELEGATION */}
 
@@ -207,10 +212,10 @@ export default function Vaishali() {
 
         </div>
 
-      </div>
-
+            </div>
+      {/* AI Daily Working Chatbot for Vaishali */}
+      <DailyWorkingChatbot />
     </div>
-
   );
 }
 

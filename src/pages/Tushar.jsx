@@ -6,7 +6,8 @@ export default function Tushar() {
 
   return (
 
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Tushar%20Sahu")}>
 
       {/* HEADER */}
 
@@ -46,10 +47,8 @@ export default function Tushar() {
        <div
   style={{...styles.card, background:"#059669"}}
 
-  onClick={() => navigate("/daily-working-vipin")}
->
-
-  <h2 style={styles.cardTitle}>
+          onClick={() => navigate("/employee-daily-working/Tushar%20Sahu")}
+        ><h2 style={styles.cardTitle}>
     Daily Working
   </h2>
 

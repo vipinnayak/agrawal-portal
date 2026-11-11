@@ -1,12 +1,13 @@
 import { useNavigate } from "react-router-dom";
 
-export default function VanshAgrawal() {
+export default function Vansh() {
 
   const navigate = useNavigate();
 
   return (
 
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Vansh%20Agrawal")}>
 
       {/* HEADER */}
 
@@ -29,7 +30,7 @@ export default function VanshAgrawal() {
         {/* DAILY ATTENDANCE */}
 
         <div style={{...styles.card, background:"#2563eb"}}
-        onClick={() => navigate("/dayash")}>
+        onClick={() => navigate("/davanshagrawal")}>
 
           <h2 style={styles.cardTitle}>
             Daily Attendance
@@ -46,10 +47,8 @@ export default function VanshAgrawal() {
        <div
   style={{...styles.card, background:"#059669"}}
 
-  onClick={() => navigate("/daily-working-vipin")}
->
-
-  <h2 style={styles.cardTitle}>
+          onClick={() => navigate("/employee-daily-working/Vansh%20Agrawal")}
+        ><h2 style={styles.cardTitle}>
     Daily Working
   </h2>
 
@@ -136,19 +135,17 @@ export default function VanshAgrawal() {
 
         {/* REPORTS */}
 
-       <div style={{...styles.card, background:"#2563eb"}}
-        onClick={() => navigate("/reports")}>
+        <div style={{...styles.card, background:"#1e293b"}}>
 
           <h2 style={styles.cardTitle}>
             Reports
           </h2>
 
           <p style={styles.cardText}>
-            Check today attendance status
+            View MIS & performance reports
           </p>
 
         </div>
-
 
         {/* CLIENT MANAGEMENT */}
 
@@ -180,11 +177,11 @@ export default function VanshAgrawal() {
 
         {/* TASK STATUS */}
 
-        <div style={{...styles.card, background:"#be123c"}} onClick={()=>navigate("/forms")}>
+        <div style={{...styles.card, background:"#be123c"}} onClick={() => navigate("/forms")}>
 
           <h2 style={styles.cardTitle}>
             Form Section
-          </h2>
+          </h2> 
 
           <p style={styles.cardText}>
             Fill your forms & check status

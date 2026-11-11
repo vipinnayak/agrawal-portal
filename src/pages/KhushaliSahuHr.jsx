@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import AttendanceChatbot from "../components/AttendanceChatbot";
 
 export default function KhushaliSahuHr() {
 
@@ -13,7 +14,7 @@ export default function KhushaliSahuHr() {
       <div style={styles.header}>
 
         <h1 style={styles.heading}>
-           Khushali Sahu
+           HR Khushali Sahu
         </h1>
 
         <p style={styles.subHeading}>
@@ -46,10 +47,8 @@ export default function KhushaliSahuHr() {
        <div
   style={{...styles.card, background:"#059669"}}
 
-  onClick={() => navigate("/daily-working-vipin")}
->
-
-  <h2 style={styles.cardTitle}>
+          onClick={() => navigate("/employee-daily-working/Khushali%20Sahu")}
+        ><h2 style={styles.cardTitle}>
     Daily Working
   </h2>
 
@@ -206,10 +205,10 @@ export default function KhushaliSahuHr() {
 
         </div>
 
-      </div>
-
+            </div>
+      {/* AI Attendance & HR Policy Chatbot for Khushali HR */}
+      <AttendanceChatbot />
     </div>
-
   );
 }
 

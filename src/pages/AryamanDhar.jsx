@@ -9,7 +9,8 @@ export default function AryamanDhar() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Aryaman%20Dhar%20Badgaiyan")}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>
@@ -42,9 +43,9 @@ export default function AryamanDhar() {
 
         <div
           style={styles.card}
-          onClick={() => navigate("/daily-working-harsh-sharma")}
-        >
-          <h2 style={styles.cardTitle}>Daily Working</h2>
+        
+          onClick={() => navigate("/employee-daily-working/Aryaman%20Dhar%20Badgaiyan")}
+        ><h2 style={styles.cardTitle}>Daily Working</h2>
           <p style={styles.cardText}>
             Submit daily work updates
           </p>

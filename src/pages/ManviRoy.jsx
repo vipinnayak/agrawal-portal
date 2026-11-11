@@ -6,7 +6,8 @@ export default function ManviRoy() {
 
   return (
 
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Manvi%20Roy")}>
 
       {/* HEADER */}
 
@@ -46,10 +47,8 @@ export default function ManviRoy() {
        <div
   style={{...styles.card, background:"#059669"}}
 
-  onClick={() => navigate("/daily-working-naresh")}
->
-
-  <h2 style={styles.cardTitle}>
+          onClick={() => navigate("/employee-daily-working/Manvi%20Roy")}
+        ><h2 style={styles.cardTitle}>
     Daily Working
   </h2>
 

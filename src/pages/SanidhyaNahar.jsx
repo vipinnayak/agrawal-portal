@@ -9,7 +9,8 @@ export default function SanidhyaNahar() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Sanidhya%20Nahar")}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>
@@ -42,9 +43,9 @@ export default function SanidhyaNahar() {
 
         <div
           style={styles.card}
-          onClick={() => navigate("/daily-working-harsh-sharma")}
-        >
-          <h2 style={styles.cardTitle}>Daily Working</h2>
+        
+          onClick={() => navigate("/employee-daily-working/Sanidhya%20Nahar")}
+        ><h2 style={styles.cardTitle}>Daily Working</h2>
           <p style={styles.cardText}>
             Submit daily work updates
           </p>

@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import AttendanceChatbot from "../components/AttendanceChatbot";
 
 export default function Babitahr() {
 
@@ -46,10 +47,8 @@ export default function Babitahr() {
        <div
   style={{...styles.card, background:"#059669"}}
 
-  onClick={() => navigate("/daily-working-vipin")}
->
-
-  <h2 style={styles.cardTitle}>
+          onClick={() => navigate("/employee-daily-working/Babita%20Pradhan")}
+        ><h2 style={styles.cardTitle}>
     Daily Working
   </h2>
 
@@ -206,10 +205,10 @@ export default function Babitahr() {
 
         </div>
 
-      </div>
-
+            </div>
+      {/* AI Attendance & HR Policy Chatbot for Babita HR */}
+      <AttendanceChatbot />
     </div>
-
   );
 }
 

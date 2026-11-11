@@ -6,7 +6,8 @@ export default function NareshPrajapati() {
 
   return (
 
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Naresh%20Prajapati")}>
 
       {/* HEADER */}
 
@@ -46,10 +47,8 @@ export default function NareshPrajapati() {
        <div
   style={{...styles.card, background:"#059669"}}
 
-  onClick={() => navigate("/daily-working-naresh")}
->
-
-  <h2 style={styles.cardTitle}>
+          onClick={() => navigate("/employee-daily-working/Naresh%20Prajapati")}
+        ><h2 style={styles.cardTitle}>
     Daily Working
   </h2>
 

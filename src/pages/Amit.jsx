@@ -6,7 +6,8 @@ export default function Amit() {
 
   return (
 
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Amit")}>
 
       {/* HEADER */}
 
@@ -46,10 +47,8 @@ export default function Amit() {
        <div
   style={{...styles.card, background:"#059669"}}
 
-  onClick={() => navigate("/daily-working-vipin")}
->
-
-  <h2 style={styles.cardTitle}>
+          onClick={() => navigate("/employee-daily-working/Amit")}
+        ><h2 style={styles.cardTitle}>
     Daily Working
   </h2>
 

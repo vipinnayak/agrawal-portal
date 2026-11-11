@@ -9,7 +9,8 @@ export default function CADRISHTI() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/CA%20Drishti%20Chandnani")}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>
@@ -42,9 +43,9 @@ export default function CADRISHTI() {
 
         <div
           style={styles.card}
-          onClick={() => navigate("/daily-working-Drishti")}
-        >
-          <h2 style={styles.cardTitle}>Daily Working</h2>
+        
+          onClick={() => navigate("/employee-daily-working/CA%20Drishti%20Chandnani")}
+        ><h2 style={styles.cardTitle}>Daily Working</h2>
           <p style={styles.cardText}>
             Submit daily work updates
           </p>

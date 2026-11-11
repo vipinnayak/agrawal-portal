@@ -1,0 +1,297 @@
+/* src/pages/PmsFMS.css - Complements InternalAuditFMS.css for PMS-specific controls & API Config Modal */
+
+.pms-top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.pms-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pms-source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.pms-source-badge.live {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.pms-source-badge.local {
+  background: #eef2ff;
+  color: #3730a3;
+  border: 1px solid #c7d2fe;
+}
+
+.pms-back-btn,
+.pms-config-btn {
+  border: none;
+  padding: 10px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  transition: 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pms-back-btn {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.pms-back-btn:hover {
+  transform: translateY(-2px);
+}
+
+.pms-config-btn {
+  background: #1e293b;
+  color: #ffffff;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.16);
+}
+
+.pms-config-btn:hover {
+  background: #0f172a;
+  transform: translateY(-2px);
+}
+
+.pms-export-register-btn {
+  background: linear-gradient(135deg, #4338ca, #6366f1);
+}
+
+.pms-export-register-btn:hover {
+  box-shadow: 0 15px 35px rgba(99, 102, 241, 0.35);
+}
+
+.pms-setup-banner {
+  background: #ffffff;
+  border: 1px solid #c7d2fe;
+  border-left: 5px solid #4338ca;
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+}
+
+.pms-setup-banner h4 {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+  color: #1e1b4b;
+}
+
+.pms-setup-banner p {
+  margin: 0;
+  font-size: 13px;
+  color: #475569;
+}
+
+.pms-selector-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+
+.pms-selector-row .auditSelect {
+  margin: 0;
+  min-width: 320px;
+}
+
+.pms-step-edit-btn {
+  margin-top: 12px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #c7d2fe;
+  background: #eef2ff;
+  color: #3730a3;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.pms-step-edit-btn:hover {
+  background: #4338ca;
+  color: #ffffff;
+}
+
+/* MODAL */
+.pms-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 2000;
+}
+
+.pms-modal-card {
+  width: 680px;
+  max-width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 22px;
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.25);
+  overflow-x: hidden;
+}
+
+.pms-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 26px;
+  background: linear-gradient(135deg, #312e81 0%, #4338ca 100%);
+  color: #ffffff;
+}
+
+.pms-modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.pms-modal-header p {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.pms-modal-close {
+  border: none;
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.pms-modal-body {
+  padding: 24px 26px;
+}
+
+.pms-field-group {
+  margin-bottom: 16px;
+}
+
+.pms-field-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 6px;
+}
+
+.pms-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.pms-field-group input,
+.pms-field-group select {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.pms-field-group input[type="url"] {
+  font-family: monospace;
+}
+
+.pms-test-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 0 14px;
+  background: #4338ca;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pms-test-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pms-test-alert {
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.pms-test-alert.ok {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.pms-test-alert.err {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.pms-modal-footer {
+  padding: 16px 26px 22px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.pms-btn-secondary {
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #334155;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pms-btn-primary {
+  border: none;
+  background: #4338ca;
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+

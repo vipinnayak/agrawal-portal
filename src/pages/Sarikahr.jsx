@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import AttendanceChatbot from "../components/AttendanceChatbot";
 
 export default function Sarikahr() {
 
@@ -46,7 +47,7 @@ export default function Sarikahr() {
        <div
   style={{...styles.card, background:"#059669"}}
 
-  onClick={() => navigate("/daily-working-vipin")}
+  onClick={() => navigate("/daily-working")}
 >
 
   <h2 style={styles.cardTitle}>
@@ -223,10 +224,10 @@ export default function Sarikahr() {
 
         </div>
 
-      </div>
-
+            </div>
+      {/* AI Attendance & HR Policy Chatbot for Sarika HR */}
+      <AttendanceChatbot />
     </div>
-
   );
 }
 

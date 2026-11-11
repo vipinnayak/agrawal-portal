@@ -4,7 +4,8 @@ export default function Supriya() {
   const navigate = useNavigate();
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Supriya%20Kurrey")}>
       {/* HEADER */}
 
       <div style={styles.header}>
@@ -34,9 +35,9 @@ export default function Supriya() {
         {/* Daily Working */}
         <div
           style={styles.card}
-          onClick={() => navigate("/daily-working-vipin")}
-        >
-          <h2 style={styles.cardTitle}>Daily Working</h2>
+        
+          onClick={() => navigate("/employee-daily-working/Supriya%20Kurrey")}
+        ><h2 style={styles.cardTitle}>Daily Working</h2>
 
           <p style={styles.cardText}>
             Submit daily work updates

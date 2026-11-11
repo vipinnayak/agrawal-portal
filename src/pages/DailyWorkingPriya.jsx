@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { fetchDailyWorkingLogs } from "../utils/dailyWorkingService";
 import "./DailyWorking.css";
 
 function DailyWorkingPriya() {
@@ -10,24 +11,12 @@ function DailyWorkingPriya() {
 
   useEffect(() => {
 
-    fetch(
-      "https://script.google.com/macros/s/AKfycbxcmMeGLQDjvNrJ-aqhfQE5Dh6Lrrc_fSxJVmeGt5Dn0bPDQAd3aGa3Pb6X4XB0VwB7/exec"
-    )
-
-      .then((res) => res.json())
-
+    fetchDailyWorkingLogs()
       .then((result) => {
-
-        console.log(result);
-
-        setData(result.data || []);
-
+        setData(result || []);
       })
-
       .catch((err) => {
-
         console.log(err);
-
       });
 
   }, []);

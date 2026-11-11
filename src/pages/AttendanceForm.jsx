@@ -1,536 +1,341 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import "./AttendanceForm.css";
 
 function AttendanceForm() {
+  const [location, setLocation] = useState("Fetching Location...");
+  const [mapUrl, setMapUrl] = useState("");
+  const [coords, setCoords] = useState(null);
+  const [accuracy, setAccuracy] = useState(null);
 
-  const [location, setLocation] =
-    useState("Fetching Location...");
+  const [employeeList, setEmployeeList] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const [mapUrl, setMapUrl] =
-    useState("");
-
-  const [employeeList, setEmployeeList] =
-    useState([]);
-
-  const [loading, setLoading] =
-    useState(false);
-
-  const [currentTime, setCurrentTime] =
-    useState("");
+  const watchIdRef = useRef(null);
+  const timeoutIdRef = useRef(null);
+  const bestPositionRef = useRef(null);
 
   const getAttendanceType = () => {
-
     const hour = new Date().getHours();
-
-    return hour >= 16
-      ? "OUT"
-      : "IN";
+    return hour >= 16 ? "OUT" : "IN";
   };
 
   const [formData, setFormData] = useState({
-
     date: "",
     employeeName: "",
     time: "",
     attendanceType: "IN",
     clientPlace: ""
-
   });
 
   // AUTO DATE + TIME
-
   useEffect(() => {
-
     const now = new Date();
-
-    const date =
-      now.toLocaleDateString("en-GB");
-
-    const time =
-      now.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit"
-      });
-
-    setFormData({
-
-      date,
-      employeeName: "",
-      time,
-      attendanceType:
-        getAttendanceType(),
-      clientPlace: ""
-
+    const date = now.toLocaleDateString("en-GB");
+    const time = now.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit"
     });
 
-  }, []);
-
-  // LIVE CURRENT TIME
-
-  useEffect(() => {
-
-    const updateCurrentTime = () => {
-
-      const now = new Date();
-
-      const hours =
-        String(now.getHours()).padStart(2, "0");
-
-      const minutes =
-        String(now.getMinutes()).padStart(2, "0");
-
-      setCurrentTime(
-        `${hours}:${minutes}`
-      );
-
-    };
-
-    updateCurrentTime();
-
-    const timer = setInterval(
-      updateCurrentTime,
-      1000
-    );
-
-    return () => clearInterval(timer);
-
+    setFormData((prev) => ({
+      ...prev,
+      date,
+      time,
+      attendanceType: getAttendanceType()
+    }));
   }, []);
 
   // FETCH EMPLOYEE NAMES
-
   useEffect(() => {
-
     fetch(
       "https://script.google.com/macros/s/AKfycbx_prCPCYi3OfDUvXX5dbW319gAbqaK9NwVuGmjzk7E_1hu6pk4PZvBED0acUZ7NvvXOg/exec"
     )
-
       .then((res) => res.json())
-
       .then((data) => {
-
-        console.log(
-          "Dropdown Data:",
-          data
-        );
-
-        if (
-          Array.isArray(data)
-        ) {
-
+        if (Array.isArray(data)) {
           setEmployeeList(data);
-
-        } else if (
-          data.employeeNames
-        ) {
-
-          setEmployeeList(
-            data.employeeNames
-          );
-
+        } else if (data.employeeNames) {
+          setEmployeeList(data.employeeNames);
         }
-
       })
-
       .catch((err) => {
-
         console.log(err);
-
       });
-
   }, []);
 
-  // FETCH DEVICE LOCATION + MAP
-
-  useEffect(() => {
-
-    if (navigator.geolocation) {
-
-      navigator.geolocation.getCurrentPosition(
-
-        async (position) => {
-
-          const lat =
-            position.coords.latitude;
-
-          const lng =
-            position.coords.longitude;
-
-          // MAP URL
-
-          setMapUrl(
-            `https://www.google.com/maps?q=${lat},${lng}&z=18&output=embed`
-          );
-
-          try {
-
-            const response =
-              await fetch(
-                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
-              );
-
-            const data =
-              await response.json();
-
-            console.log(data);
-
-            const house =
-              data.address.house_number || "";
-
-            const road =
-              data.address.road || "";
-
-            const suburb =
-              data.address.suburb ||
-              data.address.neighbourhood ||
-              data.address.residential ||
-              "";
-
-            const area =
-              data.address.city_district ||
-              data.address.county ||
-              "";
-
-            const city =
-              data.address.city ||
-              data.address.town ||
-              data.address.village ||
-              "";
-
-            const state =
-              data.address.state || "";
-
-            const finalLocation = `
-
-${house ? house + ", " : ""}
-${road ? road + ", " : ""}
-${suburb ? suburb + ", " : ""}
-${area ? area + ", " : ""}
-${city ? city + ", " : ""}
-${state}
-
-            `;
-
-            setLocation(
-              finalLocation
-                .replace(/\n/g, "")
-                .trim()
-            );
-
-          } catch (error) {
-
-            console.log(error);
-
-            setLocation(
-              "Location Not Found"
-            );
-
-          }
-
-        },
-
-        () => {
-
-          setLocation(
-            "Location Permission Denied"
-          );
-
-        },
-
+  // REVERSE GEOCODING
+  const reverseGeocode = async (lat, lng, acc) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
         {
-
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0
-
+          headers: {
+            "Accept-Language": "en"
+          }
         }
-
       );
 
+      if (!response.ok) {
+        throw new Error(`Reverse geocode HTTP error ${response.status}`);
+      }
+
+      const data = await response.json();
+      const addr = data.address || {};
+
+      const poi =
+        addr.office ||
+        addr.building ||
+        addr.amenity ||
+        addr.shop ||
+        addr.commercial ||
+        addr.industrial ||
+        addr.tourism ||
+        "";
+
+      const house = addr.house_number || addr.house_name || "";
+      const road = addr.road || addr.street || addr.pedestrian || "";
+      const locality =
+        addr.neighbourhood ||
+        addr.suburb ||
+        addr.residential ||
+        addr.subdistrict ||
+        "";
+      const area = addr.city_district || addr.county || "";
+      const city =
+        addr.city || addr.town || addr.village || addr.municipality || "";
+      const state = addr.state || "";
+      const postcode = addr.postcode ? addr.postcode : "";
+
+      const parts = [
+        poi,
+        house,
+        road,
+        locality,
+        area,
+        city ? (postcode ? `${city} - ${postcode}` : city) : "",
+        state
+      ].filter(Boolean);
+
+      let formattedAddress = parts.join(", ");
+
+      if (parts.length < 2 && data.display_name) {
+        formattedAddress = data.display_name;
+      }
+
+      if (!formattedAddress) {
+        formattedAddress = `Location (${lat.toFixed(6)}, ${lng.toFixed(6)})`;
+      }
+
+      const finalLocation = `${formattedAddress} [GPS: ${lat.toFixed(6)}, ${lng.toFixed(6)} | ±${acc}m]`;
+      setLocation(finalLocation);
+    } catch (err) {
+      console.warn("Reverse geocode fallback:", err);
+      setLocation(`GPS Coordinates: ${lat.toFixed(6)}, ${lng.toFixed(6)} (Accuracy: ±${acc}m)`);
+    }
+  };
+
+  // APPLY POSITION UPDATE
+  const applyPosition = useCallback((position) => {
+    const lat = position.coords.latitude;
+    const lng = position.coords.longitude;
+    const acc = Math.round(position.coords.accuracy);
+
+    setCoords({ lat, lng, accuracy: acc });
+    setAccuracy(acc);
+
+    setMapUrl(`https://www.google.com/maps?q=${lat},${lng}&z=18&output=embed`);
+    reverseGeocode(lat, lng, acc);
+  }, []);
+
+  // AUTOMATIC BACKGROUND HIGH-PRECISION LOCATION ACQUISITION
+  const fetchPreciseLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      setLocation("Geolocation is not supported by your browser");
+      return;
     }
 
-  }, []);
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+    if (timeoutIdRef.current !== null) {
+      clearTimeout(timeoutIdRef.current);
+      timeoutIdRef.current = null;
+    }
+
+    bestPositionRef.current = null;
+
+    const onWatchSuccess = (position) => {
+      const currentAcc = position.coords.accuracy;
+
+      // Keep updating as more precise readings arrive
+      if (
+        !bestPositionRef.current ||
+        currentAcc < bestPositionRef.current.coords.accuracy
+      ) {
+        bestPositionRef.current = position;
+        applyPosition(position);
+      }
+
+      // High satellite precision lock (<= 15 meters) achieved
+      if (currentAcc <= 15) {
+        if (watchIdRef.current !== null) {
+          navigator.geolocation.clearWatch(watchIdRef.current);
+          watchIdRef.current = null;
+        }
+        if (timeoutIdRef.current !== null) {
+          clearTimeout(timeoutIdRef.current);
+          timeoutIdRef.current = null;
+        }
+        applyPosition(position);
+      }
+    };
+
+    const onWatchError = (error) => {
+      console.warn("Geolocation watch error:", error);
+      if (!bestPositionRef.current) {
+        if (error.code === error.PERMISSION_DENIED) {
+          setLocation("Location Permission Denied");
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          setLocation("Location Signal Unavailable");
+        } else if (error.code === error.TIMEOUT) {
+          setLocation("Location Request Timed Out");
+        } else {
+          setLocation("Unable to retrieve location");
+        }
+      }
+    };
+
+    const options = {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 0
+    };
+
+    try {
+      watchIdRef.current = navigator.geolocation.watchPosition(
+        onWatchSuccess,
+        onWatchError,
+        options
+      );
+    } catch (e) {
+      console.error(e);
+    }
+
+    // After 10s stop watching to preserve battery, retaining the best reading
+    timeoutIdRef.current = setTimeout(() => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+      if (bestPositionRef.current) {
+        applyPosition(bestPositionRef.current);
+      }
+    }, 10000);
+  }, [applyPosition]);
+
+  // AUTOMATICALLY START LOCATION DETECTION ON FORM LOAD
+  useEffect(() => {
+    fetchPreciseLocation();
+
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+      if (timeoutIdRef.current !== null) {
+        clearTimeout(timeoutIdRef.current);
+      }
+    };
+  }, [fetchPreciseLocation]);
 
   // HANDLE INPUT
-
   const handleChange = (e) => {
-
     setFormData({
-
       ...formData,
-
-      [e.target.name]:
-        e.target.value
-
+      [e.target.name]: e.target.value
     });
-
-  };
-
-  // CHECK TIME
-  // IN = CURRENT TIME OR PREVIOUS 2 MINUTES
-  // OUT = CURRENT TIME ONLY
-
-  const isTimeValid = (selectedTime) => {
-
-    if (!selectedTime) {
-      return false;
-    }
-
-    // ACTUAL CURRENT DEVICE TIME
-
-    const now = new Date();
-
-    const currentMinutes =
-      now.getHours() * 60 +
-      now.getMinutes();
-
-    // SELECTED TIME
-
-    const [hours, minutes] =
-      selectedTime
-        .split(":")
-        .map(Number);
-
-    const selectedMinutes =
-      hours * 60 +
-      minutes;
-
-    // OUT = CURRENT TIME EXACTLY
-    // NOT EARLIER AND NOT LATER
-
-    if (
-      formData.attendanceType === "OUT"
-    ) {
-
-      return (
-        selectedMinutes ===
-        currentMinutes
-      );
-
-    }
-
-    // IN = CURRENT TIME OR UP TO 2 MINUTES BACK
-
-    const minimumAllowedTime =
-      currentMinutes - 2;
-
-    return (
-      selectedMinutes >=
-        minimumAllowedTime &&
-      selectedMinutes <=
-        currentMinutes
-    );
-
-  };
-
-  // GET MINIMUM ALLOWED TIME
-
-  const getMinimumTime = () => {
-
-    if (!currentTime) {
-      return "";
-    }
-
-    // OUT = CURRENT TIME ONLY
-
-    if (
-      formData.attendanceType === "OUT"
-    ) {
-
-      return currentTime;
-
-    }
-
-    // IN = 2 MINUTES BACK
-
-    const [hours, minutes] =
-      currentTime
-        .split(":")
-        .map(Number);
-
-    const totalMinutes =
-      hours * 60 +
-      minutes -
-      2;
-
-    const minimumHours =
-      Math.floor(totalMinutes / 60);
-
-    const minimumMinutes =
-      totalMinutes % 60;
-
-    return (
-      `${String(minimumHours).padStart(2, "0")}:` +
-      `${String(minimumMinutes).padStart(2, "0")}`
-    );
-
   };
 
   // SUBMIT FORM
-
   const handleSubmit = async (e) => {
-
     e.preventDefault();
 
-    // CHECK TIME BEFORE SUBMIT
-
-    if (!isTimeValid(formData.time)) {
-
-      if (
-        formData.attendanceType === "OUT"
-      ) {
-
-        alert(
-          "Invalid Time!\n\n" +
-          "For OUT attendance, you can only select the exact current time."
-        );
-
-      } else {
-
-        alert(
-          "Invalid Time!\n\n" +
-          "For IN attendance, you can only select the current time or up to 2 minutes back.\n\n" +
-          "Example: If current time is 10:30,\n" +
-          "the earliest allowed time is 10:28."
-        );
-
-      }
-
+    if (!coords && location === "Fetching Location...") {
+      alert("Please wait a moment while device location is being detected...");
       return;
-
     }
 
     setLoading(true);
 
     const finalData = {
-
       ...formData,
-      location
-
+      location,
+      latitude: coords ? coords.lat : "",
+      longitude: coords ? coords.lng : "",
+      accuracy: accuracy ? `${accuracy}m` : ""
     };
 
     try {
+      const response = await fetch(
+        "https://script.google.com/macros/s/AKfycbzyUfuwt9rjd7yAR4_2moI9dl0n13MOy08OAOq_Te_B7SMOxJx29mk_PXthY7vIXR56/exec",
+        {
+          method: "POST",
+          body: JSON.stringify(finalData)
+        }
+      );
 
-      const response =
-        await fetch(
-
-          "https://script.google.com/macros/s/AKfycbzyUfuwt9rjd7yAR4_2moI9dl0n13MOy08OAOq_Te_B7SMOxJx29mk_PXthY7vIXR56/exec",
-
-          {
-
-            method: "POST",
-
-            body: JSON.stringify(
-              finalData
-            )
-
-          }
-
-        );
-
-      const result =
-        await response.json();
-
+      const result = await response.json();
       console.log(result);
 
-      alert(
-        "Attendance Marked Successfully"
-      );
-
+      alert("Attendance Marked Successfully");
     } catch (error) {
-
       console.log(error);
-
-      alert(
-        "Error Submitting Attendance"
-      );
-
+      alert("Error Submitting Attendance");
     }
 
     setLoading(false);
-
   };
 
   return (
-
     <div className="attendance-form-page">
-
       <div className="glass-form">
-
         <div className="form-header">
-
-          <h1>
-            Mark Attendance
-          </h1>
-
-          <p>
-            Agrawal Jain & Co.
-          </p>
-
+          <h1>Mark Attendance</h1>
+          <p>Agrawal Jain & Co.</p>
         </div>
 
         <form onSubmit={handleSubmit}>
-
           {/* DATE */}
-
           <div className="input-group">
-
-            <label>
-              Date
-            </label>
-
+            <label>Date</label>
             <input
               type="text"
               name="date"
               value={formData.date}
               readOnly
             />
-
           </div>
 
           {/* EMPLOYEE */}
-
           <div className="input-group">
-
-            <label>
-              Employee Name
-            </label>
-
+            <label>Employee Name</label>
             <select
               name="employeeName"
               value={formData.employeeName}
               onChange={handleChange}
               required
             >
-
-              <option value="">
-                Select Employee
-              </option>
-
-              {employeeList.map(
-                (employee, index) => (
-
-                  <option
-                    key={index}
-                    value={employee}
-                  >
-                    {employee}
-                  </option>
-
-                )
-              )}
-
+              <option value="">Select Employee</option>
+              {employeeList.map((employee, index) => (
+                <option key={index} value={employee}>
+                  {employee}
+                </option>
+              ))}
             </select>
-
           </div>
 
           {/* CLIENT PLACE */}
-
           <div className="input-group">
-
-            <label>
-              If In Client Place
-            </label>
-
+            <label>If In Client Place</label>
             <input
               type="text"
               name="clientPlace"
@@ -540,17 +345,11 @@ ${state}
               }
               onChange={handleChange}
             />
-
           </div>
 
           {/* TIME */}
-
           <div className="input-group">
-
-            <label>
-              Time
-            </label>
-
+            <label>Time</label>
             <input
               type="time"
               name="time"
@@ -560,85 +359,50 @@ ${state}
               onChange={handleChange}
               required
             />
-
           </div>
 
           {/* ATTENDANCE TYPE */}
-
           <div className="input-group">
-
-            <label>
-              Attendance Type
-            </label>
-
+            <label>Attendance Type</label>
             <div className="attendance-type">
-
               <button
                 type="button"
-                className={
-                  formData.attendanceType === "IN"
-                    ? "active"
-                    : ""
-                }
+                className={formData.attendanceType === "IN" ? "active" : ""}
                 onClick={() =>
                   setFormData({
-
                     ...formData,
-
                     attendanceType: "IN"
-
                   })
                 }
               >
                 IN
               </button>
-
               <button
                 type="button"
-                className={
-                  formData.attendanceType === "OUT"
-                    ? "active"
-                    : ""
-                }
+                className={formData.attendanceType === "OUT" ? "active" : ""}
                 onClick={() =>
                   setFormData({
-
                     ...formData,
-
                     attendanceType: "OUT"
-
                   })
                 }
               >
                 OUT
               </button>
-
             </div>
-
           </div>
 
+          {/* DEVICE LOCATION */}
           <div className="input-group">
-          </div>
-
-          {/* LOCATION */}
-
-          <div className="input-group">
-
-            <label>
-              Device Location
-            </label>
-
+            <label>Device Location</label>
             <textarea
               value={location}
               readOnly
             />
-
           </div>
 
           {/* GOOGLE MAP */}
-
           <div className="map-container">
-
             <iframe
               title="Google Map"
               src={mapUrl}
@@ -651,11 +415,9 @@ ${state}
               allowFullScreen=""
               loading="lazy"
             ></iframe>
-
           </div>
 
           {/* SUBMIT BUTTON */}
-
           <button
             type="submit"
             className={`submit-btn ${
@@ -665,23 +427,12 @@ ${state}
             }`}
             disabled={loading}
           >
-
-            {
-              loading
-                ? "Submitting..."
-                : "Mark Attendance"
-            }
-
+            {loading ? "Submitting..." : "Mark Attendance"}
           </button>
-
         </form>
-
       </div>
-
     </div>
-
   );
-
 }
 
 export default AttendanceForm;

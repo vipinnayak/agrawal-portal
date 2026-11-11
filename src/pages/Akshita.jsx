@@ -6,7 +6,8 @@ export default function Akshita() {
 
   return (
 
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Akshita")}>
 
       {/* HEADER */}
 
@@ -46,10 +47,8 @@ export default function Akshita() {
        <div
   style={{...styles.card, background:"#059669"}}
 
-  onClick={() => navigate("/daily-working-akshita")}
->
-
-  <h2 style={styles.cardTitle}>
+          onClick={() => navigate("/employee-daily-working/Akshita")}
+        ><h2 style={styles.cardTitle}>
     Daily Working
   </h2>
 

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ExecutiveAIChatbot from "../components/ExecutiveAIChatbot";
+
 
 export default function AdminMD() {
 
@@ -86,6 +88,7 @@ export default function AdminMD() {
 
         <div
           style={{...styles.card, background:"#059669"}}
+          onClick={() => navigate("/daily-working", { state: { role: "PARTNERS_SENIORS" } })}
         >
 
           <h2 style={styles.cardTitle}>
@@ -198,7 +201,29 @@ export default function AdminMD() {
 
 </div>
 
+        {/* PMS */}
+
+<div
+  style={{ ...styles.card, background:"#4338ca" }}
+
+  onClick={() => navigate("/pms-fms")}
+>
+
+  <h2 style={styles.cardTitle}>
+    PMS
+  </h2>
+
+  <p style={styles.cardText}>
+    Create and Manage PMS Assignments
+  </p>
+
+</div>
+
       </div>
+
+      {/* Unified Executive AI Chatbot for Admin MD (Attendance + Daily Working) */}
+      <ExecutiveAIChatbot />
+
 
     </div>
 

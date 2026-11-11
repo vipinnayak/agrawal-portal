@@ -6,7 +6,8 @@ export default function Vimal() {
 
   return (
 
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Vimal%20Mahilange")}>
 
       {/* HEADER */}
 
@@ -46,10 +47,8 @@ export default function Vimal() {
        <div
   style={{...styles.card, background:"#059669"}}
 
-  onClick={() => navigate("/daily-working-vipin")}
->
-
-  <h2 style={styles.cardTitle}>
+          onClick={() => navigate("/employee-daily-working/Vimal%20Mahilange")}
+        ><h2 style={styles.cardTitle}>
     Daily Working
   </h2>
 

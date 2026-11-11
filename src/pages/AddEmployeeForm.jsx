@@ -5,6 +5,29 @@ import generateEmployeePDF from "../utils/generateEmployeePDF";
 const API =
 "https://script.google.com/macros/s/AKfycbzMc2ZIfKwYMDo5UsiRtMVOa30ZWJ35I2TIf5vlr7D_HBUrGOpxbaUHwIVAIooCC0eB/exec";
 
+const DEPARTMENTS = [
+  "Seniors, Partners and MD",
+  "Partners",
+  "Seniors",
+  "MD",
+  "CA",
+  "Back Office",
+  "HR Recruiter + Intern",
+  "Plant Executive",
+  "Articles",
+  "Office Boy + Other"
+];
+
+const DESIGNATIONS = [
+  "Managing Director (MD)",
+  "Partner",
+  "Senior CA",
+  "CA",
+  "HR Manager",
+  "HR Recruiter",
+  "Intern"
+];
+
 export default function AddEmployeeForm() {
 const [saving, setSaving] = useState(false);
 const [declaration, setDeclaration] = useState(false);
@@ -404,13 +427,19 @@ required
 
 <label>Department *</label>
 
-<input
-type="text"
+<select
 name="Department"
 value={form.Department}
 onChange={handleChange}
 required
-/>
+>
+  <option value="">Select Department</option>
+  {DEPARTMENTS.map((dept) => (
+    <option key={dept} value={dept}>
+      {dept}
+    </option>
+  ))}
+</select>
 
 </div>
 
@@ -418,13 +447,19 @@ required
 
 <label>Designation *</label>
 
-<input
-type="text"
+<select
 name="Designation"
 value={form.Designation}
 onChange={handleChange}
 required
-/>
+>
+  <option value="">Select Designation</option>
+  {DESIGNATIONS.map((desg) => (
+    <option key={desg} value={desg}>
+      {desg}
+    </option>
+  ))}
+</select>
 
 </div>
 

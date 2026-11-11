@@ -1,0 +1,972 @@
+/* src/components/ExecutiveAIChatbot.css */
+
+/* ==========================================================================
+   1. Floating Launcher Button
+   ========================================================================== */
+.executive-chatbot-launcher-btn {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #1e3a8a 0%, #312e81 40%, #065f46 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 50px;
+  padding: 13px 22px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(30, 58, 138, 0.45);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 9999;
+  letter-spacing: -0.2px;
+}
+
+.executive-chatbot-launcher-btn:hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 16px 35px rgba(30, 58, 138, 0.55);
+}
+
+.executive-chatbot-launcher-btn.active {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #047857 100%);
+  box-shadow: 0 4px 15px rgba(30, 58, 138, 0.35);
+}
+
+.executive-launcher-icon {
+  font-size: 20px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.executive-launcher-text {
+  font-weight: 700;
+  font-size: 15px;
+  color: #ffffff;
+}
+
+.executive-status-pulse {
+  width: 10px;
+  height: 10px;
+  background-color: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: executive-pulse-green 2s infinite;
+}
+
+@keyframes executive-pulse-green {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* ==========================================================================
+   2. Chat Window Container
+   ========================================================================== */
+.executive-chatbot-container {
+  position: fixed;
+  bottom: 90px;
+  right: 28px;
+  width: 450px;
+  max-width: calc(100vw - 32px);
+  height: 650px;
+  max-height: calc(100vh - 120px);
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.28);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 10000;
+  border: 1px solid rgba(203, 213, 225, 0.85);
+  animation: executiveSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  font-family: inherit;
+}
+
+@keyframes executiveSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ==========================================================================
+   3. Header
+   ========================================================================== */
+.executive-chatbot-header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 45%, #065f46 100%);
+  color: white;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.executive-header-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.executive-avatar {
+  width: 42px;
+  height: 42px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.executive-title {
+  margin: 0;
+  font-size: 16.5px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: #ffffff;
+}
+
+.executive-sub {
+  display: block;
+  font-size: 11px;
+  color: #cbd5e1;
+  margin-top: 2px;
+  font-weight: 500;
+}
+
+.executive-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.executive-action-btn {
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.executive-action-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.executive-action-btn.close-btn {
+  font-size: 15px;
+  font-weight: bold;
+}
+
+/* ==========================================================================
+   4. Executive Unified Downloads Dropdown
+   ========================================================================== */
+.executive-download-menu-wrapper {
+  position: relative;
+}
+
+.executive-action-btn.download-btn.active {
+  background: rgba(255, 255, 255, 0.38);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+.executive-export-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 280px;
+  max-height: 480px;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.25);
+  border: 1px solid #e2e8f0;
+  padding: 8px;
+  z-index: 1000;
+  animation: executiveDropdownFade 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes executiveDropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.export-dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px 8px 10px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.export-badge {
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.export-menu-section-title {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #1e3a8a;
+  background: #f1f5f9;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin: 8px 0 3px 0;
+}
+
+.export-dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+  margin-top: 2px;
+}
+
+.export-dropdown-item:hover {
+  background: #f8fafc;
+  transform: translateX(2px);
+}
+
+.export-dropdown-item.excel:hover {
+  background: #f0fdf4;
+}
+
+.export-dropdown-item.pdf:hover {
+  background: #fef2f2;
+}
+
+.export-item-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.export-item-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.export-item-info strong {
+  font-size: 12.5px;
+  color: #1e293b;
+  line-height: 1.25;
+}
+
+.export-item-info small {
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+/* ==========================================================================
+   5. Settings Panel
+   ========================================================================== */
+.executive-settings-panel {
+  background: #f8fafc;
+  padding: 14px 18px;
+  border-bottom: 1px solid #e2e8f0;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.settings-field {
+  margin-bottom: 10px;
+}
+
+.settings-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 3px;
+}
+
+.settings-field input {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 12.5px;
+  box-sizing: border-box;
+}
+
+.settings-field input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.settings-field small {
+  display: block;
+  font-size: 10.5px;
+  color: #64748b;
+  margin-top: 3px;
+}
+
+.settings-shifts-header {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 6px;
+  padding-top: 4px;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.settings-shifts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.settings-shift-item label {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings-shift-item input {
+  width: 100%;
+  padding: 5px 6px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 11.5px;
+  box-sizing: border-box;
+  background: #ffffff;
+}
+
+.settings-shift-item input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.settings-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.settings-actions .save-btn {
+  background: #1e3a8a;
+  color: white;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.settings-actions .save-btn:hover {
+  background: #1d4ed8;
+}
+
+.settings-actions .cancel-btn {
+  background: #e2e8f0;
+  color: #475569;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.settings-actions .cancel-btn:hover {
+  background: #cbd5e1;
+}
+
+/* ==========================================================================
+   6. Metrics Bar
+   ========================================================================== */
+.executive-metrics-bar {
+  display: flex;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: thin;
+}
+
+.executive-metrics-bar::-webkit-scrollbar {
+  height: 4px;
+}
+
+.executive-metrics-bar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.executive-metric-tag {
+  color: #334155;
+  background: #ffffff;
+  padding: 4px 9px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  font-size: 11px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.executive-metric-tag:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.executive-metric-tag b {
+  font-weight: 700;
+}
+
+.executive-metric-tag.plant:hover {
+  border-color: #f97316;
+  background: #fff7ed;
+}
+.executive-metric-tag.plant b {
+  color: #c2410c;
+}
+
+.executive-metric-tag.article:hover {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+.executive-metric-tag.article b {
+  color: #047857;
+}
+
+.executive-metric-tag.senior:hover {
+  border-color: #0f766e;
+  background: #f0fdfa;
+}
+.executive-metric-tag.senior b {
+  color: #0d9488;
+}
+
+.executive-metric-tag.partner:hover {
+  border-color: #7c3aed;
+  background: #f5f3ff;
+}
+.executive-metric-tag.partner b {
+  color: #6d28d9;
+}
+
+.executive-metric-tag.work {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #065f46;
+}
+.executive-metric-tag.work:hover {
+  border-color: #059669;
+  background: #d1fae5;
+}
+
+.executive-metric-tag.audit {
+  background: #f0fdfa;
+  border-color: #99f6e4;
+  color: #0f766e;
+}
+.executive-metric-tag.audit:hover {
+  border-color: #0d9488;
+  background: #ccfbf1;
+}
+.executive-metric-tag.audit b {
+  color: #0f766e;
+}
+
+.executive-metric-tag.pms {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+  color: #4338ca;
+}
+.executive-metric-tag.pms:hover {
+  border-color: #4f46e5;
+  background: #e0e7ff;
+}
+.executive-metric-tag.pms b {
+  color: #3730a3;
+}
+
+/* ==========================================================================
+   7. Messages Area & Bubbles
+   ========================================================================== */
+.executive-chatbot-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #f8fafc;
+}
+
+.executive-chatbot-messages::-webkit-scrollbar {
+  width: 5px;
+}
+
+.executive-chatbot-messages::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.executive-msg {
+  display: flex;
+  flex-direction: column;
+}
+
+.executive-msg.user {
+  align-items: flex-end;
+}
+
+.executive-msg.bot {
+  align-items: flex-start;
+}
+
+.executive-msg-bubble {
+  max-width: 90%;
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  word-break: break-word;
+}
+
+.executive-msg.user .executive-msg-bubble {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  color: #ffffff;
+  border-bottom-right-radius: 4px;
+}
+
+.executive-msg.bot .executive-msg-bubble {
+  background: #ffffff;
+  color: #1e293b;
+  border: 1px solid #e2e8f0;
+  border-bottom-left-radius: 4px;
+}
+
+.executive-msg-time {
+  font-size: 10px;
+  opacity: 0.6;
+  margin-top: 5px;
+  text-align: right;
+}
+
+/* Chat typography & layout */
+.chat-line {
+  margin-bottom: 4px;
+}
+
+.chat-line:last-child {
+  margin-bottom: 0;
+}
+
+.chat-spacer {
+  height: 8px;
+}
+
+/* Typing indicator */
+.executive-msg-bubble.typing {
+  display: flex;
+  gap: 5px;
+  padding: 14px 18px;
+}
+
+.typing-dot {
+  width: 7px;
+  height: 7px;
+  background: #1e3a8a;
+  border-radius: 50%;
+  animation: executiveTyping 1.4s infinite ease-in-out both;
+}
+
+.typing-dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes executiveTyping {
+  0%, 80%, 100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+/* ==========================================================================
+   8. Inline Action Chips & Download Buttons
+   ========================================================================== */
+.chat-inline-action-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(203, 213, 225, 0.8);
+}
+
+.chat-action-chip {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  padding: 5px 10px;
+  border-radius: 14px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chat-action-chip:hover {
+  background: #1d4ed8;
+  color: #ffffff;
+  border-color: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.chat-inline-download-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(203, 213, 225, 0.8);
+  flex-wrap: wrap;
+}
+
+.chat-dl-btn {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.chat-dl-btn.excel {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: #ffffff;
+  box-shadow: 0 3px 8px rgba(5, 150, 105, 0.25);
+}
+
+.chat-dl-btn.excel:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(5, 150, 105, 0.35);
+}
+
+.chat-dl-btn.pdf {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff;
+  box-shadow: 0 3px 8px rgba(239, 68, 68, 0.25);
+}
+
+.chat-dl-btn.pdf:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(239, 68, 68, 0.35);
+}
+
+/* Multi-Period Inline Download Card in Chat */
+.chat-multi-download-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+  background: #f8fafc;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.multi-dl-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.multi-dl-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.multi-dl-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   9. Suggestion Chips Bar
+   ========================================================================== */
+.executive-chips {
+  display: flex;
+  gap: 6px;
+  padding: 10px 14px;
+  background: #ffffff;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-top: 1px solid #e2e8f0;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+}
+
+.executive-chips::-webkit-scrollbar {
+  height: 5px;
+}
+
+.executive-chips::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 4px;
+}
+
+.executive-chips::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.executive-chips::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.chip-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.chip-btn:hover {
+  background: #1e3a8a;
+  color: #ffffff;
+  border-color: #1e3a8a;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(30, 58, 138, 0.2);
+}
+
+.chip-btn.chip-audit {
+  background: #fff1f2;
+  color: #be123c;
+  border-color: #fecdd3;
+  font-weight: 700;
+}
+
+.chip-btn.chip-audit:hover {
+  background: #e11d48;
+  color: #ffffff;
+  border-color: #e11d48;
+}
+
+.chip-btn.chip-ai {
+  background: #f5f3ff;
+  color: #6d28d9;
+  border-color: #ddd6fe;
+  font-weight: 700;
+}
+
+.chip-btn.chip-ai:hover {
+  background: #7c3aed;
+  color: #ffffff;
+  border-color: #7c3aed;
+}
+
+.chip-btn.chip-danger {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+  font-weight: 700;
+}
+
+.chip-btn.chip-danger:hover {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #dc2626;
+}
+
+.chip-btn.chip-attendance {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+.chip-btn.chip-attendance:hover {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+.chip-btn.chip-highlight {
+  background: #f0fdf4;
+  color: #047857;
+  border-color: #a7f3d0;
+  font-weight: 700;
+}
+
+.chip-btn.chip-highlight:hover {
+  background: #059669;
+  color: #ffffff;
+  border-color: #059669;
+}
+
+.chip-btn.chip-dl {
+  background: #ecfdf5;
+  color: #065f46;
+  border-color: #6ee7b7;
+  font-weight: 700;
+}
+
+.chip-btn.chip-dl:hover {
+  background: #10b981;
+  color: #ffffff;
+  border-color: #10b981;
+}
+
+/* ==========================================================================
+   10. Input Container
+   ========================================================================== */
+.executive-input-container {
+  display: flex;
+  padding: 12px 16px;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  gap: 10px;
+  align-items: center;
+}
+
+.executive-input-container input {
+  flex: 1;
+  border: 1px solid #cbd5e1;
+  border-radius: 24px;
+  padding: 9px 16px;
+  font-size: 13.5px;
+  outline: none;
+  background: #f8fafc;
+  transition: all 0.2s ease;
+}
+
+.executive-input-container input:focus {
+  background: #ffffff;
+  border-color: #1e3a8a;
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12);
+}
+
+.executive-send-btn {
+  background: linear-gradient(135deg, #1e3a8a 0%, #065f46 100%);
+  border: none;
+  color: white;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(30, 58, 138, 0.3);
+  flex-shrink: 0;
+}
+
+.executive-send-btn:hover:not(:disabled) {
+  transform: scale(1.08);
+  box-shadow: 0 6px 14px rgba(30, 58, 138, 0.4);
+}
+
+.executive-send-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   11. Responsiveness
+   ========================================================================== */
+@media (max-width: 500px) {
+  .executive-chatbot-container {
+    right: 12px;
+    bottom: 80px;
+    width: calc(100vw - 24px);
+    height: calc(100vh - 100px);
+  }
+
+  .executive-chatbot-launcher-btn {
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 18px;
+    font-size: 14px;
+  }
+}
+
