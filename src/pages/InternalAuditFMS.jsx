@@ -1,12 +1,32 @@
 import React, { useEffect, useState } from "react";
-import "./InternalAuditFMS.css";import { useNavigate } from "react-router-dom";
+import "./InternalAuditFMS.css";
+import { useNavigate } from "react-router-dom";
+import {
+  fetchUnifiedInternalAuditData,
+  exportBlankActualStatusReportToExcel,
+} from "../utils/internalAuditFmsService";
 export default function InternalAuditFMS() {
 
   const API =
   "https://script.google.com/macros/s/AKfycbzLrYemM772sgYveZ-P9o1hhPlM4wUds5HxCVbRdFlyOu_cr_M5g_DDWRJfY6QncCxNWw/exec";
 
   const [rows,setRows] = useState([]);
-  const [selected,setSelected] = useState(0);const navigate = useNavigate();
+  const [selected, setSelected] = useState(0);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleDownloadBlankReport = async () => {
+    setIsDownloading(true);
+    try {
+      const data = await fetchUnifiedInternalAuditData();
+      await exportBlankActualStatusReportToExcel(data);
+    } catch (err) {
+      console.error("Error exporting blank actual & status report:", err);
+      alert("Failed to export Blank Actual & Status Report.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
 
   useEffect(() => {
@@ -127,6 +147,15 @@ export default function InternalAuditFMS() {
     onClick={() => navigate("/internalauditform")}
   >
     📝 Internal Audit Form
+  </button>
+
+  <button
+    className="header-btn download-blank-btn"
+    onClick={handleDownloadBlankReport}
+    disabled={isDownloading}
+    title="Download report of employees who have actual and status field both blank"
+  >
+    {isDownloading ? "⏳ Generating..." : "📥 Blank Actual & Status Report"}
   </button>
 
 </div>

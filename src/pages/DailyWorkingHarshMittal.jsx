@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { fetchDailyWorkingLogs } from "../utils/dailyWorkingService";
 import "./DailyWorking.css";
 
 function DailyWorkingHarshMittal() {
@@ -10,24 +11,12 @@ function DailyWorkingHarshMittal() {
 
   useEffect(() => {
 
-    fetch(
-      "https://script.google.com/macros/s/AKfycbxChm2tuSBdFiwLATUq4THD01CMfytH0S8KJuXGobPPkxEJCbeSs7y_tVCD9rMJ2cr2Rw/exec"
-    )
-
-      .then((res) => res.json())
-
+    fetchDailyWorkingLogs()
       .then((result) => {
-
-        console.log(result);
-
-        setData(result.data || []);
-
+        setData(result || []);
       })
-
       .catch((err) => {
-
         console.log(err);
-
       });
 
   }, []);

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { fetchDailyWorkingLogs } from "../utils/dailyWorkingService";
 import "./DailyWorking.css";
 
 function DailyWorkingKanha() {
@@ -10,24 +11,12 @@ function DailyWorkingKanha() {
 
   useEffect(() => {
 
-    fetch(
-      "https://script.google.com/macros/s/AKfycbyAL7GvQCTErLbQmSFt6WeUDzmZkEyuEB6L8JQWpjyPXeOMrSLxDD0ADxBBxiv4-_M/exec"
-    )
-
-      .then((res) => res.json())
-
+    fetchDailyWorkingLogs()
       .then((result) => {
-
-        console.log(result);
-
-        setData(result.data || []);
-
+        setData(result || []);
       })
-
       .catch((err) => {
-
         console.log(err);
-
       });
 
   }, []);

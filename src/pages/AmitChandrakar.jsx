@@ -6,7 +6,8 @@ export default function AmitChandrakar() {
 
   return (
 
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Amit%20Chandrakar")}>
 
       {/* HEADER */}
 
@@ -46,10 +47,8 @@ export default function AmitChandrakar() {
        <div
   style={{...styles.card, background:"#059669"}}
 
-  onClick={() => navigate("/daily-working-vipin")}
->
-
-  <h2 style={styles.cardTitle}>
+          onClick={() => navigate("/employee-daily-working/Amit%20Chandrakar")}
+        ><h2 style={styles.cardTitle}>
     Daily Working
   </h2>
 
@@ -176,16 +175,16 @@ export default function AmitChandrakar() {
 
         </div>
 
-        {/* TASK STATUS */}
+        {/* FORM STATUS */}
 
-        <div style={{...styles.card, background:"#be123c"}}>
+        <div style={{...styles.card, background:"#be123c"}} onClick={() => navigate("/forms")}>
 
           <h2 style={styles.cardTitle}>
-            Task Status
+            Form Section
           </h2>
 
           <p style={styles.cardText}>
-            Track assigned daily tasks
+            Fill your forms & check status
           </p>
 
         </div>

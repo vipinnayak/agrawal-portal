@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import AttendanceChatbot from "../components/AttendanceChatbot";
 
 export default function Sarikahr() {
 
@@ -46,7 +47,7 @@ export default function Sarikahr() {
        <div
   style={{...styles.card, background:"#059669"}}
 
-  onClick={() => navigate("/daily-working-vipin")}
+  onClick={() => navigate("/daily-working")}
 >
 
   <h2 style={styles.cardTitle}>
@@ -178,7 +179,7 @@ export default function Sarikahr() {
 
         </div>
 
-        {/* TASK STATUS */}
+        {/* CLIENT STATUS */}
 
          <div
           style={{...styles.card, background:"#0891b2"}}
@@ -192,6 +193,20 @@ export default function Sarikahr() {
 
           <p style={styles.cardText}>
             Apply for leave requestsA
+          </p>
+
+        </div>
+
+        {/* FORM SECTION */}
+        <div style={{...styles.card, background:"#2563eb"}}
+        onClick={() => navigate("/forms")}>
+
+          <h2 style={styles.cardTitle}>
+            Form Section
+          </h2>
+
+          <p style={styles.cardText}>
+            Fill your forms & check status
           </p>
 
         </div>
@@ -209,10 +224,10 @@ export default function Sarikahr() {
 
         </div>
 
-      </div>
-
+            </div>
+      {/* AI Attendance & HR Policy Chatbot for Sarika HR */}
+      <AttendanceChatbot />
     </div>
-
   );
 }
 

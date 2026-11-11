@@ -12,8 +12,9 @@ import LeaveForm from "./pages/LeaveForm";
 import PendingApprovals from "./pages/PendingApprovals";
 import AdminMD from "./pages/AdminMD";
 import PendingApprovalsAdmin from "./pages/PendingApprovalsAdmin";
-import DailyWorking from "./pages/DailyWorking";
+import DailyWorking from "./pages/DailyWorking.jsx";
 import DailyWorkingForm from "./pages/DailyWorkingForm";
+import EmployeeDailyWorking from "./pages/EmployeeDailyWorking";
 import NareshPrajapati from "./pages/NareshPrajapati";
 import CAHARSHMITTAL from "./pages/CAHARSHMITTAL";
 import DailyWorkingNaresh from "./pages/DailyWorkingNaresh";
@@ -27,6 +28,9 @@ import DailyWorkingHarshSharma from "./pages/DailyWorkingHarshSharma";
 import InternalAuditFMS from "./pages/InternalAuditFMS";
 import InternalAuditForm from "./pages/InternalAuditForm";
 import InternalAuditDetails from "./pages/InternalAuditDetails";
+import PmsFMS from "./pages/PmsFMS";
+import PmsForm from "./pages/PmsForm";
+import PmsDetails from "./pages/PmsDetails";
 import CAKANHA from "./pages/CAKANHA";
 import DailyWorkingKanha from "./pages/DailyWorkingKanha";
 import CAPANKAJ from "./pages/CAPANKAJ";
@@ -49,40 +53,31 @@ import CAMUKUL from "./pages/CAMUKUL";
 import DailyWorkingMukul from "./pages/DailyWorkingMukul";
 import CARUPESH from "./pages/CARUPESH";
 import DailyWorkingRupesh from "./pages/DailyWorkingRupesh";
-import VipinNayak from "./pages/VipinNayak";
 import DailyWorkingVipin from "./pages/DailyWorkingVipin";
 import Rajni from "./pages/Rajni";
 import YashJairaj from "./pages/YashJairaj";
 import Yogita from "./pages/Yogita";
 import Supriya from "./pages/Supriya";
-import Pranjali from "./pages/Pranjali";
 import Bhavika from "./pages/Bhavika";
 import Babitahr from "./pages/Babitahr";
 import Sarikahr from "./pages/Sarikahr";
 import Meenu from "./pages/Meenu";
 import Amit from "./pages/Amit";
 import Vaishali from "./pages/Vaishali";
-import Nayanpreet from "./pages/Nayanpreet";
 import Vicky from "./pages/Vicky";
 import Vimal from "./pages/Vimal";
 import Chandrabhusan from "./pages/Chandrabhusan";
 import Tushar from "./pages/Tushar";
-import Lucky from "./pages/Lucky";
-import Khushboo from "./pages/Khushboo";
+import VanshAgrawal from "./pages/VanshAgrawal";
 import Reports from "./pages/Reports";
 import TRDewangan from "./pages/TRDewangan";
 import KhemlalSahu from "./pages/KhemlalSahu";
-import Jitendra from "./pages/Jitendra";
 import RohitVibhar from "./pages/RohitVibhar";
 import ShubhamChoudhary from "./pages/ShubhamChoudhary";
-import NeerajVerma from "./pages/NeerajVerma";
-import SurajSanyashi from "./pages/SurajSanyashi";
 import KundanYadav from "./pages/KundanYadav";
 import AkashYadav from "./pages/AkashYadav";
 import VikasSingh from "./pages/VikasSingh";
-import FuleshDas from "./pages/FuleshDas";
 import GauriSharma from "./pages/GauriSharma";
-import KisanYadav from "./pages/KisanYadav";
 import DayaluDewangan from "./pages/DayaluDewangan";
 import JituTati from "./pages/JituTati";
 import NitishShende from "./pages/NitishShende";
@@ -100,18 +95,14 @@ import DailyAttendanceVikas from "./pages/DailyAttedanceVikas";
 import DailyAttendanceYash from "./pages/DailyAttedanceYash";
 import DailyAttendanceAkshita from "./pages/DailyAttendanceAkshita";
 import DailyAttendanceRadhikaSingh from "./pages/DailyAttendanceRadhikaSingh";
-
-import DiptiVerma from "./pages/DiptiVerma";
-import SikhaGupta from "./pages/SikhaGupta";
-import YanaGendle from "./pages/YanaGendle";
-import TarunRathi from "./pages/TarunRathi";
+import DaLakhanLal from "./pages/DaLakhanLal";
+import DaKhushali from "./pages/DaKhushali";
 import AryamanDhar from "./pages/AryamanDhar";
 import VikasSonwani from "./pages/VikasSonwani";
 import PiyushVerma from "./pages/PiyushVerma";
 import AnkitSingh from "./pages/AnkitSingh";
 import PoorvaSharma from "./pages/PoorvaSharma";
 import SimranPatnaik from "./pages/SimranPatnaik";
-import PrakharVaid from "./pages/PrakharVaid";
 import AdityaRaj from "./pages/AdityaRaj";
 import ChetnaAgrawal from "./pages/ChetnaAgrawal";
 import SaniaDalwani from "./pages/SaniaDalwani";
@@ -128,11 +119,8 @@ import DeevyaVerma from "./pages/DeevyaVerma";
 import YogeshSonkar from "./pages/YogeshSonkar";
 import MuktiPathak from "./pages/MuktiPathak";
 import ShushantTiwari from "./pages/ShushantTiwari";
-import DevDilip from "./pages/DevDilip";
 import ShubhamVerma from "./pages/ShubhamVerma";
 import SanidhyaNahar from "./pages/SanidhyaNahar";
-import PoojaGupta from "./pages/PoojaGupta";
-import SimranSingh from "./pages/SimranSingh";
 import MDSIR from "./pages/MDSIR";
 import AttendanceReport from "./pages/AttendanceReport";
 import AddClient from "./pages/AddClient";
@@ -149,11 +137,7 @@ import DaAkashYadav from "./pages/DaAkashYadav";
 import Dababita from "./pages/Dababita";
 import DaBhavika from "./pages/DaBhavika";
 import DaChetna from "./pages/DaChetna";
-import ManojGoyal from "./pages/ManojGoyal";
-import Bhuvenshvar from "./pages/Bhuvenshvar";
-import SanchitaAgarwal from "./pages/SanchitaAgrawal";
 import AmitChandrakar from "./pages/AmitChandrakar";
-import Shyam from "./pages/Shyam";
 import EmployeeCard from "./pages/EmployeeCard";
 import EmployeeMaster from "./pages/EmployeeMaster";
 import AddEmployeeForm from "./pages/AddEmployeeForm";
@@ -173,30 +157,29 @@ import ClientAction from "./pages/ClientAction";
 import DaDeevya from "./pages/Juniorsandplant/DaDeevya";
 import DaDevdipil from "./pages/Juniorsandplant/DaDevdipil";
 import DaDipti from "./pages/Juniorsandplant/DaDipti";
-import DaFulesh from "./pages/Juniorsandplant/DaFulesh";
 import DaGauri from "./pages/Juniorsandplant/DaGauri";
 import DaHarshKumarGupta from "./pages/Juniorsandplant/DaHarshKumarGupta";
 import Dakundan from "./pages/Juniorsandplant/Dakundan";
 import DaDayalu from "./pages/Juniorsandplant/DaDayalu";
 import DaJituTati from "./pages/Juniorsandplant/DaJituTati";
-import DaJitendraYadav from "./pages/Juniorsandplant/DaJitendraYadav";
 import DaKhemlalSahu from "./pages/Juniorsandplant/DaKhemlalSahu";
-import DaKhushbooJain from "./pages/Juniorsandplant/DaKhushbooJain";
-import DaKishanYadav from "./pages/Juniorsandplant/DaKishanYadav";
-import DaLuckySahu from "./pages/Juniorsandplant/DaLuckySahu";
+import DaVanshAgrawal from "./pages/Juniorsandplant/DaVanshAgrawal";
 import DaMahakJain from "./pages/Juniorsandplant/DaMahakJain";
 import DaMeenuPatel from "./pages/Juniorsandplant/DaMeenuPatel";
 import DaMuktiPathak from "./pages/Juniorsandplant/DaMuktiPathak";
 import DaNareshPrajapati from "./pages/Juniorsandplant/DaNareshPrajapati";
-import DaNayanpreetSaluja from "./pages/Juniorsandplant/DaNayanpreetSaluja";
 import DaNikhilDawani from "./pages/Juniorsandplant/DaNikhilDawani";
 import DaNitishSindhe from "./pages/Juniorsandplant/DaNitishSindhe";
-import Bhawani from "./pages/Bhawani";
+import DaMohitAgrawal from "./pages/Juniorsandplant/DaMohitAgrawal";
 import AshuGupta from "./pages/AshuGupta";
 import Akshita from "./pages/Akshita";
 import ManviRoy from "./pages/ManviRoy";
 import RadhikaSinghBhaitan from "./pages/RadhikaSinghBhaitan";
 import DailyAttendanceManviRoy from "./pages/DailyAttendanceManviRoy";
+import KhushaliSahuHr from "./pages/KhushaliSahuHr";
+import LakhanLal from "./pages/LakhanLal";
+import MohitAgrawal from "./pages/MohitAgrawal";
+import Forms from "./pages/Forms";
 function App() {
 
   return (
@@ -212,6 +195,10 @@ function App() {
           element={<Login />}
         />
         <Route
+          path="/forms"
+          element={<Forms />}
+        />
+        <Route
           path="/amit-chandrakar"
           element={<AmitChandrakar/>}
         />
@@ -224,32 +211,16 @@ function App() {
           element={<DaDeevya/>}
         />
         <Route
-          path="/dajitendrayadav"
-          element={<DaJitendraYadav/>}
-        />
-        <Route
           path="/dakhemlalsahu"
           element={<DaKhemlalSahu/>}
-        />
-        <Route
-          path="/bhawani"
-          element={<Bhawani/>}
         />
          <Route
           path="/ashu-gupta"
           element={<AshuGupta/>}
         />
         <Route
-          path="/dakhushboojain"
-          element={<DaKhushbooJain/>}
-        />
-        <Route
-          path="/dakishanyadav"
-          element={<DaKishanYadav/>}
-        />
-        <Route
-          path="/daluckysahu"
-          element={<DaLuckySahu/>}
+          path="/davanshagrawal"
+          element={<DaVanshAgrawal/>}
         />
         <Route
           path="/damahakjain"
@@ -266,10 +237,6 @@ function App() {
         <Route
           path="/danaresh"
           element={<DaNareshPrajapati/>}
-        />
-        <Route
-          path="/danayanpreet"
-          element={<DaNayanpreetSaluja/>}
         />
         <Route
           path="/danikhildawani"
@@ -298,10 +265,6 @@ function App() {
         <Route
           path="/dadipti"
           element={<DaDipti/>}
-        />
-        <Route
-          path="/dafulesh"
-          element={<DaFulesh/>}
         />
         <Route
           path="/dagauri"
@@ -371,6 +334,11 @@ function App() {
           path="/daradhika"
           element={<DailyAttendanceRadhikaSingh/>}
         />
+         <Route
+          path="/dakhushali"
+          element={<DaKhushali/>}
+        />
+
           <Route
     path="/exitemployee/:id"
     element={<ExitEmployeeForm />}
@@ -432,28 +400,12 @@ function App() {
           element={<DAKUNDAN/>}
         />
         <Route
-          path="/shyam-narayan"
-          element={<Shyam/>}
-        />
-        <Route
-  path="/employeemaster"
-  element={<EmployeeMaster />}
-/>
-         <Route
-          path="/sanchita-agrawal"
-          element={<SanchitaAgarwal/>}
-        />
-        <Route
-          path="/bhuneshvar"
-          element={<Bhuvenshvar/>}
+          path="/employeemaster"
+          element={<EmployeeMaster />}
         />
         <Route
           path="/daaditya"
           element={<DaAdityaRaj/>}
-        />
-        <Route
-          path="/manoj-goyal"
-          element={<ManojGoyal/>}
         />
         <Route
           path="/dachetna"
@@ -491,6 +443,10 @@ function App() {
           path="/dababita"
           element={<Dababita/>}
         />
+         <Route
+          path="/damohitagrawal"
+          element={<DaMohitAgrawal/>}
+        />
 
         <Route
           path="/daharshmittal"
@@ -508,24 +464,8 @@ function App() {
           path="/attendance-report"
           element={<AttendanceReport/>}
         />
-         <Route
-          path="/dipti"
-          element={<DiptiVerma/>}
-        />
         <Route path="/client-master" element={<ClientMaster/>}/>
         <Route path="/add-client" element={<AddClient/>}/>
-        <Route
-          path="/sikha"
-          element={<SikhaGupta/>}
-        />
-        <Route
-          path="/yana"
-          element={<YanaGendle/>}
-        />
-        <Route
-          path="/tarun"
-          element={<TarunRathi/>}
-        />
         <Route
           path="/aryaman"
           element={<AryamanDhar/>}
@@ -557,18 +497,6 @@ function App() {
         <Route
           path="/sanidhya"
           element={<SanidhyaNahar/>}
-        />
-        <Route
-          path="/pooja-gupta"
-          element={<PoojaGupta/>}
-        />
-        <Route
-          path="/simran-singh"
-          element={<SimranSingh/>}
-        />
-        <Route
-          path="/prakhar"
-          element={<PrakharVaid/>}
         />
         <Route
           path="/adityaraj"
@@ -635,8 +563,16 @@ function App() {
           element={<ShushantTiwari/>}
         />
         <Route
-          path="/devdilip"
-          element={<DevDilip/>}
+          path="/lakhanlal"
+          element={<LakhanLal/>}
+        />
+         <Route
+          path="/mohitagrawal"
+          element={<MohitAgrawal/>}
+        />
+        <Route
+          path="/dalakhanlal"
+          element={<DaLakhanLal/>}
         />
         <Route
           path="/radhika-singh"
@@ -699,24 +635,12 @@ function App() {
           element={<KhemlalSahu/>}
         />
         <Route
-          path="/jitendra"
-          element={<Jitendra/>}
-        />
-        <Route
           path="/rohitvibhar"
           element={<RohitVibhar/>}
         />
         <Route
           path="/shubham"
           element={<ShubhamChoudhary/>}
-        />
-        <Route
-          path="/neeraj"
-          element={<NeerajVerma/>}
-        />
-        <Route
-          path="/suraj"
-          element={<SurajSanyashi/>}
         />
         <Route
           path="/kundan"
@@ -731,16 +655,8 @@ function App() {
           element={<VikasSingh/>}
         />
         <Route
-          path="/fulesh"
-          element={<FuleshDas/>}
-        />
-        <Route
           path="/gauri"
           element={<GauriSharma/>}
-        />
-        <Route
-          path="/kishan"
-          element={<KisanYadav/>}
         />
         <Route
           path="/dayalu"
@@ -761,8 +677,8 @@ function App() {
           element={<YashJairaj />}
         />
         <Route
-          path="/khushboo"
-          element={<Khushboo/>}
+          path="/vansh"
+          element={<VanshAgrawal/>}
         />
          <Route
           path="/reports"
@@ -775,10 +691,6 @@ function App() {
          <Route
           path="/vaishali"
           element={<Vaishali/>}
-        />
-         <Route
-          path="/nayanpreet"
-          element={<Nayanpreet/>}
         />
          <Route
           path="/vicky"
@@ -796,18 +708,9 @@ function App() {
           path="/tushar"
           element={<Tushar/>}
         />
-         <Route
-          path="/lucky"
-          element={<Lucky/>}
-        />
-
         <Route
           path="/meenu"
           element={<Meenu />}
-        />
-        <Route
-          path="/pranjali"
-          element={<Pranjali />}
         />
         <Route
           path="/yogita"
@@ -845,6 +748,11 @@ function App() {
           path="/mis1"
           element={<MIS1 />}
         />
+
+        <Route
+          path="/khushali-sahu"
+          element={<KhushaliSahuHr />} 
+        />
        
 
         {/* ADMIN MD */}
@@ -880,6 +788,16 @@ function App() {
         <Route
           path="/daily-working"
           element={<DailyWorking />}
+        />
+
+        <Route
+          path="/employee-daily-working/:empName"
+          element={<EmployeeDailyWorking />}
+        />
+
+        <Route
+          path="/employee-daily-working"
+          element={<EmployeeDailyWorking />}
         />
 
         {/* DAILY WORKING FORM */}
@@ -1025,6 +943,22 @@ function App() {
  <Route
   path="/internal-audit-fms"
   element={<InternalAuditFMS />}
+/>
+<Route
+  path="/pmsform"
+  element={<PmsForm />}
+/>
+<Route
+  path="/pmsdetails"
+  element={<PmsDetails />}
+/>
+<Route
+  path="/pms-fms"
+  element={<PmsFMS />}
+/>
+<Route
+  path="/pms"
+  element={<PmsFMS />}
 />
 
 <Route

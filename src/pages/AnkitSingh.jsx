@@ -9,7 +9,8 @@ export default function AnkitSingh() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Ankit%20Singh")}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>
@@ -42,9 +43,9 @@ export default function AnkitSingh() {
 
         <div
           style={styles.card}
-          onClick={() => navigate("/daily-working-harsh-sharma")}
-        >
-          <h2 style={styles.cardTitle}>Daily Working</h2>
+        
+          onClick={() => navigate("/employee-daily-working/Ankit%20Singh")}
+        ><h2 style={styles.cardTitle}>Daily Working</h2>
           <p style={styles.cardText}>
             Submit daily work updates
           </p>
@@ -107,10 +108,10 @@ export default function AnkitSingh() {
           </p>
         </div>
 
-        <div style={styles.card}>
-          <h2 style={styles.cardTitle}>Task Status</h2>
+        <div style={styles.card} onClick={() => navigate("/forms")}>
+          <h2 style={styles.cardTitle}>Form Section</h2>
           <p style={styles.cardText}>
-            Track assigned daily tasks
+            Fill your forms & check status
           </p>
         </div>
 

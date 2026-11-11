@@ -25,11 +25,7 @@ export default function Login() {
     EA: "ea123",
 
     "ADMIN(MD)": "admin123",
-     "rajeshagrawal123@gmail.com": "md123",
-     "manojgoyal123@gmail.com": "manoj123",
-     "bhuneshvar123@gmail.com": "bhunesh123",
-     "sanchitaagrawal123@gmail.com": "sanchita123",
-     "bhawani123@gmail.com": "bhawani123",
+    "rajeshagrawal123@gmail.com": "md123",
     "harshmittal123@gmail.com": "harsh123",
     "harshsharma123@gmail.com": "harsh123",
     "kanhakediaajc@gmail.com": "kanha123",
@@ -47,41 +43,29 @@ export default function Login() {
     "yash123@gmail.com":"yash123",
     "supriya123@gmail.com" :"supriya123",
     "meenu123@gmail.com":"meenu123",
-    "pranjali123@gmail.com":"pranjali123",
     "babita123@gmail.com":"babita123",
     "bhavika123@gmail.com":"bhavika123",
     "yogita123@gmail.com":"yogita123",
     "sarika123@gmail.com":"sarika123",
     "rajni123@gmail.com":"rajni123",
-    "khushboo123@gmail.com":"khushboo123",
+    "vansh123@gmail.com":"vansh123",
     "amit123@gmail.com":"amit123",
     "vaishali123@gmail.com":"vaishali123",
-    "nayanpreet123@gmail.com":"nayanpreet123",
     "vicky123@gmail.com":"vicky123",
     "vimal123@gmail.com":"vimal123",
     "chandrabhusan123@gmail.com":"chandrabhusan123",
     "tushar123@gmail.com":"tushar123",
-    "lucky123@gmail.com":"lucky123",
     "kundan123@gmail.com":"kundan123",
-    "kishan123@gmail.com":"kishan123",
     "khemlal123@gmail.com":"khemlal123",
     "rohit123@gmail.com":"rohit123",
-    "neeraj123@gmail.com":"neeraj123",
-    "suraj123@gmail.com":"suraj123",
     "shubham123@gmail.com":"shubham123",
-    "jitendra123@gmail.com":"jitendra123",
     "trdewangan123@gmail.com":"trdewangan123",
-    "fulesh123@gmail.com":"fulesh123",
     "akash123@gmail.com":"akash123",
     "vikas123@gmail.com":"vikas123",
     "gauri123@gmail.com":"gauri123",
     "dayalu123@gmail.com":"dayalu123",
     "nitish123@gmail.com":"nitish123",
     "jeetu123@gmail.com":"jeetu123",
-    "diptiverma123@gmail.com":"dipti123",
-    "sikhagupta123@gmail.com":"sikha123",
-    "yanagendle123@gmail.com":"yana123",
-    "tarunrathi123@gmail.com":"tarun123",
     "aryamandhar123@gmail.com":"aryaman123",
     "vikassonwani123@gmail.com":"vikas123",
     "piyushverma123@gmail.com":"piyush123",
@@ -90,9 +74,6 @@ export default function Login() {
     "simranpatnaik123@gmail.com":"simran123",
     "shubhamverma123@gmail.com":"shubham123",
     "sanidhyanahar123@gmail.com":"sanidhya123",
-    "poojagupta123@gmail.com":"pooja123",
-    "simransingh123@gmail.com":"simran123",
-    "prakharvaid123@gmail.com":"prakhar123",
     "adityaraj123@gmail.com":"aditya123",
     "chetnaagrawal123@gmail.com":"chetna123",
     "saniadalwani123@gmail.com":"sania123",
@@ -109,12 +90,13 @@ export default function Login() {
     "yogeshsonkar123@gmail.com":"yogesh123",
     "muktipathak123@gmail.com":"mukti123",
     "shushanttiwari123@gmail.com":"shushant123",
-    "devdilip123@gmail.com":"dev123",
-    "amitchandrakar123@gmail.com":"amit123",
-    "shyamnarayan123@gmail.com":"shyam123",
+    "amitchandrakar123@gmail.com":"amit123", 
     "ashugupta123@gmail.com":"ashu123",
     "manviroy123@gmail.com":"manvi123",
-    "radhikasingh123@gmail.com":"radhika123"
+    "radhikasingh123@gmail.com":"radhika123",
+    "khushalisahu123@gmail.com":"khushali123",
+    "lakhanlal123@gmail.com":"lakhanlal123",
+    "mohitagrawal123@gmail.com":"mohit123"
 
   };
 
@@ -146,8 +128,7 @@ export default function Login() {
         navigate("/ca-harsh-sharma");
       }else if (emp === "kanhakediaajc@gmail.com") {
         navigate("/ca-kanha");
-      }
-      else if (emp === "pankajagrawalajc@gmail.com") {
+      }else if (emp === "pankajagrawalajc@gmail.com") {
         navigate("/ca-pankaj");
       }else if (emp === "drishtichandnaniajc@gmail.com") {
         navigate("/ca-drishti");
@@ -173,8 +154,6 @@ export default function Login() {
         navigate("/yash");
       }else if (emp === "supriya123@gmail.com") {
         navigate("/supriya");
-      }else if (emp === "pranjali123@gmail.com") {
-        navigate("/pranjali");
       }else if (emp === "bhavika123@gmail.com") {
         navigate("/bhavika");
       }else if (emp === "babita123@gmail.com") {
@@ -187,14 +166,12 @@ export default function Login() {
         navigate("/meenu");
       }else if (emp === "rajni123@gmail.com") {
         navigate("/rajni");
-      }else if (emp === "khushboo123@gmail.com") {
-        navigate("/khushboo");
+      }else if (emp === "vansh123@gmail.com") {
+        navigate("/vansh");
       }else if (emp === "amit123@gmail.com") {
         navigate("/amit");
       }else if (emp === "vaishali123@gmail.com") {
         navigate("/vaishali");
-      }else if (emp === "nayanpreet123@gmail.com") {
-        navigate("/nayanpreet");
       }else if (emp === "vicky123@gmail.com") {
         navigate("/vicky");
       }else if (emp === "vimal123@gmail.com") {
@@ -203,48 +180,28 @@ export default function Login() {
         navigate("/chandrabhusan");
       }else if (emp === "tushar123@gmail.com") {
         navigate("/tushar");
-      }else if (emp === "lucky123@gmail.com") {
-        navigate("/lucky");
-      }else if (emp === "trdewandan123@gmail.com") {
+      }else if (emp === "trdewangan123@gmail.com") {
         navigate("/trdewangan");
       }else if (emp === "khemlal123@gmail.com") {
         navigate("/khemlalsahu");
-      }else if (emp === "jitendra123@gmail.com") {
-        navigate("/jitendra");
       }else if (emp === "rohit123@gmail.com") {
         navigate("/rohitvibhar");
       }else if (emp === "shubham123@gmail.com") {
         navigate("/shubham");
-      }else if (emp === "neeraj123@gmail.com") {
-        navigate("/neeraj");
-      }else if (emp === "suraj123@gmail.com") {
-        navigate("/suraj");
       }else if (emp === "kundan123@gmail.com") {
         navigate("/kundan");
       }else if (emp === "akash123@gmail.com") {
         navigate("/akash");
       }else if (emp === "vikas123@gmail.com") {
         navigate("/vikas");
-      }else if (emp === "fulesh123@gmail.com") {
-        navigate("/fulesh");
       }else if (emp === "gauri123@gmail.com") {
         navigate("/gauri");
-      }else if (emp === "kishan123@gmail.com") {
-        navigate("/kishan");
       }else if (emp === "dayalu123@gmail.com") {
         navigate("/dayalu");
       }else if (emp === "jeetu123@gmail.com") {
         navigate("/jeetu");
       }else if (emp === "nitish123@gmail.com") {
         navigate("/nitish");
-      }else if (emp === "diptiverma123@gmail.com") {
-        navigate("/dipti");
-      }else if (emp === "sikhagupta123@gmail.com") {
-        navigate("/sikha");
-      }else if (emp === "yanagendle123@gmail.com") {
-        navigate("/yana");
-      }else if (emp === "tarunrathi123@gmail.com") {
-        navigate("/tarun");
       }else if (emp === "aryamandhar123@gmail.com") {
         navigate("/aryaman");
       }else if (emp === "vikassonwani123@gmail.com") {
@@ -261,12 +218,6 @@ export default function Login() {
         navigate("/shubham-verma");
       }else if (emp === "sanidhyanahar123@gmail.com") {
         navigate("/sanidhya");
-      }else if (emp === "poojagupta123@gmail.com") {
-        navigate("/pooja-gupta");
-      }else if (emp === "simransingh123@gmail.com") {
-        navigate("/simran-singh");
-      }else if (emp === "prakharvaid123@gmail.com") {
-        navigate("/prakhar");
       }else if (emp === "adityaraj123@gmail.com") {
         navigate("/adityaraj");
       }else if (emp === "chetnaagrawal123@gmail.com") {
@@ -299,28 +250,24 @@ export default function Login() {
         navigate("/mukti");
       }else if (emp === "shushanttiwari123@gmail.com") {
         navigate("/shushant");
-      }else if (emp === "devdilip123@gmail.com") {
-        navigate("/devdilip");
       }else if (emp === "rajeshagrawal123@gmail.com") {
         navigate("/rajesh-agrawal");
-      }else if (emp === "manojgoyal123@gmail.com") {
-        navigate("/manoj-goyal");
       }else if (emp === "bhuneshvar123@gmail.com") {
         navigate("/bhuneshvar");
-      }else if (emp === "sanchitaagrawal123@gmail.com") {
-        navigate("/sanchita-agrawal");
       }else if (emp === "amitchandrakar123@gmail.com") {
         navigate("/amit-chandrakar");
-      }else if (emp === "shyamnarayan123@gmail.com") {
-        navigate("/shyam-narayan");
-      }else if (emp === "bhawani123@gmail.com") {
-        navigate("/bhawani");
       }else if (emp === "ashugupta123@gmail.com") {
         navigate("/ashu-gupta");
       }else if (emp === "manviroy123@gmail.com") {
         navigate("/manvi-roy");
       }else if (emp === "radhikasingh123@gmail.com") {
         navigate("/radhika-singh");
+      }else if (emp === "khushalisahu123@gmail.com") {
+        navigate("/khushali-sahu");
+      }else if (emp === "lakhanlal123@gmail.com") {
+        navigate("/lakhanlal");
+      }else if (emp === "mohitagrawal123@gmail.com") {
+        navigate("/mohitagrawal");
       }
 
     } else {

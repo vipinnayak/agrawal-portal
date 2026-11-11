@@ -5,6 +5,7 @@ import React,
 }
 from "react";
 
+import { DAILY_WORKING_API } from "../utils/dailyWorkingService";
 import "./DailyWorkingForm.css";
 
 function DailyWorkingForm() {
@@ -54,7 +55,8 @@ function DailyWorkingForm() {
   /* RESPONSE API */
 
   const RESPONSE_API =
-    "https://script.google.com/macros/s/AKfycbwneVUJJ4CwK1ODKRCtERmpzkGU0aBKeMso3GOu3ptypHhpZm73-Iq0OU6GTCSinjPkgg/exec";
+    DAILY_WORKING_API ||
+    "https://script.google.com/macros/s/AKfycbyVRDZmhX_nApCD5RPIlNNcP5xKRGQuJDQof0x2QvCxtUNeozMggmXAw-aX7fH-gjq1kQ/exec";
 
   /* FETCH DATA */
 

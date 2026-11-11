@@ -6,7 +6,8 @@ export default function Yogita() {
 
   return (
 
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Yogita%20Sinha")}>
 
       {/* HEADER */}
 
@@ -46,10 +47,8 @@ export default function Yogita() {
        <div
   style={{...styles.card, background:"#059669"}}
 
-  onClick={() => navigate("/daily-working-vipin")}
->
-
-  <h2 style={styles.cardTitle}>
+          onClick={() => navigate("/employee-daily-working/Yogita%20Sinha")}
+        ><h2 style={styles.cardTitle}>
     Daily Working
   </h2>
 
@@ -178,14 +177,14 @@ export default function Yogita() {
 
         {/* TASK STATUS */}
 
-        <div style={{...styles.card, background:"#be123c"}}>
+        <div style={{...styles.card, background:"#be123c"}} onClick={()=>navigate("/forms")}>
 
           <h2 style={styles.cardTitle}>
-            Task Status
+            Form Section
           </h2>
 
           <p style={styles.cardText}>
-            Track assigned daily tasks
+            Fill your forms & check status
           </p>
 
         </div>

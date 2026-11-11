@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { fetchDailyWorkingLogs } from "../utils/dailyWorkingService";
 import "./DailyWorking.css";
 
 function DailyWorkingVedant() {
@@ -10,24 +11,12 @@ function DailyWorkingVedant() {
 
   useEffect(() => {
 
-    fetch(
-      "https://script.google.com/macros/s/AKfycbyUxDPA82rgVqoUIbkaPlJ-eOt4Yptn_2sauyk-MASDGXjDnpYfNlfb3WQ2GRKgS06eNg/exec"
-    )
-
-      .then((res) => res.json())
-
+    fetchDailyWorkingLogs()
       .then((result) => {
-
-        console.log(result);
-
-        setData(result.data || []);
-
+        setData(result || []);
       })
-
       .catch((err) => {
-
         console.log(err);
-
       });
 
   }, []);

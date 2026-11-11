@@ -206,6 +206,20 @@
   box-shadow:
   0 15px 35px rgba(255,107,107,.35);
 }
+
+.download-blank-btn{
+  background:linear-gradient(
+    135deg,
+    #0f766e,
+    #0d9488,
+    #14b8a6
+  );
+}
+
+.download-blank-btn:hover{
+  box-shadow:
+  0 15px 35px rgba(13,148,136,.35);
+}
 .details-header{
   display:flex;
   justify-content:space-between;

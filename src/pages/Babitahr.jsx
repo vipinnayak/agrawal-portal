@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import AttendanceChatbot from "../components/AttendanceChatbot";
 
 export default function Babitahr() {
 
@@ -46,10 +47,8 @@ export default function Babitahr() {
        <div
   style={{...styles.card, background:"#059669"}}
 
-  onClick={() => navigate("/daily-working-vipin")}
->
-
-  <h2 style={styles.cardTitle}>
+          onClick={() => navigate("/employee-daily-working/Babita%20Pradhan")}
+        ><h2 style={styles.cardTitle}>
     Daily Working
   </h2>
 
@@ -178,16 +177,16 @@ export default function Babitahr() {
 
         </div>
 
-        {/* TASK STATUS */}
+        {/* FORM STATUS */}
 
-        <div style={{...styles.card, background:"#be123c"}}>
+        <div style={{...styles.card, background:"#be123c"}} onClick={() => navigate("/forms")}>
 
           <h2 style={styles.cardTitle}>
-            Task Status
+            Form Section
           </h2>
 
           <p style={styles.cardText}>
-            Track assigned daily tasks
+            Fill your forms & check status
           </p>
 
         </div>
@@ -206,10 +205,10 @@ export default function Babitahr() {
 
         </div>
 
-      </div>
-
+            </div>
+      {/* AI Attendance & HR Policy Chatbot for Babita HR */}
+      <AttendanceChatbot />
     </div>
-
   );
 }
 
