@@ -53,7 +53,6 @@ import CAMUKUL from "./pages/CAMUKUL";
 import DailyWorkingMukul from "./pages/DailyWorkingMukul";
 import CARUPESH from "./pages/CARUPESH";
 import DailyWorkingRupesh from "./pages/DailyWorkingRupesh";
-import DailyWorkingVipin from "./pages/DailyWorkingVipin";
 import Rajni from "./pages/Rajni";
 import YashJairaj from "./pages/YashJairaj";
 import Yogita from "./pages/Yogita";
