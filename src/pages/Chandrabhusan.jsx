@@ -6,8 +6,7 @@ export default function Chandrabhusan() {
 
   return (
 
-    <div style={styles.page}
-          onClick={() => navigate("/employee-daily-working/Chandrabhusan")}>
+    <div style={styles.page}>
 
       {/* HEADER */}
 

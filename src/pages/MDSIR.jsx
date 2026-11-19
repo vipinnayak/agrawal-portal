@@ -1,7 +1,6 @@
 // src/pages/MDSIR.jsx
 import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import ExecutiveAIChatbot from "../components/ExecutiveAIChatbot";
 import {
   fetchDailyWorkingLogs,
   DAILY_WORKING_GOOGLE_SHEET_ID,
@@ -1265,9 +1264,6 @@ export default function MDSIR() {
           </div>
         </div>
       )}
-
-      {/* Unified Executive AI Chatbot for MD (Live Attendance + Daily Working + Audits) */}
-      <ExecutiveAIChatbot workingLogs={workingLogs} />
     </div>
   );
 }

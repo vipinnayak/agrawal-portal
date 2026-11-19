@@ -4,8 +4,7 @@ export default function Supriya() {
   const navigate = useNavigate();
 
   return (
-    <div style={styles.page}
-          onClick={() => navigate("/employee-daily-working/Supriya%20Kurrey")}>
+    <div style={styles.page}>
       {/* HEADER */}
 
       <div style={styles.header}>

@@ -6,8 +6,7 @@ export default function Tushar() {
 
   return (
 
-    <div style={styles.page}
-          onClick={() => navigate("/employee-daily-working/Tushar%20Sahu")}>
+    <div style={styles.page}>
 
       {/* HEADER */}
 

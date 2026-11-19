@@ -971,12 +971,16 @@ export const exportMonthlyAttendanceToExcel = async ({
     month: "long",
     day: "numeric",
   });
-  const currentMonthName = new Date().toLocaleDateString("en-IN", {
-    month: "long",
-    year: "numeric",
-  });
+  const currentMonthName =
+    monthlyData.monthName ||
+    monthlyData.calendarMonth?.monthName ||
+    new Date().toLocaleDateString("en-IN", {
+      month: "long",
+      year: "numeric",
+    });
+  const monthSlug = currentMonthName.replace(/[^a-zA-Z0-9]+/g, "_");
 
-  const sheet = workbook.addWorksheet("Monthly Register");
+  const sheet = workbook.addWorksheet(`${currentMonthName.slice(0, 20)} Register`);
   sheet.views = [{ state: "frozen", ySplit: 5 }];
 
   // Table Headers
@@ -1110,7 +1114,7 @@ export const exportMonthlyAttendanceToExcel = async ({
         in: log.inTime || "-",
         out: log.outTime || "-",
         status: log.status,
-        hours: log.workingHours || "-",
+        hours: log.workingHours || log.workingHoursFormatted || "-",
         site: log.clientPlace || "Office",
       });
       r.height = 22;
@@ -1126,8 +1130,37 @@ export const exportMonthlyAttendanceToExcel = async ({
     logSheet.autoFilter = `A1:I${1 + monthlyData.monthlyLogs.length}`;
   }
 
+  // Sheet 3: Month-Wise Comparison (when All-Months comparison is supplied)
+  if (Array.isArray(monthlyData.allMonthsComparison) && monthlyData.allMonthsComparison.length > 0) {
+    const cmpSheet = workbook.addWorksheet("Month-Wise Comparison");
+    cmpSheet.columns = [
+      { header: "SR. NO.", key: "sr", width: 10 },
+      { header: "MONTH", key: "monthName", width: 22 },
+      { header: "MONTH KEY", key: "key", width: 14 },
+      { header: "WORKING DAYS", key: "workingDays", width: 16 },
+      { header: "STAFF EVALUATED", key: "totalStaff", width: 18 },
+      { header: "AVG ATTENDANCE (%)", key: "avgPct", width: 22 },
+      { header: "TOTAL LATE LOGS", key: "totalLate", width: 18 },
+      { header: "TOTAL ABSENT DAYS", key: "totalAbsent", width: 20 },
+    ];
+    cmpSheet.getRow(1).font = { name: "Segoe UI", bold: true, color: { argb: "FFFFFFFF" } };
+    cmpSheet.getRow(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "1E3A8A" } };
+    monthlyData.allMonthsComparison.forEach((m, idx) => {
+      cmpSheet.addRow({
+        sr: idx + 1,
+        monthName: m.monthName,
+        key: m.key,
+        workingDays: m.workingDaysCount,
+        totalStaff: m.totalStaff,
+        avgPct: `${m.avgPct}%`,
+        totalLate: m.totalLateLogs,
+        totalAbsent: m.totalAbsentDays,
+      });
+    });
+  }
+
   const buffer = await workbook.xlsx.writeBuffer();
-  const fileName = `AJC_Monthly_Attendance_${getFormattedDate()}.xlsx`;
+  const fileName = `AJC_Monthly_Attendance_${monthSlug}_${getFormattedDate()}.xlsx`;
   saveAs(new Blob([buffer]), fileName);
   return true;
 };
@@ -1159,10 +1192,14 @@ export const exportMonthlyAttendanceToPDF = ({
     month: "long",
     day: "numeric",
   });
-  const currentMonthName = new Date().toLocaleDateString("en-IN", {
-    month: "long",
-    year: "numeric",
-  });
+  const currentMonthName =
+    monthlyData.monthName ||
+    monthlyData.calendarMonth?.monthName ||
+    new Date().toLocaleDateString("en-IN", {
+      month: "long",
+      year: "numeric",
+    });
+  const monthSlug = currentMonthName.replace(/[^a-zA-Z0-9]+/g, "_");
 
   // Header Banner
   doc.setFillColor(30, 58, 138);
@@ -1291,7 +1328,7 @@ export const exportMonthlyAttendanceToPDF = ({
     },
   });
 
-  const fileName = `AJC_Monthly_Attendance_${getFormattedDate()}.pdf`;
+  const fileName = `AJC_Monthly_Attendance_${monthSlug}_${getFormattedDate()}.pdf`;
   doc.save(fileName);
   return true;
 };

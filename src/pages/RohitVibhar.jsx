@@ -9,8 +9,7 @@ export default function RohitVibhar() {
   };
 
   return (
-    <div style={styles.page}
-          onClick={() => navigate("/employee-daily-working/Rohit%20Vibhar")}>
+    <div style={styles.page}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>

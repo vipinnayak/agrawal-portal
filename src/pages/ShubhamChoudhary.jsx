@@ -9,8 +9,7 @@ export default function ShubhamChoudhary() {
   };
 
   return (
-    <div style={styles.page}
-          onClick={() => navigate("/employee-daily-working/Shubham%20Choudhary")}>
+    <div style={styles.page}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>

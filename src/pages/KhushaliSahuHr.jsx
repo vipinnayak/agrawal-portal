@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import AttendanceChatbot from "../components/AttendanceChatbot";
 
 export default function KhushaliSahuHr() {
 
@@ -206,8 +205,6 @@ export default function KhushaliSahuHr() {
         </div>
 
             </div>
-      {/* AI Attendance & HR Policy Chatbot for Khushali HR */}
-      <AttendanceChatbot />
     </div>
   );
 }

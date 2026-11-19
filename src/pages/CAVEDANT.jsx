@@ -9,8 +9,7 @@ export default function CAVEDANT() {
   };
 
   return (
-    <div style={styles.page}
-          onClick={() => navigate("/employee-daily-working/CA%20Vedant%20khandelwal")}>
+    <div style={styles.page}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>

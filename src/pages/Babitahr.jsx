@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import AttendanceChatbot from "../components/AttendanceChatbot";
 
 export default function Babitahr() {
 
@@ -206,8 +205,6 @@ export default function Babitahr() {
         </div>
 
             </div>
-      {/* AI Attendance & HR Policy Chatbot for Babita HR */}
-      <AttendanceChatbot />
     </div>
   );
 }

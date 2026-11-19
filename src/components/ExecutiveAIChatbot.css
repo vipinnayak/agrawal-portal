@@ -542,6 +542,19 @@
   color: #3730a3;
 }
 
+.executive-metric-tag.senior-task {
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+  color: #6d28d9;
+}
+.executive-metric-tag.senior-task:hover {
+  border-color: #7c3aed;
+  background: #ede9fe;
+}
+.executive-metric-tag.senior-task b {
+  color: #5b21b6;
+}
+
 /* ==========================================================================
    7. Messages Area & Bubbles
    ========================================================================== */

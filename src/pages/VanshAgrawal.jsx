@@ -6,8 +6,7 @@ export default function Vansh() {
 
   return (
 
-    <div style={styles.page}
-          onClick={() => navigate("/employee-daily-working/Vansh%20Agrawal")}>
+    <div style={styles.page}>
 
       {/* HEADER */}
 

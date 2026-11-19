@@ -1,7 +1,14 @@
 // src/utils/internalAuditFmsService.js
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 import { normalizeName } from "./attendanceConfig";
+import {
+  parseFmsTargetMonth,
+  matchFmsRecordToMonth,
+  groupFmsRecordsByPeriodAndMonth,
+} from "./fmsMonthUtils";
 
 // --- API ENDPOINTS ---
 export const INTERNAL_AUDIT_FMS_API =
@@ -171,7 +178,19 @@ export const FMS_17_STEPS = [
     description: "Post-audit profitability evaluation, audit team man-hours reconciliation, actual vs budgeted cost analysis, and assignment archive.",
     deliverable: "Engagement Profitability Cost Sheet & Formal Closure Note",
   },
+  {
+    stepNo: 18,
+    title: "STEP-18: Client Feedback & Action Taken Report (ATR)",
+    owner: "CRM / SENIOR",
+    method: "Client Feedback Form / ATR Review",
+    when: "Post Closure",
+    description: "Collection of formal client feedback, satisfaction rating, and tracking implementation of Action Taken Report (ATR) recommendations.",
+    deliverable: "Client Satisfaction Rating & ATR Implementation Memo",
+  },
 ];
+
+export const FMS_18_STEPS = FMS_17_STEPS;
+export const FMS_STEPS = FMS_17_STEPS;
 
 // Helper: In-memory cache for fast retrieval
 let cachedUnifiedAuditData = null;
@@ -613,20 +632,107 @@ export function getClientAuditReport(unifiedList = [], clientQuery = "") {
   return res;
 }
 
+const toArgb = (hex = "FFFFFF") => {
+  const clean = String(hex).replace(/^#/, "");
+  return clean.length === 6 ? `FF${clean}` : clean;
+};
+
+function setupIaWorksheetBannerAndHeader(
+  sheet,
+  titleText,
+  subtitleText,
+  lastColLetter,
+  titleColorHex = "0F766E",
+  subColorHex = "115E59",
+  headerColorHex = "1E3A8A"
+) {
+  sheet.spliceRows(1, 0, [titleText], [subtitleText], []);
+
+  sheet.mergeCells(`A1:${lastColLetter}1`);
+  sheet.mergeCells(`A2:${lastColLetter}2`);
+
+  sheet.getCell("A1").font = { name: "Segoe UI", size: 14, bold: true, color: { argb: "FFFFFFFF" } };
+  sheet.getCell("A1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: toArgb(titleColorHex) } };
+  sheet.getCell("A1").alignment = { horizontal: "center", vertical: "middle" };
+  sheet.getRow(1).height = 28;
+
+  sheet.getCell("A2").font = { name: "Segoe UI", size: 10, italic: true, color: { argb: "FFFFFFFF" } };
+  sheet.getCell("A2").fill = { type: "pattern", pattern: "solid", fgColor: { argb: toArgb(subColorHex) } };
+  sheet.getCell("A2").alignment = { horizontal: "center", vertical: "middle" };
+  sheet.getRow(2).height = 20;
+
+  const headerRow = sheet.getRow(4);
+  headerRow.height = 26;
+  headerRow.eachCell((cell) => {
+    cell.font = { name: "Segoe UI", size: 11, bold: true, color: { argb: "FFFFFFFF" } };
+    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: toArgb(headerColorHex) } };
+    cell.alignment = { horizontal: "center", vertical: "middle" };
+  });
+}
+
+function appendIaStepsProtocolSheet(workbook) {
+  const sheet = workbook.addWorksheet("17 Steps FMS Protocol", {
+    views: [{ showGridLines: true }],
+  });
+
+  sheet.columns = [
+    { header: "Step #", key: "stepNo", width: 8 },
+    { header: "Step Title", key: "title", width: 34 },
+    { header: "Owner", key: "owner", width: 22 },
+    { header: "Method", key: "method", width: 28 },
+    { header: "When / Timeline", key: "when", width: 26 },
+    { header: "Description / Objectives", key: "description", width: 44 },
+    { header: "Key Deliverable", key: "deliverable", width: 36 },
+  ];
+
+  setupIaWorksheetBannerAndHeader(
+    sheet,
+    "INTERNAL AUDIT FLOW MANAGEMENT SYSTEM (FMS) — 17 STEPS STANDARD PROTOCOL",
+    "Agrawal Jain & Co. Standard Operating Procedure (SOP)",
+    "G",
+    "1E3A8A",
+    "1E40AF",
+    "0F766E"
+  );
+
+  FMS_17_STEPS.forEach((s) => {
+    sheet.addRow({
+      stepNo: s.stepNo,
+      title: s.title,
+      owner: s.owner,
+      method: s.method,
+      when: s.when,
+      description: s.description,
+      deliverable: s.deliverable,
+    });
+  });
+}
+
 /**
- * Export complete Internal Audit FMS dataset to multi-tab Excel
+ * Export complete or month-filtered Internal Audit FMS dataset to multi-tab Excel
  */
-export async function exportInternalAuditFmsToExcel(unifiedList = []) {
+export async function exportInternalAuditFmsToExcel(unifiedList = [], scopeOrQuery = "ALL") {
+  let list = Array.isArray(unifiedList) && unifiedList.length > 0 ? unifiedList : await fetchUnifiedInternalAuditData();
+  const targetMonth = parseFmsTargetMonth(scopeOrQuery);
+  const isMonthScoped = Boolean(targetMonth && !targetMonth.isAllMonths);
+
+  const enrichedRows = isMonthScoped
+    ? list
+        .map((item) => ({ item, match: matchFmsRecordToMonth(item, targetMonth, "iaPeriod") }))
+        .filter((x) => x.match.matched)
+    : list.map((item) => ({ item, match: null }));
+
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "Agrawal Jain & Co. ERP";
   workbook.created = new Date();
 
-  // Tab 1: Master Engagements Register
-  const sheet1 = workbook.addWorksheet("Internal Audit Engagements", {
-    views: [{ showGridLines: true }],
-  });
+  // Tab 1: Master / Filtered Engagements Register
+  const sheet1 = workbook.addWorksheet(
+    isMonthScoped ? `IA FMS - ${targetMonth.shortLabel}` : "Internal Audit Engagements",
+    { views: [{ showGridLines: true }] }
+  );
 
-  sheet1.columns = [
+  const baseColumns = [
     { header: "Sr.", key: "sr", width: 6 },
     { header: "Assignment ID", key: "id", width: 16 },
     { header: "Group Name", key: "groupName", width: 22 },
@@ -638,33 +744,28 @@ export async function exportInternalAuditFmsToExcel(unifiedList = []) {
     { header: "Start Date", key: "startDate", width: 14 },
     { header: "Target Date", key: "targetDate", width: 14 },
   ];
+  if (isMonthScoped) {
+    baseColumns.push({ header: "Month Match Basis", key: "matchReason", width: 34 });
+  }
+  sheet1.columns = baseColumns;
 
-  // Title Row
-  sheet1.spliceRows(1, 0, [
-    ["AGRAWAL JAIN & CO. — INTERNAL AUDIT FMS REGISTER"],
-    [`Generated: ${new Date().toLocaleString("en-IN")} | Total Client Engagements: ${unifiedList.length}`],
-    [],
-  ]);
+  const lastCol = isMonthScoped ? "K" : "J";
+  setupIaWorksheetBannerAndHeader(
+    sheet1,
+    isMonthScoped
+      ? `AGRAWAL JAIN & CO. — INTERNAL AUDIT FMS (${targetMonth.label.toUpperCase()})`
+      : "AGRAWAL JAIN & CO. — INTERNAL AUDIT FMS REGISTER",
+    `Generated: ${new Date().toLocaleString("en-IN")} | Engagements: ${enrichedRows.length}${
+      isMonthScoped ? ` (Filtered strictly for ${targetMonth.label})` : ""
+    }`,
+    lastCol,
+    "0F766E",
+    "115E59",
+    "1E3A8A"
+  );
 
-  sheet1.mergeCells("A1:J1");
-  sheet1.mergeCells("A2:J2");
-  sheet1.getCell("A1").font = { name: "Segoe UI", size: 14, bold: true, color: { argb: "FFFFFF" } };
-  sheet1.getCell("A1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "0F766E" } };
-  sheet1.getCell("A1").alignment = { horizontal: "center", vertical: "middle" };
-
-  sheet1.getCell("A2").font = { name: "Segoe UI", size: 10, italic: true, color: { argb: "FFFFFF" } };
-  sheet1.getCell("A2").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "115E59" } };
-  sheet1.getCell("A2").alignment = { horizontal: "center", vertical: "middle" };
-
-  // Header formatting
-  const headerRow = sheet1.getRow(4);
-  headerRow.font = { name: "Segoe UI", size: 11, bold: true, color: { argb: "FFFFFF" } };
-  headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "1E3A8A" } };
-  headerRow.alignment = { horizontal: "center", vertical: "middle" };
-  headerRow.height = 26;
-
-  unifiedList.forEach((item, idx) => {
-    const row = sheet1.addRow({
+  enrichedRows.forEach(({ item, match }, idx) => {
+    const rowData = {
       sr: idx + 1,
       id: item.id || `IA-${idx + 1}`,
       groupName: item.groupName,
@@ -675,7 +776,11 @@ export async function exportInternalAuditFmsToExcel(unifiedList = []) {
       assignmentType: item.assignmentType,
       startDate: item.startDate || "-",
       targetDate: item.targetDate || "-",
-    });
+    };
+    if (isMonthScoped) {
+      rowData.matchReason = match?.reasons?.join(" | ") || "-";
+    }
+    const row = sheet1.addRow(rowData);
 
     row.font = { name: "Segoe UI", size: 10 };
     if (idx % 2 === 1) {
@@ -683,56 +788,45 @@ export async function exportInternalAuditFmsToExcel(unifiedList = []) {
     }
   });
 
-  // Tab 2: The 17 FMS Process Steps SOP
-  const sheet2 = workbook.addWorksheet("17 Steps FMS Protocol", {
+  // Tab 2: Month & Cycle Breakdown
+  const summarySheet = workbook.addWorksheet("Period & Month Breakdown", {
     views: [{ showGridLines: true }],
   });
-
-  sheet2.columns = [
-    { header: "Step #", key: "stepNo", width: 8 },
-    { header: "Step Title", key: "title", width: 34 },
-    { header: "Owner", key: "owner", width: 22 },
-    { header: "Method", key: "method", width: 28 },
-    { header: "When / Timeline", key: "when", width: 26 },
-    { header: "Description / Objectives", key: "description", width: 44 },
-    { header: "Key Deliverable", key: "deliverable", width: 36 },
+  summarySheet.columns = [
+    { header: "Cycle / Period", key: "period", width: 28 },
+    { header: "Total Engagements", key: "total", width: 20 },
+    { header: "Live FMS Records", key: "liveCount", width: 20 },
+    { header: "Companies", key: "companies", width: 55 },
   ];
+  setupIaWorksheetBannerAndHeader(
+    summarySheet,
+    "INTERNAL AUDIT FMS — PERIOD & CYCLE SUMMARY",
+    isMonthScoped ? `Scoped to ${targetMonth.label}` : "Complete Register Cycle Distribution",
+    "D",
+    "0F766E",
+    "115E59",
+    "1E3A8A"
+  );
 
-  sheet2.spliceRows(1, 0, [
-    ["INTERNAL AUDIT FLOW MANAGEMENT SYSTEM (FMS) — 17 STEPS STANDARD PROTOCOL"],
-    ["Agrawal Jain & Co. Standard Operating Procedure (SOP)"],
-    [],
-  ]);
-
-  sheet2.mergeCells("A1:G1");
-  sheet2.mergeCells("A2:G2");
-  sheet2.getCell("A1").font = { name: "Segoe UI", size: 14, bold: true, color: { argb: "FFFFFF" } };
-  sheet2.getCell("A1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "1E3A8A" } };
-  sheet2.getCell("A1").alignment = { horizontal: "center", vertical: "middle" };
-
-  sheet2.getCell("A2").font = { name: "Segoe UI", size: 10, italic: true, color: { argb: "FFFFFF" } };
-  sheet2.getCell("A2").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "1E40AF" } };
-  sheet2.getCell("A2").alignment = { horizontal: "center", vertical: "middle" };
-
-  const s2Header = sheet2.getRow(4);
-  s2Header.font = { name: "Segoe UI", size: 11, bold: true, color: { argb: "FFFFFF" } };
-  s2Header.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "0F766E" } };
-  s2Header.height = 26;
-
-  FMS_17_STEPS.forEach((s) => {
-    sheet2.addRow({
-      stepNo: s.stepNo,
-      title: s.title,
-      owner: s.owner,
-      method: s.method,
-      when: s.when,
-      description: s.description,
-      deliverable: s.deliverable,
+  const grouped = groupFmsRecordsByPeriodAndMonth(
+    enrichedRows.map((x) => x.item),
+    "iaPeriod"
+  );
+  grouped.periodGroups.forEach((g) => {
+    summarySheet.addRow({
+      period: g.period,
+      total: g.total,
+      liveCount: g.liveCount,
+      companies: g.items.map((i) => i.companyName).join(", "),
     });
   });
 
+  // Tab 3: The 17 FMS Process Steps SOP
+  appendIaStepsProtocolSheet(workbook);
+
   const buffer = await workbook.xlsx.writeBuffer();
-  const filename = `AJC_Internal_Audit_FMS_Register_${new Date().toISOString().slice(0, 10)}.xlsx`;
+  const scopeSlug = isMonthScoped ? targetMonth.label.replace(/\s+/g, "_") : "Register";
+  const filename = `AJC_Internal_Audit_FMS_${scopeSlug}_${new Date().toISOString().slice(0, 10)}.xlsx`;
   saveAs(new Blob([buffer], { type: "application/octet-stream" }), filename);
   return filename;
 }
@@ -909,7 +1003,8 @@ export function getBlankActualAndStatusSummary(unifiedList = []) {
  * Export official Excel workbook of employees who have both actual and status fields blank.
  */
 export async function exportBlankActualStatusReportToExcel(unifiedList = []) {
-  const auditResult = auditBlankActualAndStatus(unifiedList);
+  let list = Array.isArray(unifiedList) && unifiedList.length > 0 ? unifiedList : await fetchUnifiedInternalAuditData();
+  const auditResult = auditBlankActualAndStatus(list);
   const { blankEngagements, partners, seniors } = auditResult;
 
   const workbook = new ExcelJS.Workbook();
@@ -939,27 +1034,15 @@ export async function exportBlankActualStatusReportToExcel(unifiedList = []) {
   ];
 
   // Header Banners
-  sheet1.spliceRows(1, 0, [
-    ["AGRAWAL JAIN & CO. — INTERNAL AUDIT FMS BLANK ACTUAL & STATUS REPORT"],
-    [`Generated: ${new Date().toLocaleString("en-IN")} | Total Engagements with Blank Actual & Status: ${blankEngagements.length}`],
-    [],
-  ]);
-
-  sheet1.mergeCells("A1:N1");
-  sheet1.mergeCells("A2:N2");
-  sheet1.getCell("A1").font = { name: "Segoe UI", size: 14, bold: true, color: { argb: "FFFFFF" } };
-  sheet1.getCell("A1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "991B1B" } }; // Crimson Red
-  sheet1.getCell("A1").alignment = { horizontal: "center", vertical: "middle" };
-
-  sheet1.getCell("A2").font = { name: "Segoe UI", size: 10, italic: true, color: { argb: "FFFFFF" } };
-  sheet1.getCell("A2").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "B91C1C" } };
-  sheet1.getCell("A2").alignment = { horizontal: "center", vertical: "middle" };
-
-  const headerRow1 = sheet1.getRow(4);
-  headerRow1.font = { name: "Segoe UI", size: 11, bold: true, color: { argb: "FFFFFF" } };
-  headerRow1.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "1E3A8A" } };
-  headerRow1.alignment = { horizontal: "center", vertical: "middle" };
-  headerRow1.height = 26;
+  setupIaWorksheetBannerAndHeader(
+    sheet1,
+    "AGRAWAL JAIN & CO. — INTERNAL AUDIT FMS BLANK ACTUAL & STATUS REPORT",
+    `Generated: ${new Date().toLocaleString("en-IN")} | Total Engagements with Blank Actual & Status: ${blankEngagements.length}`,
+    "N",
+    "991B1B",
+    "B91C1C",
+    "1E3A8A"
+  );
 
   blankEngagements.forEach((item, idx) => {
     const row = sheet1.addRow({
@@ -1003,27 +1086,15 @@ export async function exportBlankActualStatusReportToExcel(unifiedList = []) {
     { header: "Compliance Status", key: "status", width: 22 },
   ];
 
-  sheet2.spliceRows(1, 0, [
-    ["EMPLOYEE SUMMARY — RESPONSIBLE PARTNERS & SENIORS WITH BLANK ACTUAL & STATUS"],
-    [`Generated: ${new Date().toLocaleString("en-IN")} | Total Employees Affected: ${partners.length + seniors.length}`],
-    [],
-  ]);
-
-  sheet2.mergeCells("A1:G1");
-  sheet2.mergeCells("A2:G2");
-  sheet2.getCell("A1").font = { name: "Segoe UI", size: 14, bold: true, color: { argb: "FFFFFF" } };
-  sheet2.getCell("A1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "0F766E" } };
-  sheet2.getCell("A1").alignment = { horizontal: "center", vertical: "middle" };
-
-  sheet2.getCell("A2").font = { name: "Segoe UI", size: 10, italic: true, color: { argb: "FFFFFF" } };
-  sheet2.getCell("A2").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "115E59" } };
-  sheet2.getCell("A2").alignment = { horizontal: "center", vertical: "middle" };
-
-  const headerRow2 = sheet2.getRow(4);
-  headerRow2.font = { name: "Segoe UI", size: 11, bold: true, color: { argb: "FFFFFF" } };
-  headerRow2.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "1E3A8A" } };
-  headerRow2.alignment = { horizontal: "center", vertical: "middle" };
-  headerRow2.height = 26;
+  setupIaWorksheetBannerAndHeader(
+    sheet2,
+    "EMPLOYEE SUMMARY — RESPONSIBLE PARTNERS & SENIORS WITH BLANK ACTUAL & STATUS",
+    `Generated: ${new Date().toLocaleString("en-IN")} | Total Employees Affected: ${partners.length + seniors.length}`,
+    "G",
+    "0F766E",
+    "115E59",
+    "1E3A8A"
+  );
 
   let empIdx = 1;
   // Partners first
@@ -1060,55 +1131,239 @@ export async function exportBlankActualStatusReportToExcel(unifiedList = []) {
   });
 
   // Tab 3: The 17 FMS Process Steps SOP
-  const sheet3 = workbook.addWorksheet("17 Steps FMS Protocol", {
-    views: [{ showGridLines: true }],
-  });
-
-  sheet3.columns = [
-    { header: "Step #", key: "stepNo", width: 8 },
-    { header: "Step Title", key: "title", width: 34 },
-    { header: "Owner", key: "owner", width: 22 },
-    { header: "Method", key: "method", width: 28 },
-    { header: "When / Timeline", key: "when", width: 26 },
-    { header: "Description / Objectives", key: "description", width: 44 },
-    { header: "Key Deliverable", key: "deliverable", width: 36 },
-  ];
-
-  sheet3.spliceRows(1, 0, [
-    ["INTERNAL AUDIT FLOW MANAGEMENT SYSTEM (FMS) — 17 STEPS STANDARD PROTOCOL"],
-    ["Agrawal Jain & Co. Standard Operating Procedure (SOP)"],
-    [],
-  ]);
-
-  sheet3.mergeCells("A1:G1");
-  sheet3.mergeCells("A2:G2");
-  sheet3.getCell("A1").font = { name: "Segoe UI", size: 14, bold: true, color: { argb: "FFFFFF" } };
-  sheet3.getCell("A1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "1E3A8A" } };
-  sheet3.getCell("A1").alignment = { horizontal: "center", vertical: "middle" };
-
-  sheet3.getCell("A2").font = { name: "Segoe UI", size: 10, italic: true, color: { argb: "FFFFFF" } };
-  sheet3.getCell("A2").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "1E40AF" } };
-  sheet3.getCell("A2").alignment = { horizontal: "center", vertical: "middle" };
-
-  const s3Header = sheet3.getRow(4);
-  s3Header.font = { name: "Segoe UI", size: 11, bold: true, color: { argb: "FFFFFF" } };
-  s3Header.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "0F766E" } };
-  s3Header.height = 26;
-
-  FMS_17_STEPS.forEach((s) => {
-    sheet3.addRow({
-      stepNo: s.stepNo,
-      title: s.title,
-      owner: s.owner,
-      method: s.method,
-      when: s.when,
-      description: s.description,
-      deliverable: s.deliverable,
-    });
-  });
+  appendIaStepsProtocolSheet(workbook);
 
   const buffer = await workbook.xlsx.writeBuffer();
   const filename = `AJC_Internal_Audit_Blank_Actual_Status_Report_${new Date().toISOString().slice(0, 10)}.xlsx`;
   saveAs(new Blob([buffer], { type: "application/octet-stream" }), filename);
   return filename;
 }
+
+/**
+ * Export Blank Actual & Status Audit Report to PDF (.pdf)
+ */
+export async function exportBlankActualStatusReportToPdf(unifiedList = []) {
+  let list = Array.isArray(unifiedList) && unifiedList.length > 0 ? unifiedList : await fetchUnifiedInternalAuditData();
+  const auditResult = auditBlankActualAndStatus(list);
+  const { blankEngagements, partners, seniors, totalEngagementsAudited, totalEngagementsBlank } = auditResult;
+
+  const doc = new jsPDF({ orientation: "landscape" });
+
+  // Title Banner
+  doc.setFillColor(15, 118, 110);
+  doc.rect(0, 0, 297, 22, "F");
+  doc.setFontSize(14);
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.text("AGRAWAL JAIN & CO. — BLANK ACTUAL & STATUS AUDIT REPORT", 14, 11);
+
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.text(
+    `Generated: ${new Date().toLocaleString("en-IN")} | Backlog: ${totalEngagementsBlank} of ${totalEngagementsAudited} Engagements (${partners.length} Partners + ${seniors.length} Seniors)`,
+    14,
+    18
+  );
+
+  // Table 1: Engagements with Blank Actual & Status
+  const body1 = blankEngagements.map((item, idx) => [
+    idx + 1,
+    item.id || "-",
+    item.partner || "-",
+    item.senior || "-",
+    item.groupName || "-",
+    item.companyName || "-",
+    item.iaPeriod || "-",
+    item.startDate || "-",
+    item.targetDate || "-",
+    `${item.blankStepsCount} / ${item.totalStepsCount}`,
+    "BLANK [No Date]",
+    "BLANK [No Status]",
+  ]);
+
+  autoTable(doc, {
+    startY: 26,
+    head: [["#", "ID", "Partner", "Senior", "Group", "Company", "Period", "Start", "Target", "Blank Steps", "Actual Field", "Status Field"]],
+    body: body1,
+    theme: "striped",
+    headStyles: {
+      fillColor: [15, 118, 110],
+      textColor: 255,
+      fontStyle: "bold",
+      fontSize: 8,
+    },
+    styles: {
+      fontSize: 7.5,
+      cellPadding: 2,
+    },
+    columnStyles: {
+      10: { textColor: [220, 38, 38], fontStyle: "bold" },
+      11: { textColor: [220, 38, 38], fontStyle: "bold" },
+    },
+  });
+
+  // Table 2: Employee Summary (Backlog by Staff)
+  const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : 30;
+  if (finalY > 165) {
+    doc.addPage();
+  }
+
+  const startY2 = finalY > 165 ? 20 : finalY;
+  doc.setFontSize(12);
+  doc.setTextColor(15, 118, 110);
+  doc.setFont("helvetica", "bold");
+  doc.text("RESPONSIBLE EMPLOYEES SUMMARY (BACKLOG)", 14, startY2);
+
+  const empData = [...partners, ...seniors].map((emp, i) => [
+    i + 1,
+    emp.name,
+    emp.role,
+    `${emp.engagements.length} Items`,
+    `${emp.totalBlankSteps} Steps`,
+    emp.engagements.map((e) => e.companyName).slice(0, 3).join(", ") + (emp.engagements.length > 3 ? "..." : ""),
+    "Actual & Status Blank",
+  ]);
+
+  autoTable(doc, {
+    startY: startY2 + 4,
+    head: [["#", "Employee Name", "Role", "Blank Engagements", "Total Blank Steps", "Clients Handled", "Compliance Status"]],
+    body: empData,
+    theme: "striped",
+    headStyles: {
+      fillColor: [30, 58, 138],
+      textColor: 255,
+      fontStyle: "bold",
+      fontSize: 8,
+    },
+    styles: {
+      fontSize: 7.5,
+      cellPadding: 2,
+    },
+  });
+
+  const filename = `AJC_Blank_Actual_Status_Report_${new Date().toISOString().slice(0, 10)}.pdf`;
+  doc.save(filename);
+  return filename;
+}
+
+export const exportInternalAuditBlankActualStatusReportToPdf = exportBlankActualStatusReportToPdf;
+
+/**
+ * Generates Month-Wise or Specific-Month Internal Audit FMS Report for the AI Chatbot.
+ */
+export function getInternalAuditMonthlyReport(unifiedList = [], queryText = "") {
+  const targetMonth = parseFmsTargetMonth(queryText);
+
+  if (!unifiedList || unifiedList.length === 0) {
+    return `🛡️ **Internal Audit FMS — Monthly Report**\n\nNo Internal Audit FMS engagements are currently loaded.`;
+  }
+
+  // Specific month requested (e.g., October, September, August, July)
+  if (!targetMonth.isAllMonths) {
+    const evaluated = unifiedList.map((item) => ({
+      item,
+      match: matchFmsRecordToMonth(item, targetMonth, "iaPeriod"),
+    }));
+    const directMatches = evaluated.filter((x) => x.match.matched && x.match.tier === "direct");
+    const annualMatches = evaluated.filter((x) => x.match.matched && x.match.tier === "annual");
+    const allMatched = [...directMatches, ...annualMatches];
+
+    if (allMatched.length === 0) {
+      const grouped = groupFmsRecordsByPeriodAndMonth(unifiedList, "iaPeriod");
+      const availPeriods = grouped.periodGroups
+        .slice(0, 8)
+        .map((p) => `\`${p.period}\` (${p.total})`)
+        .join(", ");
+      const availDates = grouped.datedMonths
+        .slice(0, 6)
+        .map((m) => `\`${m.label}\` (${m.count})`)
+        .join(", ");
+      return (
+        `🛡️ **Internal Audit FMS — ${targetMonth.label}**\n\n` +
+        `No Internal Audit FMS engagements or scheduled cycles were found matching **${targetMonth.label}**.\n` +
+        (availDates ? `\n• **Live Recorded Months:** ${availDates}` : "") +
+        (availPeriods ? `\n• **Configured Audit Periods:** ${availPeriods}` : "")
+      );
+    }
+
+    const matchedBlankAudit = auditBlankActualAndStatus(allMatched.map((x) => x.item));
+    const partnerTally = {};
+    allMatched.forEach(({ item }) => {
+      const p = item.partner || "Unassigned";
+      partnerTally[p] = (partnerTally[p] || 0) + 1;
+    });
+    const partnerLines = Object.entries(partnerTally)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, cnt]) => `• **${name}**: ${cnt} engagement(s)`)
+      .join("\n");
+
+    let out = `🛡️ **Internal Audit FMS Report — ${targetMonth.label}**\n\n`;
+    out += `• **Direct Cycle / Live-Date Matches (${targetMonth.label}):** ${directMatches.length} engagement(s)\n`;
+    if (annualMatches.length > 0) {
+      out += `• **Annual FY Retainers Covering ${targetMonth.shortLabel}:** ${annualMatches.length} engagement(s)\n`;
+    }
+    out += `• **Total Applicable in ${targetMonth.label}:** ${allMatched.length} (Blank Actual & Status: **${matchedBlankAudit.blankEngagements.length}**)\n`;
+
+    if (directMatches.length > 0) {
+      out += `\n**Active / Scheduled in ${targetMonth.label} (Direct & Cycle Matches):**\n`;
+      directMatches.slice(0, 15).forEach(({ item, match }, i) => {
+        out += `${i + 1}. **${item.companyName}** (${item.groupName || "-"}) — ${item.senior || "Lead CA"} | Partner: ${item.partner || "-"} • _${match.reasons.join(", ")}_\n`;
+      });
+      if (directMatches.length > 15) {
+        out += `• _...and ${directMatches.length - 15} more direct matches in the Excel download._\n`;
+      }
+    } else {
+      out += `\n**Annual FY Retainers Covering ${targetMonth.label}:**\n`;
+      annualMatches.slice(0, 10).forEach(({ item, match }, i) => {
+        out += `${i + 1}. **${item.companyName}** — ${item.senior || "Lead CA"} (${match.reasons.join(", ")})\n`;
+      });
+    }
+
+    if (partnerLines) {
+      out += `\n**Partner Distribution (${targetMonth.label}):**\n${partnerLines}\n`;
+    }
+    out += `\n[DOWNLOAD_INTERNAL_AUDIT_EXCEL:${targetMonth.key}]`;
+    return out;
+  }
+
+  // General Month-Wise & Period Breakdown
+  const grouped = groupFmsRecordsByPeriodAndMonth(unifiedList, "iaPeriod");
+  const { quarterTotals, periodGroups, datedMonths } = grouped;
+  const blankAudit = auditBlankActualAndStatus(unifiedList);
+
+  let out = `🛡️ **Internal Audit FMS — Month & Cycle Wise Report**\n\n`;
+  out += `• **Total Engagements:** ${unifiedList.length} | **Blank Actual & Status:** ${blankAudit.blankEngagements.length}\n`;
+  out += `• **Cycle Distribution:** Q1 Apr-Jun (**${quarterTotals.Q1}**), Q2 Jul-Sep (**${quarterTotals.Q2}**), Q3 Oct-Dec (**${quarterTotals.Q3}**), Q4 Jan-Mar (**${quarterTotals.Q4}**), Half-Year (**${quarterTotals.HalfYear}**), Annual FY (**${quarterTotals.AnnualFY}**), Custom Ranges (**${quarterTotals.Range}**), General/Unscheduled (**${quarterTotals.General}**)\n`;
+
+  if (datedMonths.length > 0) {
+    out += `\n**Live Recorded Activity Months:**\n`;
+    datedMonths.slice(0, 8).forEach((m) => {
+      out += `• **${m.label}**: ${m.count} engagement(s) with Start/Target/Log date\n`;
+    });
+  }
+
+  out += `\n**Top Configured Audit Periods:**\n`;
+  periodGroups
+    .filter((g) => g.period !== "General")
+    .slice(0, 8)
+    .forEach((g) => {
+      out += `• **${g.period}**: ${g.total} engagement(s) (${g.liveCount} live)\n`;
+    });
+
+  out += `\n💡 _Tip: Ask **"October Internal Audit FMS"** or **"September IA FMS"** to export only that month's applicable engagements._\n[DOWNLOAD_INTERNAL_AUDIT_EXCEL:ALL]`;
+  return out;
+}
+
+// Re-exports for 18 steps & Target Date Blank
+export {
+  auditFmsTargetDateBlank,
+  auditTargetDateBlank,
+  getFmsTargetDateBlankSummary,
+  exportFmsTargetDateBlankReportToExcel,
+  exportTargetDateBlankReportToExcel,
+  exportFmsTargetDateBlankReportToPdf,
+  exportTargetDateBlankReportToPdf,
+  getFms18StepsGuideReport,
+  get18StepsGuideReport,
+} from "./fmsService";

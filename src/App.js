@@ -4,8 +4,10 @@ import {
   BrowserRouter,
   Routes,
   Route,
+  useLocation,
 } from "react-router-dom";
 
+import ExecutiveAIChatbot from "./components/ExecutiveAIChatbot";
 import Login from "./pages/Login";
 import MIS1 from "./pages/MIS1";
 import LeaveForm from "./pages/LeaveForm";
@@ -180,6 +182,18 @@ import KhushaliSahuHr from "./pages/KhushaliSahuHr";
 import LakhanLal from "./pages/LakhanLal";
 import MohitAgrawal from "./pages/MohitAgrawal";
 import Forms from "./pages/Forms";
+
+// Global Chatbot wrapper that hides the AI assistant on the login page ("/")
+// and renders it on all employee dashboards and ERP pages after login
+function GlobalExecutiveChatbot() {
+  const location = useLocation();
+  const currentPath = (location.pathname || "").toLowerCase().trim();
+  if (currentPath === "" || currentPath === "/" || currentPath === "/login") {
+    return null;
+  }
+  return <ExecutiveAIChatbot />;
+}
+
 function App() {
 
   return (
@@ -974,6 +988,9 @@ function App() {
   element={<DelegationForm />}
 />
       </Routes>
+
+      {/* Unified Executive AI Chatbot available on all employee dashboards after login (hidden on login page) */}
+      <GlobalExecutiveChatbot />
 
     </BrowserRouter>
 

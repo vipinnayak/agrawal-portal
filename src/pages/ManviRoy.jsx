@@ -6,8 +6,7 @@ export default function ManviRoy() {
 
   return (
 
-    <div style={styles.page}
-          onClick={() => navigate("/employee-daily-working/Manvi%20Roy")}>
+    <div style={styles.page}>
 
       {/* HEADER */}
 

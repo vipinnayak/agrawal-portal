@@ -310,26 +310,17 @@ export const getCurrentMonthLabel = () => {
 /**
  * Parse target month specification from user query
  */
-export const parseTargetMonthFromQuery = (queryText = "", defaultYear = 2026) => {
+export const parseTargetMonthFromQuery = (queryText = "", defaultYear = null) => {
   const q = (queryText || "").toLowerCase().trim();
   if (!q) return null;
 
-  if (
-    q.includes("all month") ||
-    q.includes("all-month") ||
-    q.includes("every month") ||
-    q.includes("month wise") ||
-    q.includes("month-wise") ||
-    q.includes("monthly") ||
-    q.includes("each month")
-  ) {
-    return { isAllMonths: true, label: "All Months (Monthly Breakdown)" };
-  }
+  const now = new Date();
+  const curMonth = now.getMonth() + 1;
+  const curYear = now.getFullYear();
 
   if (q.includes("last month") || q.includes("previous month") || q.includes("prev month")) {
-    const now = new Date();
     let m = now.getMonth();
-    let y = now.getFullYear();
+    let y = curYear;
     if (m === 0) {
       m = 12;
       y -= 1;
@@ -344,15 +335,12 @@ export const parseTargetMonthFromQuery = (queryText = "", defaultYear = 2026) =>
   }
 
   if (q.includes("this month") || q.includes("current month")) {
-    const now = new Date();
-    const m = now.getMonth() + 1;
-    const y = now.getFullYear();
     return {
-      month: m,
-      year: y,
-      key: `${y}-${String(m).padStart(2, "0")}`,
-      label: `${MONTH_NAMES[m - 1]} ${y}`,
-      monthName: MONTH_NAMES[m - 1],
+      month: curMonth,
+      year: curYear,
+      key: `${curYear}-${String(curMonth).padStart(2, "0")}`,
+      label: `${MONTH_NAMES[curMonth - 1]} ${curYear}`,
+      monthName: MONTH_NAMES[curMonth - 1],
     };
   }
 
@@ -362,10 +350,11 @@ export const parseTargetMonthFromQuery = (queryText = "", defaultYear = 2026) =>
     foundYear = parseInt(yearMatch[1], 10);
   }
 
+  // Specific month names take priority over generic "monthly" wording (e.g. "October monthly report")
   for (const [alias, mNum] of Object.entries(MONTH_ALIAS_MAP)) {
     const reg = new RegExp(`\\b${alias}\\b`, "i");
     if (reg.test(q)) {
-      const year = foundYear || defaultYear;
+      const year = foundYear || defaultYear || (mNum > curMonth ? curYear - 1 : curYear);
       return {
         month: mNum,
         year,
@@ -374,6 +363,18 @@ export const parseTargetMonthFromQuery = (queryText = "", defaultYear = 2026) =>
         monthName: MONTH_NAMES[mNum - 1],
       };
     }
+  }
+
+  if (
+    q.includes("all month") ||
+    q.includes("all-month") ||
+    q.includes("every month") ||
+    q.includes("month wise") ||
+    q.includes("month-wise") ||
+    q.includes("monthly") ||
+    q.includes("each month")
+  ) {
+    return { isAllMonths: true, label: "All Months (Monthly Breakdown)" };
   }
 
   return null;
@@ -3017,11 +3018,19 @@ export const auditEmployeesLessThanNineHours = (workingLogs = [], profiles = [],
   const totalShortfallMinutes = shortfallDays.reduce((acc, d) => acc + d.shortfallMinutes, 0);
   const targetShortfallMinutes = targetMonthShortfallDays.reduce((acc, d) => acc + d.shortfallMinutes, 0);
 
-  const partnersCount = shortfallDays.filter((d) => isPartner(d.rawName, d)).length;
-  const seniorsCount = shortfallDays.filter((d) => isSenior(d.rawName, d)).length;
-  const articlesCount = shortfallDays.filter((d) => isArticle(d.rawName, d)).length;
-  const plantStaffCount = shortfallDays.filter((d) => isPlantStaff(d.rawName, d)).length;
-  const backOfficeCount = shortfallDays.length - (partnersCount + seniorsCount + articlesCount + plantStaffCount);
+  const computeRoleCounts = (rows) => {
+    const partners = rows.filter((d) => isPartner(d.rawName, d)).length;
+    const seniors = rows.filter((d) => isSenior(d.rawName, d)).length;
+    const articles = rows.filter((d) => isArticle(d.rawName, d)).length;
+    const plantStaff = rows.filter((d) => isPlantStaff(d.rawName, d)).length;
+    return {
+      partners,
+      seniors,
+      articles,
+      plantStaff,
+      backOffice: Math.max(0, rows.length - (partners + seniors + articles + plantStaff)),
+    };
+  };
 
   return {
     activeMonthSpec,
@@ -3035,13 +3044,8 @@ export const auditEmployeesLessThanNineHours = (workingLogs = [], profiles = [],
       totalShortfallHours: (totalShortfallMinutes / 60).toFixed(1),
       targetMonthShortfallHours: (targetShortfallMinutes / 60).toFixed(1),
       todayShortfallCount: todayShortfallList.length,
-      roleCounts: {
-        partners: partnersCount,
-        seniors: seniorsCount,
-        articles: articlesCount,
-        plantStaff: plantStaffCount,
-        backOffice: Math.max(0, backOfficeCount),
-      },
+      roleCounts: computeRoleCounts(shortfallDays),
+      targetMonthRoleCounts: computeRoleCounts(targetMonthShortfallDays),
     },
     shortfallDays,
     targetMonthShortfallDays,
@@ -4025,3 +4029,355 @@ export const exportCrossEmployeeDuplicatesToExcel = async (workingLogs = [], pro
   );
 };
 
+
+/**
+ * Resolves a string scope ("ALL", "2026-10", or natural-language query) into a month filter spec.
+ */
+export function resolveDailyWorkingScope(scopeOrQuery = "ALL") {
+  if (!scopeOrQuery || String(scopeOrQuery).trim().toUpperCase() === "ALL") {
+    return { isAllMonths: true, key: "ALL", label: "All Recorded Months" };
+  }
+  if (typeof scopeOrQuery === "string") {
+    const trimmed = scopeOrQuery.trim();
+    if (/^\d{4}-\d{2}$/.test(trimmed)) {
+      const [y, m] = trimmed.split("-").map(Number);
+      if (m >= 1 && m <= 12) {
+        return {
+          month: m,
+          year: y,
+          key: trimmed,
+          label: `${MONTH_NAMES[m - 1]} ${y}`,
+          monthName: MONTH_NAMES[m - 1],
+        };
+      }
+    }
+    const parsed = parseTargetMonthFromQuery(trimmed);
+    if (parsed) return parsed;
+    return { isAllMonths: true, key: "ALL", label: "All Recorded Months" };
+  }
+  if (scopeOrQuery?.month && scopeOrQuery?.year) return scopeOrQuery;
+  return { isAllMonths: true, key: "ALL", label: "All Recorded Months" };
+}
+
+function aggregateDailyWorkingMonthBucket(monthEntries = [], monthSpec = {}) {
+  const empMap = new Map();
+  const clientMap = new Map();
+  const deptMap = new Map();
+  const activeDatesSet = new Set();
+  let totalMinutes = 0;
+
+  monthEntries.forEach((entry) => {
+    const doer = (entry.doerName || entry.employeeName || "Unknown").trim();
+    const clean = normalizeName(doer);
+    const dateStr = formatExcelOrStringDate(entry.date || entry.timestamp) || "Unknown Date";
+    if (dateStr !== "Unknown Date") activeDatesSet.add(dateStr);
+
+    const mins = parseTimeToMinutes(entry.timeGiven);
+    totalMinutes += mins;
+
+    const comp = (entry.companyName || entry.groupName || "General").trim();
+    const dept = (entry.department || "General").trim();
+
+    if (!empMap.has(clean)) {
+      const cat = getEmployeeCategoryInfo(doer, entry);
+      empMap.set(clean, {
+        name: doer,
+        cleanName: clean,
+        role: cat.shortLabel || cat.label || "Staff",
+        department: dept,
+        entriesCount: 0,
+        totalMinutes: 0,
+        daysSet: new Set(),
+        clientsMap: new Map(),
+      });
+    }
+    const emp = empMap.get(clean);
+    emp.entriesCount += 1;
+    emp.totalMinutes += mins;
+    if (dateStr !== "Unknown Date") emp.daysSet.add(dateStr);
+    emp.clientsMap.set(comp, (emp.clientsMap.get(comp) || 0) + 1);
+
+    clientMap.set(comp, (clientMap.get(comp) || 0) + 1);
+    deptMap.set(dept, (deptMap.get(dept) || 0) + 1);
+  });
+
+  const staffRows = Array.from(empMap.values())
+    .map((e) => {
+      const daysWorked = e.daysSet.size;
+      const avgMins = daysWorked > 0 ? Math.round(e.totalMinutes / daysWorked) : 0;
+      const topClients = Array.from(e.clientsMap.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([c]) => c)
+        .join(", ");
+      return {
+        name: e.name,
+        role: e.role,
+        department: e.department,
+        entriesCount: e.entriesCount,
+        daysWorked,
+        totalMinutes: e.totalMinutes,
+        totalHoursText: formatMinutesToHours(e.totalMinutes),
+        totalHoursDecimal: Number((e.totalMinutes / 60).toFixed(1)),
+        avgDailyHoursText: formatMinutesToHours(avgMins),
+        topClients: topClients || "-",
+      };
+    })
+    .sort((a, b) => b.totalMinutes - a.totalMinutes || b.entriesCount - a.entriesCount);
+
+  return {
+    key: monthSpec.key || "ALL",
+    label: monthSpec.label || "All Time",
+    totalEntries: monthEntries.length,
+    activeStaffCount: staffRows.length,
+    activeDaysCount: activeDatesSet.size,
+    totalMinutes,
+    totalHoursText: formatMinutesToHours(totalMinutes),
+    totalHoursDecimal: Number((totalMinutes / 60).toFixed(1)),
+    staffRows,
+    topClients: Array.from(clientMap.entries()).sort((a, b) => b[1] - a[1]),
+    topDepartments: Array.from(deptMap.entries()).sort((a, b) => b[1] - a[1]),
+  };
+}
+
+/**
+ * Computes Monthly Daily Working analytics for either one specific month or all available months.
+ */
+export function auditDailyWorkingMonthly(workingLogs = [], profiles = [], scopeOrQuery = "ALL") {
+  const availableMonths = getAllAvailableMonths(workingLogs);
+  const spec = resolveDailyWorkingScope(scopeOrQuery);
+
+  if (spec.isAllMonths) {
+    const monthlyBuckets = availableMonths.map((m) => {
+      const mLogs = (workingLogs || []).filter((l) => isEntryInMonth(l, m.month, m.year));
+      const base = aggregateDailyWorkingMonthBucket(mLogs, m);
+      const dupeAudit = auditTaskDescriptionDuplicacy(mLogs, profiles);
+      const nineHrAudit = auditEmployeesLessThanNineHours(mLogs, profiles, m.key);
+      return {
+        ...base,
+        duplicateRows: dupeAudit.kpis.totalDuplicatedRows,
+        shortfallDays: nineHrAudit.kpis.targetMonthShortfallDays,
+      };
+    });
+
+    return {
+      isAllMonths: true,
+      spec,
+      availableMonths,
+      monthlyBuckets,
+      overall: aggregateDailyWorkingMonthBucket(workingLogs, { key: "ALL", label: "All Recorded Months" }),
+    };
+  }
+
+  const scopedLogs = (workingLogs || []).filter((l) => isEntryInMonth(l, spec.month, spec.year));
+  const bucket = aggregateDailyWorkingMonthBucket(scopedLogs, spec);
+  const dupeAudit = auditTaskDescriptionDuplicacy(scopedLogs, profiles);
+  const nineHrAudit = auditEmployeesLessThanNineHours(workingLogs, profiles, spec.key);
+
+  return {
+    isAllMonths: false,
+    spec,
+    availableMonths,
+    scopedLogs,
+    bucket,
+    duplicateRows: dupeAudit.kpis.totalDuplicatedRows,
+    duplicateStaff: dupeAudit.kpis.affectedStaffCount,
+    shortfallDays: nineHrAudit.kpis.targetMonthShortfallDays,
+    shortfallHours: nineHrAudit.kpis.targetMonthShortfallHours,
+  };
+}
+
+/**
+ * Generates Chatbot Markdown report for Daily Working Monthly Reports (All Months OR Specific Month only).
+ */
+export function getDailyWorkingMonthlyChatbotReport(workingLogs = [], profiles = [], queryText = "") {
+  if (!workingLogs || workingLogs.length === 0) {
+    return `📝 **Daily Working Monthly Report**:\n\nDaily working logs are still syncing from Google Sheet. Please wait a moment and try again.`;
+  }
+
+  const parsed = parseTargetMonthFromQuery(queryText);
+  const audit = auditDailyWorkingMonthly(workingLogs, profiles, parsed || "ALL");
+
+  if (audit.isAllMonths) {
+    let res = `📝 **Daily Working — Month-Wise Executive Summary (${audit.availableMonths.length} Months)**\n`;
+    res += `• 📊 **Total Entries Audited**: **${audit.overall.totalEntries.toLocaleString("en-IN")} tasks** (${audit.overall.totalHoursText} logged)\n\n`;
+
+    res += `### 📅 Month-by-Month Breakdown:\n`;
+    audit.monthlyBuckets.forEach((m, idx) => {
+      const top = m.staffRows[0];
+      res += `${idx + 1}. **${m.label}** — **${m.totalEntries.toLocaleString("en-IN")} tasks** | 👥 **${m.activeStaffCount} staff** | ⏱️ **${m.totalHoursText}** (${m.activeDaysCount} working days)\n`;
+      res += `   • ⚠️ <9h Days: **${m.shortfallDays}** | 🔁 Duplicates: **${m.duplicateRows} rows**${top ? ` | 🏆 Top: **${top.name}** (${top.totalHoursText})` : ""}\n`;
+    });
+
+    const chipMonths = audit.availableMonths
+      .slice(0, 4)
+      .map((m) => `Daily working report for ${m.label}|📅 ${m.monthName}`)
+      .join(";");
+
+    res += `\n${chipMonths ? `[ACTION_CHIPS:${chipMonths}]\n\n` : ""}`;
+    res += `📥 **Download Month-Wise Daily Working Workbook (.xlsx)**:\n[DOWNLOAD_DAILY_WORKING_MONTHLY_EXCEL:ALL]`;
+    return res;
+  }
+
+  const { spec, bucket, availableMonths, duplicateRows, shortfallDays, shortfallHours } = audit;
+  if (bucket.totalEntries === 0) {
+    const availList = availableMonths.map((m) => m.label).join(", ");
+    return `📝 **Daily Working Report — ${spec.label}**\n\n• ⚠️ **No daily working entries recorded for ${spec.label}.**\n• 📅 **Available Months in Sheet**: ${availList || "None"}`;
+  }
+
+  let res = `📝 **Daily Working Monthly Report — ${spec.label}**\n`;
+  res += `• 📊 **Tasks Logged**: **${bucket.totalEntries.toLocaleString("en-IN")} entries** across **${bucket.activeDaysCount} working days**\n`;
+  res += `• 👥 **Active Staff**: **${bucket.activeStaffCount} employees**\n`;
+  res += `• ⏱️ **Total Time Logged**: **${bucket.totalHoursText}** (*${bucket.totalHoursDecimal} hrs*)\n`;
+  res += `• ⚠️ **Quality & Compliance**: **${shortfallDays} employee-days < 9 hrs** (*${shortfallHours} hrs deficit*) | 🔁 **${duplicateRows} duplicate rows**\n\n`;
+
+  res += `### 🏆 Top Contributors in ${spec.label} (By Hours Logged):\n`;
+  bucket.staffRows.slice(0, 12).forEach((s, idx) => {
+    res += `${idx + 1}. **${s.name}** (${s.role}) — **${s.totalHoursText}** (**${s.entriesCount} tasks**, ${s.daysWorked} days, Avg: ${s.avgDailyHoursText}/day)\n`;
+  });
+  if (bucket.staffRows.length > 12) {
+    res += `*...plus ${bucket.staffRows.length - 12} more staff detailed in the downloaded Excel.*\n`;
+  }
+
+  if (bucket.topClients.length > 0) {
+    res += `\n### 🏢 Top Clients / Groups Worked On (${spec.label}):\n`;
+    bucket.topClients.slice(0, 8).forEach(([comp, count], idx) => {
+      res += `${idx + 1}. **${comp}** — **${count} entries**\n`;
+    });
+  }
+
+  res += `\n[DOWNLOAD_DAILY_WORKING_MONTHLY_EXCEL:${spec.key}]`;
+  return res;
+}
+
+/**
+ * Exports a Monthly Daily Working Excel workbook (either a single requested month or all recorded months).
+ */
+export async function exportDailyWorkingMonthlyToExcel(workingLogs = [], profiles = [], scopeOrQuery = "ALL") {
+  const audit = auditDailyWorkingMonthly(workingLogs, profiles, scopeOrQuery);
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = "Agrawal Jain & Co. ERP";
+  workbook.created = new Date();
+
+  const styleSheetBanner = (sheet, title, subtitle, headers, colorHex = "1E3A8A") => {
+    sheet.addRow([title]);
+    sheet.addRow([subtitle]);
+    sheet.addRow([]);
+    sheet.getRow(1).font = { name: "Segoe UI", size: 14, bold: true, color: { argb: "1E3A8A" } };
+    sheet.getRow(2).font = { name: "Segoe UI", size: 10, italic: true, color: { argb: "475569" } };
+    const hdr = sheet.addRow(headers);
+    hdr.font = { name: "Segoe UI", size: 10, bold: true, color: { argb: "FFFFFF" } };
+    hdr.fill = { type: "pattern", pattern: "solid", fgColor: { argb: colorHex } };
+    hdr.alignment = { vertical: "middle", horizontal: "center" };
+    hdr.height = 24;
+  };
+
+  if (audit.isAllMonths) {
+    const s1 = workbook.addWorksheet("Month-Wise Summary");
+    styleSheetBanner(
+      s1,
+      "AGRAWAL JAIN & CO. — DAILY WORKING MONTH-WISE REPORT",
+      `Generated: ${new Date().toLocaleString("en-IN")} | Months Covered: ${audit.monthlyBuckets.length}`,
+      ["Sr.", "Month", "Month Key", "Active Staff", "Working Days", "Total Tasks", "Total Hours", "<9h Shortfall Days", "Duplicate Rows", "Top Contributor"]
+    );
+    audit.monthlyBuckets.forEach((m, idx) => {
+      const top = m.staffRows[0];
+      s1.addRow([
+        idx + 1,
+        m.label,
+        m.key,
+        m.activeStaffCount,
+        m.activeDaysCount,
+        m.totalEntries,
+        m.totalHoursText,
+        m.shortfallDays,
+        m.duplicateRows,
+        top ? `${top.name} (${top.totalHoursText})` : "-",
+      ]);
+    });
+    s1.columns = [
+      { width: 6 }, { width: 20 }, { width: 12 }, { width: 14 }, { width: 14 },
+      { width: 14 }, { width: 16 }, { width: 20 }, { width: 16 }, { width: 32 },
+    ];
+
+    const s2 = workbook.addWorksheet("All-Time Staff Breakdown");
+    styleSheetBanner(
+      s2,
+      "EMPLOYEE-WISE SUMMARY ACROSS ALL MONTHS",
+      `Total Logged Tasks: ${audit.overall.totalEntries}`,
+      ["Sr.", "Employee Name", "Role", "Department", "Active Days", "Total Tasks", "Total Hours", "Avg Hours / Day", "Top Clients"],
+      "0F766E"
+    );
+    audit.overall.staffRows.forEach((r, idx) => {
+      s2.addRow([idx + 1, r.name, r.role, r.department, r.daysWorked, r.entriesCount, r.totalHoursText, r.avgDailyHoursText, r.topClients]);
+    });
+    s2.columns = [
+      { width: 6 }, { width: 26 }, { width: 18 }, { width: 20 }, { width: 14 },
+      { width: 14 }, { width: 16 }, { width: 16 }, { width: 40 },
+    ];
+
+    const filename = `AJC_Daily_Working_MonthWise_Report_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    const buf = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([buf], { type: "application/octet-stream" }), filename);
+    return filename;
+  }
+
+  const { spec, bucket, scopedLogs } = audit;
+  const s1 = workbook.addWorksheet(`${spec.label.slice(0, 20)} Staff`.trim());
+  styleSheetBanner(
+    s1,
+    `AGRAWAL JAIN & CO. — DAILY WORKING (${spec.label.toUpperCase()})`,
+    `Entries: ${bucket.totalEntries} | Active Staff: ${bucket.activeStaffCount} | Total Time: ${bucket.totalHoursText} | <9h Shortfall Days: ${audit.shortfallDays} | Duplicates: ${audit.duplicateRows}`,
+    ["Sr.", "Employee Name", "Role", "Department", "Days Logged", "Tasks Logged", "Total Hours", "Avg Hours / Day", "Top Clients Handled"]
+  );
+  bucket.staffRows.forEach((r, idx) => {
+    s1.addRow([idx + 1, r.name, r.role, r.department, r.daysWorked, r.entriesCount, r.totalHoursText, r.avgDailyHoursText, r.topClients]);
+  });
+  s1.columns = [
+    { width: 6 }, { width: 26 }, { width: 18 }, { width: 20 }, { width: 14 },
+    { width: 14 }, { width: 16 }, { width: 16 }, { width: 42 },
+  ];
+
+  const s2 = workbook.addWorksheet("Client Breakdown");
+  styleSheetBanner(
+    s2,
+    `CLIENT & GROUP WORK ALLOCATION — ${spec.label.toUpperCase()}`,
+    `Distinct Companies/Groups: ${bucket.topClients.length}`,
+    ["Sr.", "Company / Group Name", "Tasks Logged"],
+    "0F766E"
+  );
+  bucket.topClients.forEach(([comp, count], idx) => s2.addRow([idx + 1, comp, count]));
+  s2.columns = [{ width: 6 }, { width: 42 }, { width: 16 }];
+
+  const s3 = workbook.addWorksheet("Entries Register");
+  styleSheetBanner(
+    s3,
+    `DAILY WORKING REGISTER — ${spec.label.toUpperCase()}`,
+    `Strictly filtered to ${spec.label} (${scopedLogs.length} entries)`,
+    ["Sr.", "Date", "Doer Name", "Location", "Department", "Group Name", "Company Name", "Time Given", "Task Description"],
+    "334155"
+  );
+  scopedLogs.slice(0, 5000).forEach((e, idx) => {
+    s3.addRow([
+      idx + 1,
+      formatExcelOrStringDate(e.date || e.timestamp) || "-",
+      e.doerName || e.employeeName || "-",
+      e.location || "-",
+      e.department || "-",
+      e.groupName || "-",
+      e.companyName || "-",
+      e.timeGiven || "-",
+      e.taskDescription || "-",
+    ]);
+  });
+  s3.columns = [
+    { width: 6 }, { width: 14 }, { width: 24 }, { width: 16 }, { width: 18 },
+    { width: 22 }, { width: 28 }, { width: 14 }, { width: 52 },
+  ];
+
+  const slug = (spec.label || spec.key).replace(/[^a-zA-Z0-9]+/g, "_");
+  const filename = `AJC_Daily_Working_${slug}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+  const buf = await workbook.xlsx.writeBuffer();
+  saveAs(new Blob([buf], { type: "application/octet-stream" }), filename);
+  return filename;
+}

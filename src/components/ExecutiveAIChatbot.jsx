@@ -29,6 +29,8 @@ import {
 import {
   MONTHLY_GOOGLE_SHEET_URL,
   fetchMonthlyAttendance,
+  resolveMonthlyAttendanceSlice,
+  cacheMonthlyAttendanceSafely,
 } from "../utils/monthlyAttendanceService";
 
 // --- DAILY WORKING UTILITIES & SERVICES ---
@@ -56,6 +58,10 @@ import {
   parseTargetMonthFromQuery,
   getAllAvailableMonths,
   getMonthlyDuplicacyOverview,
+  resolveDailyWorkingScope,
+  auditDailyWorkingMonthly,
+  getDailyWorkingMonthlyChatbotReport,
+  exportDailyWorkingMonthlyToExcel,
 } from "../utils/dailyWorkingService";
 
 // --- HR & STATUTORY LABOUR LAW KNOWLEDGE ---
@@ -64,20 +70,25 @@ import {
   HR_LABOUR_LAW_SYSTEM_PROMPT,
 } from "../utils/hrLabourLawKnowledge";
 
-// --- INTERNAL AUDIT FMS KNOWLEDGE & SERVICES ---
+// --- FMS (FLOW MANAGEMENT SYSTEM / INTERNAL AUDIT) KNOWLEDGE & SERVICES ---
 import {
   fetchUnifiedInternalAuditData,
   getInternalAuditOverview,
   getPartnerOrSeniorAuditReport,
   getAuditsByTypeReport,
-  get17StepsGuideReport,
+  get18StepsGuideReport,
   getClientAuditReport,
   exportInternalAuditFmsToExcel,
   getBlankActualAndStatusSummary,
   exportBlankActualStatusReportToExcel,
-} from "../utils/internalAuditFmsService";
+  exportBlankActualStatusReportToPdf,
+  getInternalAuditMonthlyReport,
+  getFmsTargetDateBlankSummary,
+  exportFmsTargetDateBlankReportToExcel,
+  exportFmsTargetDateBlankReportToPdf,
+} from "../utils/fmsService";
 
-// --- PMS FMS KNOWLEDGE & SERVICES ---
+// --- PMS (PERFORMANCE MANAGEMENT SYSTEM) KNOWLEDGE & SERVICES ---
 import {
   fetchUnifiedPmsData,
   getPmsOverview,
@@ -85,10 +96,53 @@ import {
   getPmsByTypeReport,
   getPms17StepsGuideReport,
   getClientOrGroupPmsReport,
-  exportPmsFmsToExcel,
+  exportPmsToExcel as exportPmsFmsToExcel,
   getPmsBlankActualAndStatusSummary,
   exportPmsBlankActualStatusReportToExcel,
-} from "../utils/pmsFmsService";
+  exportPmsBlankActualStatusReportToPdf,
+  getPmsMonthlyReport,
+} from "../utils/pmsService";
+
+// --- FMS & PMS SHARED MONTH RESOLVER ---
+import {
+  parseFmsTargetMonth,
+  matchFmsRecordToMonth,
+} from "../utils/fmsMonthUtils";
+
+// --- SENIOR & JUNIOR TASK (DELEGATION) KNOWLEDGE & SERVICES ---
+import {
+  fetchSeniorTaskReport,
+  fetchJuniorTaskReport,
+  getDelegationMeta,
+  computeSeniorTaskAnalytics,
+  cleanSeniorPersonName,
+  filterTasksByNaturalMonth,
+  getSeniorTaskOverviewReport,
+  getSeniorTaskMonthWiseReport,
+  getSeniorTaskCancelledReport,
+  getSeniorTaskRevisionsAndOverdueReport,
+  getSeniorTaskDoneReport,
+  getSeniorTaskPersonReport,
+  getSeniorTaskWorkTypeOrClientReport,
+  exportSeniorTaskMasterExcel,
+  exportSeniorTaskCancelledExcel,
+  exportSeniorTaskOverdueExcel,
+  exportSeniorTaskDoneExcel,
+  exportSeniorTaskMonthlyExcel,
+} from "../utils/seniorTaskService";
+
+// --- MULTI-COMPANY / GROUP AUDIT SERVICES & COMPLETION INTELLIGENCE ---
+import {
+  fetchAllCompanyAuditData,
+  getWorkCompletionOnDateReport,
+  getWorkCompletionBeforeTargetDateReport,
+  getWorkCompletionAfterTargetDateReport,
+  getCompanyAuditOverviewReport,
+  getSingleCompanyCompletionReport,
+  exportCompanyCompletionToExcel,
+  exportCompanyCompletionToPdf,
+  COMPANY_AUDIT_ENDPOINTS,
+} from "../utils/companyAuditService";
 
 // Helper: Add minutes to time string (e.g. "10:00" + 5 -> "10:05")
 const addMinutesToTime = (timeStr, minutesToAdd = 5) => {
@@ -207,7 +261,7 @@ export default function ExecutiveAIChatbot({
       id: 1,
       sender: "bot",
       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      text: `👋 Greetings MD Sir & Executive Team! I am your **AJC Unified Executive AI Assistant**.\n\nI provide unified executive intelligence across **Real-Time Attendance**, **Daily Working Submissions**, **Internal Audit FMS**, and **PMS FMS**:\n\n• ⏰ **Live Attendance & Shifts**: MD (10:00 AM), Partners (10:00 AM), Seniors (10:00 AM), Plant Audit (10:30 AM), Articles (11:00 AM), Office (10:00 AM).\n• 📝 **Daily Working & Audits**: Real-time task diary submissions, 6-parameter duplicate audits, missing date backlogs, and AI usage detection.\n• 📊 **Internal Audit FMS**: 89 Client Assignments, 17-Step Process SOP (Seniors & Partners), Plant vs City engagements, and milestone delivery tracking.\n• 📋 **PMS FMS (Process Management)**: 17-Step FMS tracking assignments, Partner & Senior ownership, Blank Actual & Status audits, and Google Sheet API sync.\n\n💡 **Top Queries You Can Ask**:\n- 📊 *"Internal audit FMS status"* or *"PMS FMS status"* or *"Explain the 17 steps of PMS"*\n- 👔 *"Audits assigned to CA Harsh Mittal"* or *"PMS of CA Harsh Mittal"*\n- 🏭 *"Show plant audit assignments"*\n- 🔍 *"Duplicacy in October"* or *"Monthly duplicacy overview"*\n- ⏰ *"Who is late today?"* or *"Who is absent today?"*\n- 🤖 *"Uses of AI or Claude in the task description of daily working"*\n- 🚨 *"The seniors/articles/plant staff/partners who have not filled their daily working more than 2 days"*\n- 👤 *"Show 360 report for CA Harsh Mittal"*\n- 📥 *"Download PMS report"* or *"Download internal audit FMS report"* or *"Download attendance report"*`,
+      text: `👋 Greetings MD Sir & Executive Team! I am your **AJC Unified Executive AI Assistant**.\n\nI provide unified executive intelligence across **Real-Time Attendance**, **Daily Working Submissions**, **Senior & Junior Task Delegation**, **Internal Audit FMS**, **PMS FMS**, and **Multi-Company Work Completion**:\n\n• ⏰ **Live Attendance & Shifts**: MD (10:00 AM), Partners (10:00 AM), Seniors (10:00 AM), Plant Audit (10:30 AM), Articles (11:00 AM), Office (10:00 AM).\n• 🗂️ **Senior & Junior Delegation**: Month-wise completion trends, Cancelled tasks & most cancelling Doer/Assignor leaderboards, Overdue targets, and Revisions for both Senior & Junior datasets.\n• 📝 **Daily Working & Audits**: Real-time task diary submissions, 6-parameter duplicate audits, missing date backlogs, and AI usage detection.\n• 📊 **Internal Audit FMS**: 89 Client Assignments, 18-Step Process SOP (Seniors & Partners), Plant vs City engagements, Target Date Blank audits, and missed steps breakdown.\n• 📋 **PMS FMS (Process Management)**: 17-Step FMS tracking assignments, Partner & Senior ownership, Blank Actual & Status audits, and Google Sheet API sync.\n• 🏢 **Multi-Company Work Completion (16 Groups/Companies)**: Comprehensive audit completion intelligence across Sunil Ispat, Sambhv Steel, Vishv Guru, United Logistics, Real Space & Ajay Steels, Maruti Ferrans, Viraj Steel, Ambika Iron, Real Ispat & Power City, Nutan Ispat, Karnikripa, Sai Baba Hospital, NRVS & NR Ispat, SKS Ispat, SKY Alloy PMS, and Real Ispat & Power Limited.\n  - 🎯 **Work Completion ON Date** (397 tasks finished with 0 delay)\n  - ⚡ **Work Completion BEFORE Target Date** (37 tasks finished ahead of schedule)\n  - ⚠️ **Work Completion AFTER Target Date** (133 tasks finished with delay)\n\n💡 **Top Queries You Can Ask**:\n- 🎯 *"Work completion on date report"*\n- ⚡ *"Work completion before target date report"*\n- ⚠️ *"Work completion after target date report"*\n- 🏢 *"Overall work completion analysis"*, *"SKY Alloy PMS report"*, or *"SKS completion report"*\n- 🗂️ *"Month-wise senior task report"* or *"Month-wise junior task report"*\n- 📊 *"FMS target date blank"* or *"Which steps are missed in FMS"*\n- 📥 *"Download completion report"* or *"Download senior task monthly report"*`,
     },
   ]);
   const [inputValue, setInputValue] = useState("");
@@ -216,6 +270,11 @@ export default function ExecutiveAIChatbot({
   // --- DATA STATES ---
   const [internalAudits, setInternalAudits] = useState([]);
   const [pmsRecords, setPmsRecords] = useState([]);
+  const [seniorTasks, setSeniorTasks] = useState([]);
+  const seniorTaskAnalytics = useMemo(() => computeSeniorTaskAnalytics(seniorTasks), [seniorTasks]);
+  const [juniorTasks, setJuniorTasks] = useState([]);
+  const juniorTaskAnalytics = useMemo(() => computeSeniorTaskAnalytics(juniorTasks), [juniorTasks]);
+  const [companyAuditData, setCompanyAuditData] = useState(null);
   const [internalDailyRows, setInternalDailyRows] = useState(() => {
     if (rows && rows.length > 0) return rows;
     try {
@@ -365,9 +424,7 @@ export default function ExecutiveAIChatbot({
           if (!isMounted || !res) return;
           if (!monthlyData && res.monthlySummaries) {
             setInternalMonthlyData(res);
-            try {
-              localStorage.setItem("ajc_cached_monthly_attendance", JSON.stringify(res));
-            } catch (_) {}
+            cacheMonthlyAttendanceSafely(res);
           }
           if (!weeklyData && res.weeklySummaries) {
             const wData = {
@@ -428,7 +485,7 @@ export default function ExecutiveAIChatbot({
     }
   }, [initialProfiles, initialWorkingLogs]);
 
-  // 5. Internal Audit FMS & PMS FMS Assignments & SOP
+  // 5. Internal Audit FMS, PMS FMS & Senior Task (Delegation) Assignments & Live Feeds
   useEffect(() => {
     let isMounted = true;
     fetchUnifiedInternalAuditData()
@@ -444,6 +501,27 @@ export default function ExecutiveAIChatbot({
         setPmsRecords(records);
       })
       .catch((err) => console.warn("ExecutiveAIChatbot PMS FMS fetch error:", err));
+
+    fetchSeniorTaskReport()
+      .then((res) => {
+        if (!isMounted || !Array.isArray(res?.tasks)) return;
+        setSeniorTasks(res.tasks);
+      })
+      .catch((err) => console.warn("ExecutiveAIChatbot senior task fetch error:", err));
+
+    fetchJuniorTaskReport()
+      .then((res) => {
+        if (!isMounted || !Array.isArray(res?.tasks)) return;
+        setJuniorTasks(res.tasks);
+      })
+      .catch((err) => console.warn("ExecutiveAIChatbot junior task fetch error:", err));
+
+    fetchAllCompanyAuditData()
+      .then((res) => {
+        if (!isMounted || !res) return;
+        setCompanyAuditData(res);
+      })
+      .catch((err) => console.warn("ExecutiveAIChatbot company audit fetch error:", err));
 
     return () => {
       isMounted = false;
@@ -843,11 +921,27 @@ export default function ExecutiveAIChatbot({
     }
   };
 
-  const handleDownloadMonthlyAttendanceExcel = async () => {
+  const handleDownloadMonthlyAttendanceExcel = async (scopeOrEvent = "CURRENT") => {
+    const scope = typeof scopeOrEvent === "string" && scopeOrEvent.trim() ? scopeOrEvent.trim() : "CURRENT";
+    const resolved = resolveMonthlyAttendanceSlice(activeMonthlyData, scope);
+    if (!resolved.ready || !resolved.found || !resolved.slice) {
+      const avail = (resolved.availableMonths || []).map((m) => m.monthName).join(", ");
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          sender: "bot",
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          text: `⚠️ **Monthly Attendance for ${resolved.requestedLabel || scope} is not available in loaded records.**\n\n• **Available Months**: ${avail || "Syncing from sheet..."}`,
+        },
+      ]);
+      return;
+    }
+
     setIsExporting(true);
     try {
       await exportMonthlyAttendanceToExcel({
-        monthlyData: activeMonthlyData,
+        monthlyData: resolved.slice,
         shiftPolicies,
         messages,
       });
@@ -858,7 +952,7 @@ export default function ExecutiveAIChatbot({
           id: Date.now(),
           sender: "bot",
           time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          text: `📊 **Monthly Attendance Register Excel Downloaded!**\n\n• Source: [Google Sheet Register](${MONTHLY_GOOGLE_SHEET_URL}).`,
+          text: `📊 **Monthly Attendance Register Excel Downloaded (${resolved.slice.monthName || resolved.slice.calendarMonth?.monthName || scope})!**\n\n• Source: [Google Sheet Register](${MONTHLY_GOOGLE_SHEET_URL}).`,
         },
       ]);
     } catch (err) {
@@ -869,11 +963,27 @@ export default function ExecutiveAIChatbot({
     }
   };
 
-  const handleDownloadMonthlyAttendancePDF = () => {
+  const handleDownloadMonthlyAttendancePDF = (scopeOrEvent = "CURRENT") => {
+    const scope = typeof scopeOrEvent === "string" && scopeOrEvent.trim() ? scopeOrEvent.trim() : "CURRENT";
+    const resolved = resolveMonthlyAttendanceSlice(activeMonthlyData, scope);
+    if (!resolved.ready || !resolved.found || !resolved.slice) {
+      const avail = (resolved.availableMonths || []).map((m) => m.monthName).join(", ");
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          sender: "bot",
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          text: `⚠️ **Monthly Attendance PDF for ${resolved.requestedLabel || scope} is not available.**\n\n• **Available Months**: ${avail || "Syncing from sheet..."}`,
+        },
+      ]);
+      return;
+    }
+
     setIsExporting(true);
     try {
       exportMonthlyAttendanceToPDF({
-        monthlyData: activeMonthlyData,
+        monthlyData: resolved.slice,
         shiftPolicies,
       });
       setShowExportMenu(false);
@@ -883,7 +993,7 @@ export default function ExecutiveAIChatbot({
           id: Date.now(),
           sender: "bot",
           time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          text: `📄 **Monthly Attendance Register PDF Downloaded!**\n\n• Source: [Google Sheet Register](${MONTHLY_GOOGLE_SHEET_URL}).`,
+          text: `📄 **Monthly Attendance Register PDF Downloaded (${resolved.slice.monthName || resolved.slice.calendarMonth?.monthName || scope})!**\n\n• Source: [Google Sheet Register](${MONTHLY_GOOGLE_SHEET_URL}).`,
         },
       ]);
     } catch (err) {
@@ -1004,10 +1114,14 @@ export default function ExecutiveAIChatbot({
     }
   };
 
-  const handleDownloadLessThan9HoursExcel = async (targetMonth = null) => {
+  const handleDownloadLessThan9HoursExcel = async (targetMonthOrEvent = null) => {
+    const scopeStr =
+      typeof targetMonthOrEvent === "string" && targetMonthOrEvent.trim() ? targetMonthOrEvent.trim() : null;
+    const scopeSpec = scopeStr ? resolveDailyWorkingScope(scopeStr) : targetMonthOrEvent?.month ? targetMonthOrEvent : null;
+    const finalMonth = scopeSpec && !scopeSpec.isAllMonths ? scopeSpec : null;
     setIsExporting(true);
     try {
-      await exportLessThanNineHoursReportToExcel(workingLogs, profiles, targetMonth);
+      await exportLessThanNineHoursReportToExcel(workingLogs, profiles, finalMonth);
       setShowExportMenu(false);
       setMessages((prev) => [
         ...prev,
@@ -1015,7 +1129,7 @@ export default function ExecutiveAIChatbot({
           id: Date.now(),
           sender: "bot",
           time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          text: `⏱️ **Employees < 9 Hours in Daily Working Report Downloaded!**\n\n• Multi-tab Excel workbook tracking all days where staff logged under 9 hours, employee shortfall summary, and today's live status.`,
+          text: `⏱️ **Employees < 9 Hours in Daily Working Report Downloaded${finalMonth ? ` (${finalMonth.label})` : ""}!**\n\n• Multi-tab Excel workbook tracking all days where staff logged under 9 hours, employee shortfall summary, and today's live status.`,
         },
       ]);
     } catch (err) {
@@ -1026,10 +1140,14 @@ export default function ExecutiveAIChatbot({
     }
   };
 
-  const handleDownloadCrossEmployeeDuplicatesExcel = async (targetMonth = null) => {
+  const handleDownloadCrossEmployeeDuplicatesExcel = async (targetMonthOrEvent = null) => {
+    const scopeStr =
+      typeof targetMonthOrEvent === "string" && targetMonthOrEvent.trim() ? targetMonthOrEvent.trim() : null;
+    const scopeSpec = scopeStr ? resolveDailyWorkingScope(scopeStr) : targetMonthOrEvent?.month ? targetMonthOrEvent : null;
+    const finalMonth = scopeSpec && !scopeSpec.isAllMonths ? scopeSpec : null;
     setIsExporting(true);
     try {
-      await exportCrossEmployeeDuplicatesToExcel(workingLogs, profiles, targetMonth);
+      await exportCrossEmployeeDuplicatesToExcel(workingLogs, profiles, finalMonth);
       setShowExportMenu(false);
       setMessages((prev) => [
         ...prev,
@@ -1037,7 +1155,7 @@ export default function ExecutiveAIChatbot({
           id: Date.now(),
           sender: "bot",
           time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          text: `👥 **Same Task Across Different Employees Report Downloaded!**\n\n• Multi-tab Excel workbook tracking identical work logged across multiple employees with matching location, department, group, company, and task description.`,
+          text: `👥 **Same Task Across Different Employees Report Downloaded${finalMonth ? ` (${finalMonth.label})` : ""}!**\n\n• Multi-tab Excel workbook tracking identical work logged across multiple employees with matching location, department, group, company, and task description.`,
         },
       ]);
     } catch (err) {
@@ -1070,10 +1188,11 @@ export default function ExecutiveAIChatbot({
     }
   };
 
-  const handleDownloadInternalAuditExcel = async () => {
+  const handleDownloadDailyWorkingMonthlyExcel = async (scopeOrEvent = "ALL") => {
+    const scope = typeof scopeOrEvent === "string" && scopeOrEvent.trim() ? scopeOrEvent.trim() : "ALL";
     setIsExporting(true);
     try {
-      const filename = await exportInternalAuditFmsToExcel(internalAudits);
+      const filename = await exportDailyWorkingMonthlyToExcel(workingLogs, profiles, scope);
       setShowExportMenu(false);
       setMessages((prev) => [
         ...prev,
@@ -1081,12 +1200,42 @@ export default function ExecutiveAIChatbot({
           id: Date.now(),
           sender: "bot",
           time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          text: `📊 **Internal Audit FMS Register Excel Downloaded!** (${filename})\n\n• Includes all 89 client assignments across 46 corporate groups, lead CAs, partners, and the 17-step FMS standard protocol.`,
+          text: `📝 **Daily Working Monthly Report Downloaded!** (${filename})\n\n• Scope: **${scope === "ALL" ? "All Recorded Months Comparison" : scope}** with employee hours, clients handled, and task register.`,
         },
       ]);
     } catch (err) {
       console.error(err);
-      alert("Failed to export Internal Audit FMS Excel.");
+      alert("Failed to export Daily Working Monthly Report.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleDownloadInternalAuditExcel = async (scopeOrEvent = "ALL") => {
+    const scope = typeof scopeOrEvent === "string" && scopeOrEvent.trim() ? scopeOrEvent.trim() : "ALL";
+    setIsExporting(true);
+    try {
+      let data = internalAudits;
+      if (!Array.isArray(data) || data.length === 0) {
+        data = await fetchUnifiedInternalAuditData(true);
+        if (Array.isArray(data) && data.length > 0) {
+          setInternalAudits(data);
+        }
+      }
+      const filename = await exportInternalAuditFmsToExcel(data, scope);
+      setShowExportMenu(false);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          sender: "bot",
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          text: `📊 **FMS Register Excel Downloaded!** (${filename})\n\n• Scope: **${scope === "ALL" ? "Complete FMS Register & 17-step SOP" : `${scope} Scheduled & Active Engagements`}**.`,
+        },
+      ]);
+    } catch (err) {
+      console.error("FMS Excel export error:", err);
+      alert("Failed to export FMS Excel: " + (err.message || err));
     } finally {
       setIsExporting(false);
     }
@@ -1095,7 +1244,14 @@ export default function ExecutiveAIChatbot({
   const handleDownloadBlankActualStatusExcel = async () => {
     setIsExporting(true);
     try {
-      const filename = await exportBlankActualStatusReportToExcel(internalAudits);
+      let data = internalAudits;
+      if (!Array.isArray(data) || data.length === 0) {
+        data = await fetchUnifiedInternalAuditData(true);
+        if (Array.isArray(data) && data.length > 0) {
+          setInternalAudits(data);
+        }
+      }
+      const filename = await exportBlankActualStatusReportToExcel(data);
       setShowExportMenu(false);
       setMessages((prev) => [
         ...prev,
@@ -1103,24 +1259,111 @@ export default function ExecutiveAIChatbot({
           id: Date.now(),
           sender: "bot",
           time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          text: `🚨 **Blank Actual & Status Audit Report Downloaded!** (${filename})\n\n• Multi-tab Excel workbook of all employees (Partners & Seniors) whose assignments have blank actual completion dates and blank status.`,
+          text: `🚨 **Blank Actual & Status Audit Report (Excel) Downloaded!** (${filename})\n\n• Multi-tab Excel workbook of all employees (Partners & Seniors) whose assignments have blank actual completion dates and blank status.`,
         },
       ]);
     } catch (err) {
-      console.error(err);
-      alert("Failed to export Blank Actual & Status Report.");
+      console.error("Blank Actual Status export error:", err);
+      alert("Failed to export Blank Actual & Status Report: " + (err.message || err));
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleDownloadBlankActualStatusPdf = async () => {
+    setIsExporting(true);
+    try {
+      let data = internalAudits;
+      if (!Array.isArray(data) || data.length === 0) {
+        data = await fetchUnifiedInternalAuditData(true);
+        if (Array.isArray(data) && data.length > 0) {
+          setInternalAudits(data);
+        }
+      }
+      const filename = await exportBlankActualStatusReportToPdf(data);
+      setShowExportMenu(false);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          sender: "bot",
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          text: `📄 **Blank Actual & Status Audit Report (PDF) Downloaded!** (${filename})\n\n• Formatted PDF document detailing all assignments and responsible staff with blank actual & status fields.`,
+        },
+      ]);
+    } catch (err) {
+      console.error("Blank Actual Status PDF export error:", err);
+      alert("Failed to export Blank Actual & Status PDF: " + (err.message || err));
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleDownloadFmsTargetDateBlankExcel = async () => {
+    setIsExporting(true);
+    try {
+      let data = internalAudits;
+      if (!Array.isArray(data) || data.length === 0) {
+        data = await fetchUnifiedInternalAuditData(true);
+        if (Array.isArray(data) && data.length > 0) {
+          setInternalAudits(data);
+        }
+      }
+      const filename = await exportFmsTargetDateBlankReportToExcel(data);
+      setShowExportMenu(false);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          sender: "bot",
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          text: `📅 **FMS Target Date Blank Report (Excel) Downloaded!** (${filename})\n\n• Multi-tab workbook of FMS engagements where Target Date is blank / unassigned.`,
+        },
+      ]);
+    } catch (err) {
+      console.error("FMS Target Date Blank export error:", err);
+      alert("Failed to export FMS Target Date Blank Report: " + (err.message || err));
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleDownloadFmsTargetDateBlankPdf = async () => {
+    setIsExporting(true);
+    try {
+      let data = internalAudits;
+      if (!Array.isArray(data) || data.length === 0) {
+        data = await fetchUnifiedInternalAuditData(true);
+        if (Array.isArray(data) && data.length > 0) {
+          setInternalAudits(data);
+        }
+      }
+      const filename = await exportFmsTargetDateBlankReportToPdf(data);
+      setShowExportMenu(false);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          sender: "bot",
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          text: `📄 **FMS Target Date Blank Report (PDF) Downloaded!** (${filename})\n\n• Printable PDF document detailing all FMS client engagements missing planned target completion dates.`,
+        },
+      ]);
+    } catch (err) {
+      console.error("FMS Target Date Blank PDF export error:", err);
+      alert("Failed to export FMS Target Date Blank PDF: " + (err.message || err));
     } finally {
       setIsExporting(false);
     }
   };
 
   /**
-   * Shared executor for PMS FMS workbook downloads so loading state and toast messages stay DRY.
+   * Shared executor for FMS and Senior Task workbook downloads so loading state and toast messages stay DRY.
    */
-  const downloadPmsWorkbook = async (exporterFn, buildMessage, failureLabel) => {
+  const runChatbotWorkbookExport = async (exporterFn, dataset, buildMessage, failureLabel, scopeArg) => {
     setIsExporting(true);
     try {
-      const filename = await exporterFn(pmsRecords);
+      const filename = await exporterFn(dataset, scopeArg);
       setShowExportMenu(false);
       setMessages((prev) => [
         ...prev,
@@ -1139,21 +1382,135 @@ export default function ExecutiveAIChatbot({
     }
   };
 
-  const handleDownloadPmsExcel = () =>
-    downloadPmsWorkbook(
+  const handleDownloadPmsExcel = (scopeOrEvent = "ALL") => {
+    const scope = typeof scopeOrEvent === "string" && scopeOrEvent.trim() ? scopeOrEvent.trim() : "ALL";
+    return runChatbotWorkbookExport(
       exportPmsFmsToExcel,
+      pmsRecords,
       (filename) =>
-        `📋 **PMS FMS Register Excel Downloaded!** (${filename})\n\n• Includes PMS client/process assignments (${pmsRecords.length} live/local records), Partner & Lead CA ownership, and the 17-step PMS protocol.`,
-      "PMS FMS Excel"
+        `📋 **PMS FMS Register Excel Downloaded!** (${filename})\n\n• Scope: **${scope === "ALL" ? `All ${pmsRecords.length} records` : scope}** with Partner & Lead CA ownership and the 17-step PMS protocol.`,
+      "PMS FMS Excel",
+      scope
     );
+  };
 
   const handleDownloadPmsBlankActualStatusExcel = () =>
-    downloadPmsWorkbook(
+    runChatbotWorkbookExport(
       exportPmsBlankActualStatusReportToExcel,
+      pmsRecords,
       (filename) =>
         `🚨 **PMS Blank Actual & Status Report Downloaded!** (${filename})\n\n• Multi-tab Excel workbook of PMS assignments where both Actual Completion Date and Status fields are blank.`,
       "PMS Blank Actual & Status Report"
     );
+
+  const handleDownloadPmsBlankActualStatusPdf = () =>
+    runChatbotWorkbookExport(
+      exportPmsBlankActualStatusReportToPdf,
+      pmsRecords,
+      (filename) =>
+        `📄 **PMS Blank Actual & Status Audit Report (PDF) Downloaded!** (${filename})\n\n• Formatted PDF document detailing all PMS assignments and responsible staff with blank actual & status fields.`,
+      "PMS Blank Actual & Status Report PDF"
+    );
+
+  const handleDownloadCompanyAuditExcel = async (filterType = "ALL", companyIdOrQuery = null) => {
+    setIsExporting(true);
+    try {
+      const filename = await exportCompanyCompletionToExcel(filterType, companyIdOrQuery);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          sender: "bot",
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          text: `📥 **Company Work Completion Excel Downloaded!** (${filename})\n\n• Multi-tab workbook: Executive Summary, Completed On Date, Completed Before Target (Early), Completed After Target (Delayed), and Complete Audit Register across all 14 corporate client sheets.`,
+        },
+      ]);
+    } catch (err) {
+      console.error("Error downloading company audit Excel:", err);
+      alert("Failed to export company audit completion Excel report.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleDownloadCompanyAuditPdf = async (filterType = "ALL", companyIdOrQuery = null) => {
+    setIsExporting(true);
+    try {
+      const filename = await exportCompanyCompletionToPdf(filterType, companyIdOrQuery);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          sender: "bot",
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          text: `📄 **Company Work Completion PDF Downloaded!** (${filename})\n\n• Executive corporate PDF report detailing work completed on target date, before target date, and delayed completions across client groups.`,
+        },
+      ]);
+    } catch (err) {
+      console.error("Error downloading company audit PDF:", err);
+      alert("Failed to export company audit completion PDF report.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleDownloadDelegationExcel = (tier = "senior", kind = "master", scopeOrEvent = "ALL") => {
+    const meta = getDelegationMeta(tier);
+    const dataset = meta.key === "junior" ? juniorTasks : seniorTasks;
+    const analytics = meta.key === "junior" ? juniorTaskAnalytics : seniorTaskAnalytics;
+    const ov = analytics.overview;
+    const scope = typeof scopeOrEvent === "string" && scopeOrEvent.trim() ? scopeOrEvent.trim() : "ALL";
+
+    if (kind === "master") {
+      return runChatbotWorkbookExport(
+        (list) => exportSeniorTaskMasterExcel(list, meta.key),
+        dataset,
+        (filename) =>
+          `🗂️ **${meta.label} AI Analytics Excel Downloaded!** (${filename})\n\n• Multi-tab workbook (${ov.totalTasks.toLocaleString("en-IN")} tasks): Executive Summary, Month-Wise Report, ${meta.shortLabel} & Assignor Scorecards, Cancelled Tasks, Overdue & Revisions, and Full Register.`,
+        `${meta.label} AI Analytics Excel`
+      );
+    }
+
+    const configMap = {
+      cancelled: {
+        fn: (list, s) => exportSeniorTaskCancelledExcel(list, s, meta.key),
+        label: `${meta.label} Cancellation Report`,
+        msg: (filename) =>
+          `❌ **${meta.label} Cancellation Report Downloaded!** (${filename})\n\n• Complete audit of **${ov.cancelledCount} cancelled tasks** (${ov.cancelRate}%), Top Cancelled ${meta.pluralLabel} & Assignors, Month-Wise Breakdown, Work Type analysis, and Cancellation Register.`,
+      },
+      overdue: {
+        fn: (list, s) => exportSeniorTaskOverdueExcel(list, s, meta.key),
+        label: `${meta.label} Overdue Report`,
+        msg: (filename) =>
+          `🚨 **${meta.label} Overdue & Delay Report Downloaded!** (${filename})\n\n• Audit of **${ov.overdueCount} open overdue tasks** & **${ov.doneLateCount} completed post-target tasks**, Top Overdue ${meta.pluralLabel} & Assignors, Month-Wise Overdue Trends, and Overdue Register.`,
+      },
+      done: {
+        fn: (list, s) => exportSeniorTaskDoneExcel(list, s, meta.key),
+        label: `${meta.label} Done Report`,
+        msg: (filename) =>
+          `✅ **${meta.label} Done (Completed) Report Downloaded!** (${filename})\n\n• Breakdown of **${ov.doneCount} completed tasks** (${ov.completionRate}% completion | ${ov.onTimeRate}% on-time), ${meta.shortLabel} & Assignor Scorecards, Month-Wise Trends, and Completed Register.`,
+      },
+      monthly: {
+        fn: (list, s) => exportSeniorTaskMonthlyExcel(list, s, meta.key),
+        label: `${meta.label} Monthly Report`,
+        msg: (filename) =>
+          `📅 **${meta.label} Monthly Report Downloaded!** (${filename})\n\n• Chronological month-wise scorecard covering **${analytics.monthly.length} months** (Total, Done, On-Time %, Overdue, Cancelled, Cancel %, Revisions), Top Month Performers, and Task Register.`,
+      },
+    };
+
+    const selected = configMap[kind] || configMap.monthly;
+    return runChatbotWorkbookExport(selected.fn, dataset, selected.msg, selected.label, scope);
+  };
+
+  const handleDownloadSeniorTaskExcel = () => handleDownloadDelegationExcel("senior", "master");
+  const handleDownloadSeniorTaskCancelledExcel = (scopeOrEvent) =>
+    handleDownloadDelegationExcel("senior", "cancelled", scopeOrEvent);
+  const handleDownloadSeniorTaskOverdueExcel = (scopeOrEvent) =>
+    handleDownloadDelegationExcel("senior", "overdue", scopeOrEvent);
+  const handleDownloadSeniorTaskDoneExcel = (scopeOrEvent) =>
+    handleDownloadDelegationExcel("senior", "done", scopeOrEvent);
+  const handleDownloadSeniorTaskMonthlyExcel = (scopeOrEvent) =>
+    handleDownloadDelegationExcel("senior", "monthly", scopeOrEvent);
 
   // --- QUERY CHECKERS ---
   const isDuplicacyQuery = (text = "") => {
@@ -1370,7 +1727,12 @@ export default function ExecutiveAIChatbot({
       };
     }
 
+    const hasExplicitMonth = Boolean(targetMonthSpec && targetMonthSpec.month && targetMonthSpec.year);
     const monthLogs = logs.filter((l) => isEntryInMonth(l, targetMonth.month, targetMonth.year));
+    if (hasExplicitMonth && monthLogs.length === 0) {
+      const availStr = availableMonths.map((m) => `\`${m.label}\` (${m.count})`).join(", ");
+      return `🔍 **Duplicacy in Daily Working — ${targetMonth.label}**\n\n• ⚠️ **0 daily working entries found for ${targetMonth.label}.**\n• 📅 **Available Months in Sheet**: ${availStr || "None"}`;
+    }
     const targetLogs = monthLogs.length > 0 ? monthLogs : logs;
     const isFiltered = monthLogs.length > 0;
     const activeLabel = isFiltered ? targetMonth.label : "All Records";
@@ -1435,9 +1797,19 @@ export default function ExecutiveAIChatbot({
     return response;
   };
 
-  const generateAiAndClaudeUsageReport = (logs = []) => {
+  const generateAiAndClaudeUsageReport = (logs = [], queryText = "") => {
+    const requestedMonth = parseTargetMonthFromQuery(queryText);
+    const scopedLogs = requestedMonth
+      ? logs.filter((l) => isEntryInMonth(l, requestedMonth.month, requestedMonth.year))
+      : logs;
+    const scopeLabel = requestedMonth ? requestedMonth.label : "All Recorded Months";
+
     if (!logs || logs.length === 0) {
       return `🤖 **AI & Claude Usage Audit Report**:\n\nNo task logs are currently available to analyze for AI usage.`;
+    }
+    if (requestedMonth && scopedLogs.length === 0) {
+      const avail = getAllAvailableMonths(logs).map((m) => m.label).join(", ");
+      return `🤖 **AI & Claude Usage Audit Report (${scopeLabel})**:\n\nNo daily working entries were found for **${scopeLabel}**.\n• **Available Months:** ${avail || "None"}`;
     }
 
     const AI_PATTERNS = [
@@ -1452,7 +1824,7 @@ export default function ExecutiveAIChatbot({
 
     const matchedEntries = [];
 
-    logs.forEach((entry) => {
+    scopedLogs.forEach((entry) => {
       const rawTask = (entry.taskDescription || "").trim();
       if (!rawTask) return;
 
@@ -1474,8 +1846,8 @@ export default function ExecutiveAIChatbot({
       }
     });
 
-    let response = `🤖 **AJC Executive Audit: Uses of AI & Claude in Daily Working**\n\n`;
-    response += `• 📊 **Total Tasks Audited**: **${logs.length.toLocaleString()} Entries**\n`;
+    let response = `🤖 **AJC Executive Audit: Uses of AI & Claude in Daily Working (${scopeLabel})**\n\n`;
+    response += `• 📊 **Total Tasks Audited**: **${scopedLogs.length.toLocaleString()} Entries**\n`;
     response += `• 🔍 **AI-Assisted Tasks Identified**: **${matchedEntries.length} Tasks**\n`;
 
     if (matchedEntries.length === 0) {
@@ -1656,16 +2028,19 @@ export default function ExecutiveAIChatbot({
     }
 
     // Role breakdown
+    const rc = isTargetMonthOnly && audit.kpis.targetMonthRoleCounts
+      ? audit.kpis.targetMonthRoleCounts
+      : audit.kpis.roleCounts;
     response += `━━━━━━━━━━━━━━━━━━━━\n`;
-    response += `### 📊 Department & Role Breakdown (< 9 Hours):\n`;
-    response += `• 🤝 **Partners**: ${audit.kpis.roleCounts.partners} Days\n`;
-    response += `• 👔 **Seniors**: ${audit.kpis.roleCounts.seniors} Days\n`;
-    response += `• 📚 **Articles**: ${audit.kpis.roleCounts.articles} Days\n`;
-    response += `• 🏭 **Plant Audit Staff**: ${audit.kpis.roleCounts.plantStaff} Days\n`;
-    response += `• 🏢 **Back Office**: ${audit.kpis.roleCounts.backOffice} Days\n\n`;
+    response += `### 📊 Department & Role Breakdown (< 9 Hours${isTargetMonthOnly ? ` — ${monthLabel}` : ""}):\n`;
+    response += `• 🤝 **Partners**: ${rc.partners} Days\n`;
+    response += `• 👔 **Seniors**: ${rc.seniors} Days\n`;
+    response += `• 📚 **Articles**: ${rc.articles} Days\n`;
+    response += `• 🏭 **Plant Audit Staff**: ${rc.plantStaff} Days\n`;
+    response += `• 🏢 **Back Office**: ${rc.backOffice} Days\n\n`;
 
-    // Today's live check
-    if (audit.todayShortfallList.length > 0) {
+    // Today's live check (show when not strictly auditing a past closed month)
+    if (!isTargetMonthOnly && audit.todayShortfallList.length > 0) {
       response += `━━━━━━━━━━━━━━━━━━━━\n`;
       response += `### 🚨 Today's Live Defaulters (< 9 Hours Logged Today):\n`;
       audit.todayShortfallList.slice(0, 8).forEach((t, i) => {
@@ -1679,25 +2054,40 @@ export default function ExecutiveAIChatbot({
     }
 
     // Top staff with most shortfall days
+    const topStaffList = isTargetMonthOnly
+      ? audit.staffSummary
+          .filter((s) => (s.targetMonthShortfallCount || 0) > 0)
+          .sort((a, b) => (b.targetMonthShortfallCount || 0) - (a.targetMonthShortfallCount || 0))
+      : audit.staffSummary;
+
     response += `━━━━━━━━━━━━━━━━━━━━\n`;
-    response += `### 👥 Staff with Frequent Shortfall Days:\n`;
-    audit.staffSummary.slice(0, 8).forEach((s, idx) => {
-      response += `${idx + 1}. **${s.name}** (${s.categoryRole} • ${s.department}) — **${s.shortfallDaysCount} Days < 9 hrs**\n`;
-      response += `   • **Avg Daily Time**: ${s.avgLoggedDuration} | **Cumulative Deficit**: ${s.totalShortfallDuration} | **Lowest Day**: ${s.minLoggedHoursStr}\n`;
-    });
-    response += `\n`;
+    response += `### 👥 Staff with Frequent Shortfall Days${isTargetMonthOnly ? ` (${monthLabel})` : ""}:\n`;
+    if (topStaffList.length === 0) {
+      response += `*No staff logged less than 9 hours in ${monthLabel}!* ✅\n\n`;
+    } else {
+      topStaffList.slice(0, 8).forEach((s, idx) => {
+        const dayCnt = isTargetMonthOnly ? s.targetMonthShortfallCount : s.shortfallDaysCount;
+        response += `${idx + 1}. **${s.name}** (${s.categoryRole} • ${s.department}) — **${dayCnt} Days < 9 hrs**\n`;
+        response += `   • **Avg Daily Time**: ${s.avgLoggedDuration} | **Cumulative Deficit**: ${s.totalShortfallDuration} | **Lowest Day**: ${s.minLoggedHoursStr}\n`;
+      });
+      response += `\n`;
+    }
 
     // Recent instances
     response += `━━━━━━━━━━━━━━━━━━━━\n`;
-    response += `### 📝 Recent Days Logged Under 9 Hours:\n`;
-    activeList.slice(0, 6).forEach((r, idx) => {
-      response += `${idx + 1}. **${r.rawName}** (${r.categoryRole}) — **${r.date}**\n`;
-      response += `   • **Logged Time**: **${r.loggedHoursStr}** (${r.loggedDurationText}) | **Shortfall**: **${r.shortfallDurationText}**\n`;
-      response += `   • **Tasks (${r.tasksCount})**: ${r.tasks.slice(0, 2).map((t) => `${t.company} (${t.timeGiven}): ${t.task.slice(0, 35)}`).join(" | ")}\n\n`;
-    });
+    response += `### 📝 ${isTargetMonthOnly ? `${monthLabel} Days` : "Recent Days"} Logged Under 9 Hours:\n`;
+    if (activeList.length === 0) {
+      response += `*0 instances recorded in ${monthLabel}.*\n\n`;
+    } else {
+      activeList.slice(0, 6).forEach((r, idx) => {
+        response += `${idx + 1}. **${r.rawName}** (${r.categoryRole}) — **${r.date}**\n`;
+        response += `   • **Logged Time**: **${r.loggedHoursStr}** (${r.loggedDurationText}) | **Shortfall**: **${r.shortfallDurationText}**\n`;
+        response += `   • **Tasks (${r.tasksCount})**: ${r.tasks.slice(0, 2).map((t) => `${t.company} (${t.timeGiven}): ${t.task.slice(0, 35)}`).join(" | ")}\n\n`;
+      });
+    }
 
     response += `📥 **Report Download**: Click below to download the official Excel register with full row-by-row task breakdown, staff summary, and live status:\n\n`;
-    response += `[DOWNLOAD_LESS_THAN_9_HOURS_EXCEL]`;
+    response += `[DOWNLOAD_LESS_THAN_9_HOURS_EXCEL:${targetMonth?.key || "CURRENT"}]`;
     return response;
   };
 
@@ -1708,13 +2098,14 @@ export default function ExecutiveAIChatbot({
     const isTargetMonthOnly = Boolean(targetMonth);
 
     const activeGroups = isTargetMonthOnly ? audit.targetMonthGroups : audit.groups;
+    const activeWorkClustersCount = activeGroups.filter((g) => !g.isLeaveOrHoliday).length;
 
     let response = `👥 **AJC Executive Audit: Same Task Logged Across Different Employees**\n\n`;
     response += `*Criteria: Same Work Location, Department, Group Name, Company Name, and Task Description logged by ≥ 2 different employees.*\n\n`;
 
     if (isTargetMonthOnly) {
       response += `• 📅 **Audit Period**: **${monthLabel}**\n`;
-      response += `• 🏢 **Active Work Task Clusters**: **${audit.kpis.activeWorkClustersCount} Clusters**\n`;
+      response += `• 🏢 **Active Work Task Clusters**: **${activeWorkClustersCount} Clusters** (Total: ${audit.kpis.targetMonthClusters})\n`;
       response += `• 📝 **Total Shared Task Entries**: **${audit.kpis.targetMonthSharedRows} Entries**\n`;
       response += `• 👥 **Staff Involved in ${monthLabel}**: **${audit.kpis.targetMonthStaffInvolved} Employees**\n\n`;
     } else {
@@ -1725,11 +2116,11 @@ export default function ExecutiveAIChatbot({
     }
 
     if (activeGroups.length === 0) {
-      response += `🎉 **Zero Cross-Employee Duplicate Tasks Found!** No identical tasks were logged across different employees.\n\n`;
+      response += `🎉 **Zero Cross-Employee Duplicate Tasks Found${isTargetMonthOnly ? ` for ${monthLabel}` : ""}!** No identical tasks were logged across different employees.\n\n`;
     } else {
       // Top Shared Task Clusters
       response += `━━━━━━━━━━━━━━━━━━━━\n`;
-      response += `### 🏢 Top Shared Task Clusters (Same Task Logged by Multiple Staff):\n`;
+      response += `### 🏢 Top Shared Task Clusters${isTargetMonthOnly ? ` (${monthLabel})` : ""}:\n`;
       activeGroups.slice(0, 8).forEach((g, idx) => {
         const clientLabel = g.company || g.groupName || "General Client";
         const tag = g.isLeaveOrHoliday ? " [Leave/Holiday]" : "";
@@ -1744,17 +2135,24 @@ export default function ExecutiveAIChatbot({
       }
 
       // Top Staff Involved
+      const staffList = isTargetMonthOnly
+        ? audit.staffSummary
+            .filter((s) => (s.targetMonthSharedEntries || 0) > 0)
+            .sort((a, b) => (b.targetMonthSharedEntries || 0) - (a.targetMonthSharedEntries || 0))
+        : audit.staffSummary;
+
       response += `━━━━━━━━━━━━━━━━━━━━\n`;
-      response += `### 👥 Staff Involved in Shared Task Clusters:\n`;
-      audit.staffSummary.slice(0, 6).forEach((s, idx) => {
-        response += `${idx + 1}. **${s.name}** (${s.categoryRole} • ${s.department}) — **${s.totalSharedEntries} Shared Entries** across **${s.distinctClustersCount} Clusters**\n`;
+      response += `### 👥 Staff Involved in Shared Task Clusters${isTargetMonthOnly ? ` (${monthLabel})` : ""}:\n`;
+      staffList.slice(0, 6).forEach((s, idx) => {
+        const sharedCnt = isTargetMonthOnly ? s.targetMonthSharedEntries : s.totalSharedEntries;
+        response += `${idx + 1}. **${s.name}** (${s.categoryRole} • ${s.department}) — **${sharedCnt} Shared Entries**${!isTargetMonthOnly ? ` across **${s.distinctClustersCount} Clusters**` : ""}\n`;
         response += `   • 🤝 **Frequent Co-Workers**: ${s.topCoWorkers}\n`;
       });
       response += `\n`;
     }
 
     response += `📥 **Report Download**: Click below to download the official 4-sheet Excel workbook tracking Month Tasks, Cluster Overview, Staff Involvement, and All-Time Cross-Employee Register:\n\n`;
-    response += `[DOWNLOAD_CROSS_EMPLOYEE_DUPLICATES_EXCEL]`;
+    response += `[DOWNLOAD_CROSS_EMPLOYEE_DUPLICATES_EXCEL:${targetMonth?.key || "CURRENT"}]`;
     return response;
   };
 
@@ -1958,6 +2356,30 @@ export default function ExecutiveAIChatbot({
     res += formatFmsSection(assignedAudits, "📑 **5. Internal Audit FMS Engagements**", "Client Audits");
     res += formatFmsSection(assignedPms, "📋 **6. PMS FMS Assignments**", "PMS Entries");
 
+    // 7. Senior & Junior Task (Delegation) Ownership
+    const cleanSeniorName = cleanSeniorPersonName(name);
+    if (cleanSeniorName) {
+      [
+        { list: seniorTasks, title: "🗂️ **7. Senior Task (Delegation) Summary**:" },
+        { list: juniorTasks, title: "🧑‍💻 **8. Junior Task (Delegation) Summary**:" },
+      ].forEach(({ list, title }) => {
+        if (!list || !list.length) return;
+        const asDoerTasks = list.filter((t) => cleanSeniorPersonName(t.doer) === cleanSeniorName);
+        const asAssignorTasks = list.filter((t) => cleanSeniorPersonName(t.assignor) === cleanSeniorName);
+        if (asDoerTasks.length > 0 || asAssignorTasks.length > 0) {
+          const doerOv = computeSeniorTaskAnalytics(asDoerTasks).overview;
+          const assignOv = computeSeniorTaskAnalytics(asAssignorTasks).overview;
+          res += `\n${title}\n`;
+          if (asDoerTasks.length > 0) {
+            res += `  • **As Doer (${doerOv.totalTasks} tasks)**: ✅ ${doerOv.doneCount} Done (${doerOv.completionRate}%) | ❌ ${doerOv.cancelledCount} Cancelled (${doerOv.cancelRate}%) | 🔄 ${doerOv.openCount} Open (*${doerOv.overdueCount} Overdue*) | 🔁 ${doerOv.totalRevisions} Rev\n`;
+          }
+          if (asAssignorTasks.length > 0) {
+            res += `  • **As Assignor (${assignOv.totalTasks} assigned)**: ✅ ${assignOv.doneCount} Done | ❌ ${assignOv.cancelledCount} Cancelled (${assignOv.cancelRate}%) | 🔄 ${assignOv.openCount} Open\n`;
+          }
+        }
+      });
+    }
+
     res += `\n💡 *Tip: Ask "Daily working of ${name}" for full task descriptions, or "Who is late today?" for firm-wide attendance.*`;
     return res;
   };
@@ -1993,10 +2415,19 @@ export default function ExecutiveAIChatbot({
     const hasSubmittedToday = todayTasks.length > 0 || (p && p.submittedToday);
     const todayTimeTotal = sumTimeGiven(todayTasks);
 
-    // Current month tasks
-    const curMonthLabel = getCurrentMonthLabel();
-    const curMonthEntries = empEntries.filter((e) => isEntryInMonth(e.date, curMonthLabel));
+    // Current or Requested month tasks
+    const requestedMonth = parseTargetMonthFromQuery(query);
+    const activeMonthSpec = requestedMonth || {
+      month: new Date().getMonth() + 1,
+      year: new Date().getFullYear(),
+      label: getCurrentMonthLabel(),
+    };
+    const curMonthLabel = activeMonthSpec.label;
+    const curMonthEntries = empEntries.filter((e) =>
+      isEntryInMonth(e, activeMonthSpec.month, activeMonthSpec.year)
+    );
     const curMonthDays = new Set(curMonthEntries.map((e) => formatExcelOrStringDate(e.date))).size;
+    const curMonthTimeTotal = sumTimeGiven(curMonthEntries);
 
     // Top clients / groups
     const clientCountMap = new Map();
@@ -2114,8 +2545,14 @@ export default function ExecutiveAIChatbot({
     res += `\n`;
 
     // 3. Monthly & Historical Performance
-    res += `📊 **3. Monthly & Historical Work Profile**:\n`;
-    res += `• 🗓️ **This Month (${curMonthLabel})**: **${curMonthEntries.length} tasks** logged across **${curMonthDays} days**\n`;
+    res += `📊 **3. ${requestedMonth ? `${curMonthLabel} Performance` : "Monthly & Historical Work Profile"}**:\n`;
+    res += `• 🗓️ **${curMonthLabel}**: **${curMonthEntries.length} tasks** logged across **${curMonthDays} days**${curMonthTimeTotal ? ` (${curMonthTimeTotal})` : ""}\n`;
+    if (requestedMonth && curMonthEntries.length > 0) {
+      res += `• 📌 **${curMonthLabel} Sample Tasks**:\n`;
+      curMonthEntries.slice(0, 4).forEach((t, i) => {
+        res += `  ${i + 1}. [${formatExcelOrStringDate(t.date)}] *${t.companyName || t.groupName || "General"}* — ${(t.taskDescription || "").slice(0, 70)} (${t.timeGiven || "N/A"})\n`;
+      });
+    }
     res += `• 📂 **Total All-Time Entries**: **${empEntries.length} tasks** in database\n`;
     if (topClients) {
       res += `• 🏢 **Primary Clients / Groups Handled**: ${topClients}\n`;
@@ -2259,6 +2696,179 @@ export default function ExecutiveAIChatbot({
     return res;
   };
 
+  // --- MONTHLY ATTENDANCE (SPECIFIC MONTH OR LATEST + COMPARISON) ---
+  const generateMonthlyAttendanceReport = (queryText = "") => {
+    const q = (queryText || "").toLowerCase();
+    if (!activeMonthlyData || !activeMonthlyData.monthlySummaries || activeMonthlyData.monthlySummaries.length === 0) {
+      return `📊 **Monthly Attendance Register is connecting to Google Sheet...**\n\nSyncing latest biometric and sheet records. Please try again in 2-3 seconds or visit the **Attendance Report** page.`;
+    }
+
+    const requestedMonth = parseTargetMonthFromQuery(q);
+    const wantsAllMonths = /\b(all\s+months|month[\s-]*wise|every\s+month|comparison)\b/i.test(q);
+    const scopeArg = requestedMonth ? requestedMonth : wantsAllMonths ? "ALL" : "CURRENT";
+    const resolved = resolveMonthlyAttendanceSlice(activeMonthlyData, scopeArg);
+
+    if (requestedMonth && (!resolved.ready || !resolved.found || !resolved.slice)) {
+      const avail = (resolved.availableMonths || []).map((m) => `\`${m.monthName}\` (${m.avgPct}%)`).join(", ");
+      return `📊 **Monthly Attendance Register — ${requestedMonth.label}**\n\n• ⚠️ **No attendance records found for ${requestedMonth.label}.**\n• 📅 **Available Months in Google Sheet**: ${avail || "None"}`;
+    }
+
+    const slice = resolved.slice;
+    const summaries = slice.monthlySummaries || [];
+    const workingDays = slice.workingDaysCount || 26;
+    const monthTitle = slice.monthName || slice.calendarMonth?.monthName || "Current Month";
+    const scopeKey = requestedMonth ? slice.monthKey || requestedMonth.key : wantsAllMonths ? "ALL" : (slice.monthKey || "CURRENT");
+
+    const totalStaff = summaries.length;
+    const avgPct = Math.round(summaries.reduce((acc, cur) => acc + (cur.attendancePct || 0), 0) / (totalStaff || 1));
+    const totalLateLogs = summaries.reduce((acc, cur) => acc + (cur.lateDays || 0), 0);
+    const totalAbsentDays = summaries.reduce((acc, cur) => acc + (cur.daysAbsent || 0), 0);
+    const allLateStaff = summaries.filter((e) => (e.lateDays || 0) > 0).sort((a, b) => (b.lateDays || 0) - (a.lateDays || 0));
+    const allAbsentStaff = summaries.filter((e) => (e.daysAbsent || 0) > 0).sort((a, b) => (b.daysAbsent || 0) - (a.daysAbsent || 0));
+
+    const top5 = [...summaries].sort((a, b) => (b.attendancePct || 0) - (a.attendancePct || 0)).slice(0, 5);
+    const topStr = top5
+      .map((e, idx) => `  ${idx + 1}. **${e.employee}** [${e.categoryShort}] — **${e.attendancePct}%** (${e.daysPresent} present / ${e.totalDays} days • ${e.totalWorkingHours})`)
+      .join("\n");
+
+    let out = `📊 **Monthly Attendance Register — ${monthTitle} (${workingDays} Working Days)**\n\n`;
+    out += `• 👥 **Total Staff Evaluated**: **${totalStaff} employees**\n`;
+    out += `• 📈 **Firm Average Attendance Rate**: **${avgPct}%**\n`;
+    out += `• ⏰ **Total Late Logs Recorded**: **${totalLateLogs}** (${allLateStaff.length} employees with late logs)\n`;
+    out += `• ❌ **Total Absent Days Recorded**: **${totalAbsentDays}** (${allAbsentStaff.length} employees with absences)\n`;
+    out += `• 🔗 **Source**: [Monthly Google Sheet](${MONTHLY_GOOGLE_SHEET_URL})\n\n`;
+
+    if (q.includes("late") && allLateStaff.length > 0) {
+      out += `━━━━━━━━━━━━━━━━━━━━\n⏰ **Top Late Staff in ${monthTitle}**:\n`;
+      allLateStaff.slice(0, 10).forEach((e, i) => {
+        out += `  ${i + 1}. **${e.employee}** [${e.categoryShort}] — **${e.lateDays} late days** (${e.daysPresent}/${e.totalDays} present)\n`;
+      });
+      out += `\n`;
+    } else if (q.includes("absent") && allAbsentStaff.length > 0) {
+      out += `━━━━━━━━━━━━━━━━━━━━\n❌ **Top Absent Staff in ${monthTitle}**:\n`;
+      allAbsentStaff.slice(0, 10).forEach((e, i) => {
+        out += `  ${i + 1}. **${e.employee}** [${e.categoryShort}] — **${e.daysAbsent} absent days** (${e.attendancePct}%)\n`;
+      });
+      out += `\n`;
+    }
+
+    out += `━━━━━━━━━━━━━━━━━━━━\n🏆 **Top Consistent Employees (${monthTitle})**:\n${topStr}\n`;
+
+    const availMonths = activeMonthlyData.availableMonths || [];
+    if (availMonths.length > 1) {
+      if (!requestedMonth || wantsAllMonths) {
+        out += `\n━━━━━━━━━━━━━━━━━━━━\n📅 **All Recorded Months Comparison**:\n`;
+        availMonths.forEach((m) => {
+          out += `• **${m.monthName}**: **${m.avgPct}%** avg | ${m.totalStaff} staff | ${m.workingDaysCount} working days | ${m.totalLateLogs} late | ${m.totalAbsentDays} absent\n`;
+        });
+      }
+      const chips = availMonths
+        .slice(-4)
+        .reverse()
+        .map((m) => `Attendance for ${m.monthName}|📊 ${m.monthName}`)
+        .join(";");
+      if (chips) out += `\n[ACTION_CHIPS:${chips}]\n`;
+    }
+
+    out += `\n👇 **Download ${monthTitle} Attendance Reports:**\n[DOWNLOAD_MONTHLY_BUTTONS:${scopeKey}]`;
+    return out;
+  };
+
+  // --- ALL 5 MODULES MONTHLY / SPECIFIC MONTH UNIFIED REPORT ---
+  const generateAllModulesMonthlyReport = (queryText = "") => {
+    const requestedMonth = parseTargetMonthFromQuery(queryText);
+
+    if (requestedMonth) {
+      const fmsSpec = parseFmsTargetMonth(requestedMonth.key);
+
+      // 1. Attendance
+      const attResolved = resolveMonthlyAttendanceSlice(activeMonthlyData, requestedMonth);
+      let attSection = "";
+      if (attResolved.ready && attResolved.found && attResolved.slice) {
+        const s = attResolved.slice;
+        const sums = s.monthlySummaries || [];
+        const avgPct = Math.round(sums.reduce((a, c) => a + (c.attendancePct || 0), 0) / (sums.length || 1));
+        const late = sums.reduce((a, c) => a + (c.lateDays || 0), 0);
+        const abs = sums.reduce((a, c) => a + (c.daysAbsent || 0), 0);
+        attSection = `• ✅ **${s.monthName}**: **${avgPct}% avg** across **${sums.length} staff** (${s.workingDaysCount} working days) | ⏰ Late: **${late}** | ❌ Absent: **${abs}**`;
+      } else {
+        const avail = (attResolved.availableMonths || []).map((m) => m.monthName).join(", ");
+        attSection = `• ⚠️ No Attendance records for **${requestedMonth.label}**${avail ? ` *(Available: ${avail})*` : ""}.`;
+      }
+
+      // 2. Senior & Junior Task (Delegation)
+      const summarizeTierMonth = (list, tierLabel) => {
+        const tf = filterTasksByNaturalMonth(list, queryText);
+        if (tf.filtered.length > 0) {
+          const ov = computeSeniorTaskAnalytics(tf.filtered).overview;
+          return `• ✅ **${tf.matchedLabel || requestedMonth.label}**: **${ov.totalTasks} ${tierLabel} tasks** | Done: **${ov.doneCount}** (${ov.completionRate}%, ${ov.onTimeRate}% on-time) | ❌ Cancelled: **${ov.cancelledCount}** (${ov.cancelRate}%) | 🚨 Overdue Open: **${ov.overdueCount}**`;
+        }
+        return `• ⚠️ **0 ${tierLabel} Delegation tasks** recorded for **${requestedMonth.label}**.`;
+      };
+      const stSection = summarizeTierMonth(seniorTasks, "Senior");
+      const jtSection = summarizeTierMonth(juniorTasks, "Junior");
+
+      // 3. Daily Working
+      const dwAudit = auditDailyWorkingMonthly(workingLogs, profiles, requestedMonth);
+      let dwSection = "";
+      if (dwAudit.bucket.totalEntries > 0) {
+        const b = dwAudit.bucket;
+        const top = b.staffRows[0];
+        dwSection = `• ✅ **${requestedMonth.label}**: **${b.totalEntries.toLocaleString("en-IN")} entries** by **${b.activeStaffCount} staff** across **${b.activeDaysCount} days** (⏱️ **${b.totalHoursText}**) | ⚠️ <9h: **${dwAudit.shortfallDays} days** | 🔁 Dupes: **${dwAudit.duplicateRows}**${top ? ` | 🏆 Top: **${top.name}**` : ""}`;
+      } else {
+        const avail = dwAudit.availableMonths.map((m) => m.label).join(", ");
+        dwSection = `• ⚠️ **0 Daily Working entries** found for **${requestedMonth.label}**${avail ? ` *(Available: ${avail})*` : ""}.`;
+      }
+
+      // 4. Internal Audit FMS
+      const iaMatched = internalAudits.map((it) => matchFmsRecordToMonth(it, fmsSpec, "iaPeriod")).filter((m) => m.matched);
+      const iaDirect = iaMatched.filter((m) => m.tier === "direct").length;
+      const iaAnnual = iaMatched.filter((m) => m.tier === "annual").length;
+      const iaSection = iaMatched.length > 0
+        ? `• ✅ **${requestedMonth.label}**: **${iaDirect} direct cycle/dated** + **${iaAnnual} annual FY** engagements (**${iaMatched.length} total applicable**)`
+        : `• ⚠️ **0 Internal Audit FMS cycles** matched for **${requestedMonth.label}**.`;
+
+      // 5. PMS FMS
+      const pmsMatched = pmsRecords.map((it) => matchFmsRecordToMonth(it, fmsSpec, "pmsPeriod")).filter((m) => m.matched);
+      const pmsSection = pmsRecords.length === 0
+        ? `• ℹ️ **0 PMS FMS records** currently loaded in PMS sheet/portal.`
+        : pmsMatched.length > 0
+          ? `• ✅ **${requestedMonth.label}**: **${pmsMatched.length} PMS engagement(s)** applicable`
+          : `• ⚠️ **0 PMS FMS records** matched for **${requestedMonth.label}**.`;
+
+      let out = `📊 **AJC Executive Monthly Report — ${requestedMonth.label} (All Modules)**\n`;
+      out += `_Strictly filtered to **${requestedMonth.label}** across Attendance, Senior & Junior Delegation, Daily Working, IA FMS & PMS FMS._\n\n`;
+      out += `### 1. 📊 Attendance\n${attSection}\n\n`;
+      out += `### 2A. 👔 Senior Task (Delegation)\n${stSection}\n\n`;
+      out += `### 2B. 🧑‍💻 Junior Task (Delegation)\n${jtSection}\n\n`;
+      out += `### 3. 📝 Daily Working\n${dwSection}\n\n`;
+      out += `### 4. 🛡️ Internal Audit FMS\n${iaSection}\n\n`;
+      out += `### 5. 📌 PMS FMS\n${pmsSection}\n\n`;
+      out += `[ACTION_CHIPS:Attendance for ${requestedMonth.label}|📊 Attendance Only;Senior delegation report for ${requestedMonth.label}|👔 Senior Delegation;Junior delegation report for ${requestedMonth.label}|🧑‍💻 Junior Delegation;Daily working report for ${requestedMonth.label}|📝 Daily Working Only;Internal Audit FMS for ${requestedMonth.label}|🛡️ IA FMS Only]\n\n`;
+      out += `👇 **Download ${requestedMonth.label} Reports (Strictly Filtered):**\n[DOWNLOAD_ALL_MODULES_MONTHLY:${requestedMonth.key}]`;
+      return out;
+    }
+
+    // Cross-module Month-Wise Overview
+    const attMonths = (activeMonthlyData?.availableMonths || []).map((m) => `**${m.monthName}** (${m.avgPct}%)`).join(", ");
+    const stMonths = seniorTaskAnalytics.monthly.slice(-6).map((m) => `**${m.monthLabel}** (${m.total})`).join(", ");
+    const jtMonths = juniorTaskAnalytics.monthly.slice(-6).map((m) => `**${m.monthLabel}** (${m.total})`).join(", ");
+    const dwOverview = auditDailyWorkingMonthly(workingLogs, profiles, "ALL");
+    const dwMonths = dwOverview.availableMonths.slice(0, 6).map((m) => `**${m.label}** (${m.totalEntries})`).join(", ");
+
+    let out = `📅 **AJC All-Modules Monthly Report Center**\n\n`;
+    out += `• 📊 **1. Attendance**: ${attMonths || "Syncing..."}\n`;
+    out += `• 👔 **2A. Senior Task (Delegation)**: ${seniorTaskAnalytics.monthly.length} months (${stMonths || "Syncing..."})\n`;
+    out += `• 🧑‍💻 **2B. Junior Task (Delegation)**: ${juniorTaskAnalytics.monthly.length} months (${jtMonths || "Syncing..."})\n`;
+    out += `• 📝 **3. Daily Working**: ${dwOverview.availableMonths.length} months (${dwMonths || "Syncing..."})\n`;
+    out += `• 🛡️ **4. Internal Audit FMS**: ${internalAudits.length} engagements mapped across Q1–Q4, Half-Year, FY & Live Dates\n`;
+    out += `• 📌 **5. PMS FMS**: ${pmsRecords.length} loaded PMS assignments\n\n`;
+    out += `💡 _Click any month below to view & download that exact month's report across ALL 5 modules:_\n`;
+    out += `[ACTION_CHIPS:October 2026 report|📅 October 2026;September 2026 report|📅 September 2026;August 2026 report|📅 August 2026;July 2026 report|📅 July 2026]\n\n`;
+    out += `[DOWNLOAD_ALL_MODULES_MONTHLY:ALL]`;
+    return out;
+  };
+
   // --- LOCAL RULE-BASED ANALYZER ---
   const generateLocalAnswer = (query) => {
     const q = query.toLowerCase();
@@ -2273,12 +2883,157 @@ export default function ExecutiveAIChatbot({
       return `🏖️ **Sunday Attendance Policy (Official Weekly Off)**:\n\n• 🏖️ **Sundays are official WEEKLY OFF days** (Offices are closed).\n• ❌ **Sundays are NEVER counted as absent days** for any employee.\n• ✅ **Absence is strictly counted only on working days** (Monday to Saturday).\n• 📊 All Monthly and Weekly registers calculate attendance compliance exclusively across working days!`;
     }
 
-    // 2.4 PMS FMS SPECIALIZED INTELLIGENCE
+    // 2.3 SENIOR & JUNIOR TASK (DELEGATION) SPECIALIZED INTELLIGENCE
+    const targetMonthSpec = parseTargetMonthFromQuery(q);
+    const hasSpecificMonth = Boolean(targetMonthSpec && !targetMonthSpec.isAllMonths);
+    const hasMonthWord = /\b(monthly|month|month-wise|month wise|this month|current month|whole month|entire month|all months)\b/i.test(q);
+    const hasAnyMonthRef = hasSpecificMonth || hasMonthWord;
+
+    const wantsJuniorTier =
+      q.includes("junior") ||
+      q.includes("juniot") ||
+      /\bjr\b/i.test(q) ||
+      q.includes("ajc_ds");
+    const wantsSeniorTier =
+      q.includes("senior") ||
+      q.includes("seniot") ||
+      /\bsr\b/i.test(q) ||
+      q.includes("ajc-ds");
+
+    const isCancelKeyword = /canc(?:e|l)+|cancle|canceled|cancelled/i.test(q);
     const isExplicitWorkingQuery =
       q.includes("daily working") ||
       q.includes("working sheet") ||
       q.includes("work log") ||
+      q.includes("work diary") ||
       q.includes("task description");
+    const isOtherModuleQuery =
+      isExplicitWorkingQuery ||
+      q.includes("same task") ||
+      q.includes("identical work") ||
+      q.includes("different employee") ||
+      q.includes("pms") ||
+      q.includes("internal audit") ||
+      q.includes("ia fms") ||
+      q.includes("audit fms") ||
+      /\bfms\b/i.test(q) ||
+      q.includes("attendance") ||
+      q.includes("late arrival") ||
+      q.includes("9 hour") ||
+      q.includes("duplic");
+    const isOverdueTaskKeyword =
+      !isOtherModuleQuery &&
+      (q.includes("overdue") || q.includes("past target") || q.includes("due within"));
+    const isDoneTaskKeyword =
+      !isOtherModuleQuery &&
+      !q.includes("not done") &&
+      ((q.includes("done") &&
+        (q.includes("task") ||
+          q.includes("senior") ||
+          q.includes("junior") ||
+          q.includes("delegat") ||
+          q.includes("report") ||
+          q.includes("repost") ||
+          q.includes("month") ||
+          q.trim() === "done")) ||
+        (q.includes("completed") &&
+          (q.includes("task") ||
+            q.includes("senior") ||
+            q.includes("junior") ||
+            q.includes("delegat") ||
+            q.includes("report") ||
+            q.includes("repost") ||
+            q.includes("month"))));
+    const isPureDownloadCommand =
+      q.startsWith("download") || q.startsWith("downlaod") || q.startsWith("export");
+
+    const isDelegationTaskIntent =
+      !isOtherModuleQuery &&
+      !isPureDownloadCommand &&
+      (wantsJuniorTier ||
+        wantsSeniorTier ||
+        q.includes("delegation") ||
+        q.includes("delegat") ||
+        q.includes("assignor") ||
+        q.includes("doer") ||
+        isCancelKeyword ||
+        isOverdueTaskKeyword ||
+        isDoneTaskKeyword ||
+        q.includes("revision") ||
+        (q.includes("task") &&
+          (q.includes("month") ||
+            q.includes("most") ||
+            q.includes("overdue") ||
+            q.includes("past target") ||
+            q.includes("pending") ||
+            q.includes("status") ||
+            q.includes("report") ||
+            q.includes("repost") ||
+            q.includes("work type") ||
+            q.includes("summary") ||
+            q.includes("how many") ||
+            q.includes("who") ||
+            q.includes("of ") ||
+            q.includes("for ") ||
+            q.includes("by "))));
+
+    const generateDelegationReportForTier = (tierKey) => {
+      const taskList = tierKey === "junior" ? juniorTasks : seniorTasks;
+      const analytics = tierKey === "junior" ? juniorTaskAnalytics : seniorTaskAnalytics;
+
+      if (!q.includes("who") && !q.includes("most")) {
+        const personTaskReport = getSeniorTaskPersonReport(taskList, query, tierKey);
+        if (personTaskReport) return personTaskReport;
+      }
+      if (isCancelKeyword) {
+        return getSeniorTaskCancelledReport(taskList, query, tierKey);
+      }
+      if (isOverdueTaskKeyword || q.includes("revision") || q.includes("delay")) {
+        return getSeniorTaskRevisionsAndOverdueReport(taskList, query, tierKey);
+      }
+      if (isDoneTaskKeyword) {
+        return getSeniorTaskDoneReport(taskList, query, tierKey);
+      }
+      if (q.includes("month") || Boolean(parseTargetMonthFromQuery(q))) {
+        return getSeniorTaskMonthWiseReport(taskList, query, tierKey);
+      }
+      const wtOrGroupReport = getSeniorTaskWorkTypeOrClientReport(taskList, query, tierKey);
+      if (wtOrGroupReport) return wtOrGroupReport;
+      return getSeniorTaskOverviewReport(taskList, analytics, tierKey);
+    };
+
+    if (isDelegationTaskIntent) {
+      if (wantsJuniorTier && !wantsSeniorTier) {
+        return generateDelegationReportForTier("junior");
+      }
+      if (wantsSeniorTier && !wantsJuniorTier) {
+        return generateDelegationReportForTier("senior");
+      }
+
+      // Neither Senior nor Junior explicitly requested: check Person match across both tiers first!
+      if (!q.includes("who") && !q.includes("most")) {
+        const seniorPerson = getSeniorTaskPersonReport(seniorTasks, query, "senior");
+        const juniorPerson = getSeniorTaskPersonReport(juniorTasks, query, "junior");
+        if (seniorPerson && juniorPerson) {
+          return `${seniorPerson}\n\n---\n\n${juniorPerson}`;
+        }
+        if (seniorPerson) return seniorPerson;
+        if (juniorPerson) return juniorPerson;
+      }
+
+      // Return Senior report paired with Junior summary & Junior download tag
+      const seniorReport = generateDelegationReportForTier("senior");
+      const juniorReport = generateDelegationReportForTier("junior");
+      const jOv = juniorTaskAnalytics.overview;
+      if (wantsSeniorTier && wantsJuniorTier) {
+        return `${seniorReport}\n\n---\n\n${juniorReport}`;
+      }
+      const jTagMatch = juniorReport.match(/\[DOWNLOAD_JUNIOR_TASK_[^\]]+\]/);
+      const jSummaryLine = `\n\n---\n\n### 🧑‍💻 Junior Task Delegation Snapshot:\n• 📌 **Total Junior Tasks**: **${jOv.totalTasks.toLocaleString("en-IN")}** | ✅ **Done**: **${jOv.doneCount.toLocaleString("en-IN")}** (${jOv.completionRate}%) | ❌ **Cancelled**: **${jOv.cancelledCount}** (${jOv.cancelRate}%) | 🚨 **Overdue**: **${jOv.overdueCount}**\n${jOv.topCancelledDoer ? `• 👤 **Most Cancelled Junior (Doer)**: **${jOv.topCancelledDoer.name}** (${jOv.topCancelledDoer.cancelled} cancelled)\n` : ""}${jTagMatch ? jTagMatch[0] : "[DOWNLOAD_JUNIOR_TASK_EXCEL]"}\n\n[ACTION_CHIPS:Junior delegation ${isCancelKeyword ? "cancelled report" : isOverdueTaskKeyword ? "overdue report" : isDoneTaskKeyword ? "done report" : "monthly report"}|🧑‍💻 Full Junior Report;Senior delegation ${isCancelKeyword ? "cancelled report" : isOverdueTaskKeyword ? "overdue report" : isDoneTaskKeyword ? "done report" : "monthly report"}|👔 Senior Full Report]`;
+      return `${seniorReport}${jSummaryLine}`;
+    }
+
+    // 2.4 PMS FMS SPECIALIZED INTELLIGENCE
     const isPmsFmsIntent =
       q.includes("pms fms") ||
       q.includes("pms step") ||
@@ -2333,6 +3088,11 @@ export default function ExecutiveAIChatbot({
         if (pmsPersonReport) return pmsPersonReport;
       }
 
+      // D0. Month-wise or Specific Month PMS FMS Report
+      if (hasAnyMonthRef) {
+        return getPmsMonthlyReport(pmsRecords, query);
+      }
+
       // D. Specific Client Company or Group PMS Status
       if (
         q.includes("status") ||
@@ -2350,20 +3110,122 @@ export default function ExecutiveAIChatbot({
       return getPmsOverview(pmsRecords);
     }
 
+    // 2.45 MULTI-COMPANY / GROUP WORK COMPLETION INTELLIGENCE
+    const isCompanyAuditIntent =
+      q.includes("work completion") ||
+      q.includes("completion report") ||
+      q.includes("completion on date") ||
+      q.includes("on date report") ||
+      q.includes("on target date") ||
+      q.includes("before target") ||
+      q.includes("after target") ||
+      q.includes("early completion") ||
+      q.includes("delayed completion") ||
+      q.includes("late completion") ||
+      q.includes("ahead of target") ||
+      q.includes("ahead of schedule") ||
+      q.includes("company completion") ||
+      q.includes("group completion") ||
+      (q.includes("target date") && (q.includes("completion") || q.includes("done") || q.includes("status") || q.includes("after") || q.includes("before") || q.includes("on date") || q.includes("variance"))) ||
+      COMPANY_AUDIT_ENDPOINTS.some(
+        (c) =>
+          (q.includes(c.shortName.toLowerCase()) || q.includes(c.name.toLowerCase())) &&
+          (q.includes("completion") || q.includes("target") || q.includes("audit") || q.includes("report") || q.includes("pms") || q.includes("status") || q.includes("task"))
+      ) ||
+      COMPANY_AUDIT_ENDPOINTS.some(
+        (c) => q.trim() === c.shortName.toLowerCase() || q.trim() === c.name.toLowerCase()
+      );
+
+    if (isCompanyAuditIntent) {
+      const activeData = companyAuditData || { allTasks: [], companySummaries: [] };
+
+      // Helper to match longest/most specific company name
+      const findBestMatchingCompany = () => {
+        const matches = COMPANY_AUDIT_ENDPOINTS.filter(
+          (c) => q.includes(c.shortName.toLowerCase()) || q.includes(c.name.toLowerCase())
+        );
+        return matches.sort((a, b) => b.shortName.length - a.shortName.length)[0] || null;
+      };
+
+      // 1. Work completion ON target date
+      if (
+        q.includes("on date") ||
+        q.includes("on target") ||
+        q.includes("on-time") ||
+        q.includes("ontime") ||
+        (q.includes("exact") && q.includes("target"))
+      ) {
+        const matchedComp = findBestMatchingCompany();
+        return getWorkCompletionOnDateReport(activeData, matchedComp?.shortName || null);
+      }
+
+      // 2. Work completion BEFORE target date (ahead of schedule / early)
+      if (
+        q.includes("before target") ||
+        q.includes("before date") ||
+        q.includes("early") ||
+        q.includes("ahead") ||
+        q.includes("before deadline")
+      ) {
+        const matchedComp = findBestMatchingCompany();
+        return getWorkCompletionBeforeTargetDateReport(activeData, matchedComp?.shortName || null);
+      }
+
+      // 3. Work completion AFTER target date (delayed / late)
+      if (
+        q.includes("after target") ||
+        q.includes("after date") ||
+        q.includes("delayed") ||
+        q.includes("delay") ||
+        q.includes("late") ||
+        q.includes("after deadline") ||
+        q.includes("past target")
+      ) {
+        const matchedComp = findBestMatchingCompany();
+        return getWorkCompletionAfterTargetDateReport(activeData, matchedComp?.shortName || null);
+      }
+
+      // 4. Specific single company completion / PMS report
+      const matchedComp = findBestMatchingCompany();
+      if (matchedComp) {
+        return getSingleCompanyCompletionReport(activeData, matchedComp.shortName);
+      }
+
+      // 5. Overall multi-company work completion overview
+      return getCompanyAuditOverviewReport(activeData);
+    }
+
     // 2.5 INTERNAL AUDIT FMS SPECIALIZED INTELLIGENCE
-    // A0. Employees with Blank Actual and Status fields
+    // A00. Target date blank in FMS
+    const isTargetDateBlank =
+      (q.includes("target") && (q.includes("blank") || q.includes("not filled") || q.includes("missing") || q.includes("not set") || q.includes("without"))) ||
+      (q.includes("target date") && (q.includes("blank") || q.includes("missing") || q.includes("null") || q.includes("report")));
+
+    if (isTargetDateBlank) {
+      return getFmsTargetDateBlankSummary(internalAudits);
+    }
+
+    // A0. Employees with Blank Actual and Status fields / Blank steps / Missed steps
     const isBlankActualStatus =
+      q.includes("blank step") ||
+      q.includes("missed step") ||
+      q.includes("which step") ||
+      q.includes("steps missed") ||
+      q.includes("steps are missed") ||
       (q.includes("actual") && q.includes("status")) ||
-      (q.includes("blank") && (q.includes("actual") || q.includes("status") || q.includes("audit") || q.includes("fms") || q.includes("field"))) ||
+      (q.includes("blank") && (q.includes("actual") || q.includes("status") || q.includes("audit") || q.includes("fms") || q.includes("field") || q.includes("step"))) ||
       (q.includes("both are blank") || q.includes("both blank"));
 
     if (isBlankActualStatus) {
       return getBlankActualAndStatusSummary(internalAudits);
     }
 
-    // A. The 17 Steps SOP Protocol
+    // A. The 18 Steps SOP Protocol
     if (
+      q.includes("18 step") ||
       q.includes("17 step") ||
+      q.includes("18 steps") ||
+      q.includes("17 steps") ||
       q.includes("fms step") ||
       q.includes("steps of internal audit") ||
       q.includes("internal audit step") ||
@@ -2372,7 +3234,7 @@ export default function ExecutiveAIChatbot({
       q.includes("fms sop") ||
       q.includes("ia step")
     ) {
-      return get17StepsGuideReport();
+      return get18StepsGuideReport();
     }
 
     // B. Plant vs City Internal Audits
@@ -2399,6 +3261,14 @@ export default function ExecutiveAIChatbot({
       if (partnerOrSeniorReport) return partnerOrSeniorReport;
     }
 
+    // D0. Month-wise or Specific Month Internal Audit FMS Report
+    if (
+      (q.includes("internal audit") || q.includes("ia fms") || q.includes("audit fms") || /\bfms\b/i.test(q) || /\bia\b/i.test(q) || cleanQ === "audit" || (q.includes("audit") && !isExplicitWorkingQuery && !q.includes("attendance"))) &&
+      hasAnyMonthRef
+    ) {
+      return getInternalAuditMonthlyReport(internalAudits, query);
+    }
+
     // D. Specific Client Company or Group Audit (e.g. "audit of shree hanuman loha", "balajee audit status", "bhagwati audit")
     if (
       (q.includes("audit") || q.includes("ia") || q.includes("fms")) &&
@@ -2413,10 +3283,13 @@ export default function ExecutiveAIChatbot({
       q.includes("internal audit") ||
       q.includes("ia fms") ||
       q.includes("audit fms") ||
+      /\bfms\b/i.test(q) ||
+      /\bia\b/i.test(q) ||
       cleanQ === "fms" ||
       cleanQ === "internal audit fms" ||
       cleanQ === "ia" ||
-      cleanQ === "audit"
+      cleanQ === "audit" ||
+      q.includes("flow management system")
     ) {
       return getInternalAuditOverview(internalAudits);
     }
@@ -2431,7 +3304,7 @@ export default function ExecutiveAIChatbot({
     }
 
     if (isAiUsageQuery(q)) {
-      return generateAiAndClaudeUsageReport(workingLogs);
+      return generateAiAndClaudeUsageReport(workingLogs, query);
     }
 
     if (isMoreThanTwoDaysQuery(q)) {
@@ -2440,6 +3313,20 @@ export default function ExecutiveAIChatbot({
 
     if (isLessThanNineHoursQuery(q)) {
       return generateLessThanNineHoursReport(workingLogs, profiles, query);
+    }
+
+    // Monthly Daily Working query (check before individual targetMatch if no employee is named, or when explicitly asking daily working monthly/month)
+    const isDailyWorkingModuleQuery =
+      isExplicitWorkingQuery ||
+      ((q.includes("working") || q.includes("diary")) && !q.includes("working hour") && !q.includes("work hour") && !q.includes("working day") && !q.includes("attendance"));
+    const targetMatchForWorkCheck = matchTargetEmployee(query);
+    if (
+      !isPureDownloadCommand &&
+      isDailyWorkingModuleQuery &&
+      hasAnyMonthRef &&
+      !targetMatchForWorkCheck
+    ) {
+      return getDailyWorkingMonthlyChatbotReport(workingLogs, profiles, query);
     }
 
     // Defaulters query
@@ -2491,26 +3378,78 @@ export default function ExecutiveAIChatbot({
       /\b(xlsx|excel|pdf)\b/i.test(q);
 
     if (isAskingToDownload) {
+      const isDelegationDownload =
+        !isOtherModuleQuery &&
+        (wantsJuniorTier ||
+          wantsSeniorTier ||
+          q.includes("delegat") ||
+          isCancelKeyword ||
+          isOverdueTaskKeyword ||
+          isDoneTaskKeyword ||
+          (q.includes("task") && !q.includes("same task")));
+
+      if (isDelegationDownload) {
+        const dlScope = q.replace(/[[\]]/g, " ").trim() || "ALL";
+        const buildTierDownloadMsg = (tierKey) => {
+          const meta = getDelegationMeta(tierKey);
+          const ov = (tierKey === "junior" ? juniorTaskAnalytics : seniorTaskAnalytics).overview;
+          const mCount = (tierKey === "junior" ? juniorTaskAnalytics : seniorTaskAnalytics).monthly.length;
+          if (isCancelKeyword) {
+            return `❌ **${meta.label} Cancellation Report Download**:\n\nClick below to download the multi-tab Excel workbook detailing **${ov.cancelledCount} cancelled tasks**, Top Cancelled ${meta.pluralLabel} & Assignors, and Month-Wise Cancellations:\n\n[DOWNLOAD_${meta.tagPrefix}_CANCEL_EXCEL:${dlScope}]`;
+          }
+          if (isOverdueTaskKeyword || q.includes("revision") || q.includes("delay")) {
+            return `🚨 **${meta.label} Overdue & Delay Report Download**:\n\nClick below to download the multi-tab Excel workbook detailing **${ov.overdueCount} open overdue tasks** and **${ov.doneLateCount} completed post-target tasks**, Top Overdue ${meta.pluralLabel} & Assignors, and Month-Wise Overdue Trends:\n\n[DOWNLOAD_${meta.tagPrefix}_OVERDUE_EXCEL:${dlScope}]`;
+          }
+          if (isDoneTaskKeyword) {
+            return `✅ **${meta.label} Done (Completed) Report Download**:\n\nClick below to download the multi-tab Excel workbook detailing **${ov.doneCount} completed tasks** (**${ov.completionRate}% completion rate** | **${ov.onTimeRate}% on-time**), ${meta.shortLabel}/Assignor Scorecards, and Month-Wise Trends:\n\n[DOWNLOAD_${meta.tagPrefix}_DONE_EXCEL:${dlScope}]`;
+          }
+          if (q.includes("month") || Boolean(parseTargetMonthFromQuery(q))) {
+            return `📅 **${meta.label} Monthly Report Download**:\n\nClick below to download the multi-tab Excel workbook covering **${mCount} months**, Done vs Open vs Overdue vs Cancelled breakdown, Month Performers, and Task Register:\n\n[DOWNLOAD_${meta.tagPrefix}_MONTHLY_EXCEL:${dlScope}]`;
+          }
+          return `🗂️ **${meta.label} AI Analytics Workbook Download**:\n\nClick below to download the multi-tab Excel report covering all **${ov.totalTasks.toLocaleString("en-IN")} ${meta.label}s**, Month-Wise Trends, ${meta.shortLabel}/Assignor Scorecards, and Overdue/Revisions:\n\n[DOWNLOAD_${meta.tagPrefix}_EXCEL]`;
+        };
+
+        if (wantsJuniorTier && !wantsSeniorTier) {
+          return buildTierDownloadMsg("junior");
+        }
+        if (wantsSeniorTier && !wantsJuniorTier) {
+          return buildTierDownloadMsg("senior");
+        }
+        return `${buildTierDownloadMsg("senior")}\n\n---\n\n${buildTierDownloadMsg("junior")}`;
+      }
+      const dlScope = targetMonthSpec?.key || "ALL";
       if (q.includes("pms") || q.includes("performance management") || q.includes("process management")) {
         if (q.includes("blank") || (q.includes("actual") && q.includes("status"))) {
           return `🚨 **PMS Blank Actual & Status Report Download**:\n\nClick below to download the Excel workbook of PMS assignments where actual completion date and status fields are both blank:\n\n[DOWNLOAD_PMS_BLANK_ACTUAL_STATUS_EXCEL]`;
         }
-        return `📋 **PMS FMS Register Download**:\n\nClick below to download the complete multi-tab PMS Excel workbook with client/process assignments and the 17-step workflow:\n\n[DOWNLOAD_PMS_EXCEL]`;
+        return `📋 **PMS FMS Register Download${targetMonthSpec ? ` (${targetMonthSpec.label})` : ""}**:\n\nClick below to download the PMS Excel workbook${targetMonthSpec ? ` filtered strictly for **${targetMonthSpec.label}**` : " with client/process assignments and the 17-step workflow"}:\n\n[DOWNLOAD_PMS_EXCEL:${dlScope}]`;
       }
-      if (q.includes("blank") || (q.includes("actual") && q.includes("status"))) {
-        return `🚨 **Blank Actual & Status Report Download**:\n\nClick below to download the official Excel workbook of employees who have actual and status field both blank:\n\n[DOWNLOAD_BLANK_ACTUAL_STATUS_EXCEL]`;
+      if (
+        (q.includes("target") && (q.includes("blank") || q.includes("not filled") || q.includes("missing"))) ||
+        (q.includes("target date") && q.includes("blank"))
+      ) {
+        return `📅 **FMS Target Date Blank Report Download**:\n\nClick below to download the official report (available in Excel or PDF format) of FMS engagements where Target Date is blank / unassigned:\n\n[DOWNLOAD_FMS_TARGET_DATE_BLANK_EXCEL]`;
+      }
+      if (
+        q.includes("blank") ||
+        (q.includes("actual") && q.includes("status")) ||
+        q.includes("missed step") ||
+        q.includes("blank step") ||
+        q.includes("which step")
+      ) {
+        return `🚨 **Blank Steps & Actual Status Report Download**:\n\nClick below to download the official report (available in Excel or PDF format) detailing missed steps across all 18 FMS milestones:\n\n[DOWNLOAD_BLANK_ACTUAL_STATUS_EXCEL]`;
       }
       if (
         isCrossEmployeeDuplicateQuery(q) ||
         (q.includes("different") && (q.includes("employee") || q.includes("staff") || q.includes("name")))
       ) {
-        return `👥 **Same Task Across Different Employees Report Download**:\n\nClick below to download the official multi-tab Excel workbook tracking identical work logged across multiple employees with cluster breakdown, staff involvement register, and all-time log:\n\n[DOWNLOAD_CROSS_EMPLOYEE_DUPLICATES_EXCEL]`;
+        return `👥 **Same Task Across Different Employees Report Download${targetMonthSpec ? ` (${targetMonthSpec.label})` : ""}**:\n\nClick below to download the official multi-tab Excel workbook tracking identical work logged across multiple employees:\n\n[DOWNLOAD_CROSS_EMPLOYEE_DUPLICATES_EXCEL:${targetMonthSpec?.key || "CURRENT"}]`;
       }
-      if (q.includes("audit") || q.includes("fms") || q.includes("ia")) {
-        return `📥 **Internal Audit FMS Register Download**:\n\nClick below to download the complete multi-tab Excel workbook with all 89 client assignments across 46 corporate groups and the 17-step SOP:\n\n[DOWNLOAD_INTERNAL_AUDIT_EXCEL]`;
+      if (q.includes("audit") || q.includes("fms") || /\bia\b/i.test(q)) {
+        return `📥 **FMS Register Download${targetMonthSpec ? ` (${targetMonthSpec.label})` : ""}**:\n\nClick below to download the official FMS Excel workbook${targetMonthSpec ? ` filtered for **${targetMonthSpec.label}**` : " with client assignments and the 17-step SOP"}:\n\n[DOWNLOAD_INTERNAL_AUDIT_EXCEL:${dlScope}]`;
       }
       if (q.includes("duplic") || q.includes("repeat")) {
-        return `📥 **Duplicacy Audit Report Download**:\n\nClick below to download the row-by-row Excel register:\n\n[DOWNLOAD_DUPLICACY_BUTTON:CURRENT]`;
+        return `📥 **Duplicacy Audit Report Download**:\n\nClick below to download the row-by-row Excel register:\n\n[DOWNLOAD_DUPLICACY_BUTTON:${targetMonthSpec?.key || "CURRENT"}]`;
       }
       if (q.includes("ai") || q.includes("claude")) {
         return `📥 **AI & Claude Usage Report Download**:\n\nClick below to download the AI usage audit workbook:\n\n[DOWNLOAD_AI_REPORT_BUTTON]`;
@@ -2519,47 +3458,47 @@ export default function ExecutiveAIChatbot({
         return `📥 **Staff Not Filled > 2 Days Report Download**:\n\nClick below to download the official defaulters report:\n\n[DOWNLOAD_TWO_DAYS_DEFAULTERS_BUTTON]`;
       }
       if (q.includes("9 hour") || q.includes("9 hr") || q.includes("less than 9") || q.includes("under 9")) {
-        return `⏱️ **Employees with Less Than 9 Hours Report Download**:\n\nClick below to download the official Excel register with daily shortfall log, employee summary, and live status:\n\n[DOWNLOAD_LESS_THAN_9_HOURS_EXCEL]`;
+        return `⏱️ **Employees with Less Than 9 Hours Report Download${targetMonthSpec ? ` (${targetMonthSpec.label})` : ""}**:\n\nClick below to download the official Excel register:\n\n[DOWNLOAD_LESS_THAN_9_HOURS_EXCEL:${targetMonthSpec?.key || "CURRENT"}]`;
       }
       if (q.includes("working") || q.includes("task") || q.includes("diary")) {
+        if (hasAnyMonthRef) {
+          return `📝 **Daily Working Monthly Report Download (${targetMonthSpec ? targetMonthSpec.label : "All Months"})**:\n\n[DOWNLOAD_DAILY_WORKING_MONTHLY_EXCEL:${dlScope}]`;
+        }
         return `📥 **Daily Working Reports Download**:\n\nChoose your desired format below:\n\n[DOWNLOAD_DAILY_WORKING_BUTTONS]`;
       }
       if (q.includes("weekly")) {
         return `📥 **Weekly Attendance Report Download (${activeWeeklyData?.weekRange || "Past 7 Days"})**:\n\n[DOWNLOAD_WEEKLY_BUTTONS]`;
       }
-      if (q.includes("monthly")) {
-        return `📥 **Monthly Attendance Register Download (${activeMonthlyData?.monthName || "Current Month"})**:\n\n[DOWNLOAD_MONTHLY_BUTTONS]`;
+      if (hasSpecificMonth && !q.includes("attendance")) {
+        return `📥 **All-Modules Monthly Downloads — ${targetMonthSpec.label}**:\n\nEvery workbook below is strictly scoped to **${targetMonthSpec.label}**:\n\n[DOWNLOAD_ALL_MODULES_MONTHLY:${targetMonthSpec.key}]`;
+      }
+      if (hasAnyMonthRef) {
+        const resolvedAtt = resolveMonthlyAttendanceSlice(activeMonthlyData, targetMonthSpec || "CURRENT");
+        const attLabel = resolvedAtt.slice?.monthName || targetMonthSpec?.label || activeMonthlyData?.monthName || "Current Month";
+        return `📥 **Monthly Attendance Register Download (${attLabel})**:\n\n[DOWNLOAD_MONTHLY_BUTTONS:${targetMonthSpec?.key || "CURRENT"}]`;
       }
       // General download card
       return `📥 **Download Executive Reports (Attendance & Daily Working)**:\n\nChoose any report to download immediately in Excel (.xlsx) or PDF (.pdf):\n\n[DOWNLOAD_ALL_BUTTONS]`;
     }
 
-    // 6. Monthly Attendance Queries
-    const isMonthlyQuery =
-      /\b(monthly|month|october|this month|current month|whole month|entire month)\b/i.test(q) ||
-      /\b(in\s+month|for\s+the\s+month|month's)\b/i.test(q);
+    // 6. All-Modules Specific Month / Monthly Report & Monthly Attendance Queries
+    const hasAttendanceKeyword =
+      q.includes("attendance") ||
+      q.includes("present") ||
+      q.includes("absent") ||
+      q.includes("late") ||
+      q.includes("punch") ||
+      q.includes("biometric");
+    const isCrossModuleMonthlyRequest =
+      (hasSpecificMonth && !hasAttendanceKeyword) ||
+      (!hasAttendanceKeyword && (q.includes("all module") || cleanQ === "monthly" || /\bmonthly\s+(?:report|summary)\b/i.test(q)));
 
-    if (isMonthlyQuery && !q.includes("duplic") && !q.includes("working task")) {
-      if (!activeMonthlyData || !activeMonthlyData.monthlySummaries || activeMonthlyData.monthlySummaries.length === 0) {
-        return `📊 **Monthly Attendance Register is connecting to Google Sheet...**\n\nSyncing latest biometric and sheet records for current month. Please try again in 2-3 seconds or visit the **Attendance Report** page.`;
-      }
+    if (isCrossModuleMonthlyRequest) {
+      return generateAllModulesMonthlyReport(query);
+    }
 
-      const summaries = activeMonthlyData.monthlySummaries;
-      const workingDays = activeMonthlyData.workingDaysCount || 26;
-      const totalStaff = summaries.length;
-      const avgPct = Math.round(summaries.reduce((acc, cur) => acc + (cur.attendancePct || 0), 0) / (totalStaff || 1));
-      const totalLateLogs = summaries.reduce((acc, cur) => acc + (cur.lateDays || 0), 0);
-      const totalAbsentDays = summaries.reduce((acc, cur) => acc + (cur.daysAbsent || 0), 0);
-
-      const allLateStaff = summaries.filter((e) => (e.lateDays || 0) > 0);
-      const allAbsentStaff = summaries.filter((e) => (e.daysAbsent || 0) > 0);
-
-      const top5 = [...summaries].sort((a, b) => (b.attendancePct || 0) - (a.attendancePct || 0)).slice(0, 5);
-      const topStr = top5
-        .map((e, idx) => `  ${idx + 1}. **${e.employee}** [${e.categoryShort}] — **${e.attendancePct}%** (${e.daysPresent} present / ${e.totalDays} days • ${e.totalWorkingHours})`)
-        .join("\n");
-
-      return `📊 **Monthly Attendance Register Overview (${workingDays} Working Days)**:\n\n• 👥 **Total Staff Evaluated**: **${totalStaff} employees**\n• 📈 **Firm Average Attendance Rate**: **${avgPct}%**\n• ⏰ **Total Late Logs Recorded**: **${totalLateLogs}** (${allLateStaff.length} employees with late logs)\n• ❌ **Total Absent Days Recorded**: **${totalAbsentDays}** (${allAbsentStaff.length} employees with absences)\n• 🔗 **Source**: [Monthly Google Sheet](${MONTHLY_GOOGLE_SHEET_URL})\n\n━━━━━━━━━━━━━━━━━━━━\n🏆 **Top Consistent Employees This Month**:\n${topStr}\n\n👇 **Download Monthly Reports:**\n[DOWNLOAD_MONTHLY_BUTTONS]`;
+    if (hasAnyMonthRef && !q.includes("duplic") && !q.includes("working task") && !q.includes("weekly")) {
+      return generateMonthlyAttendanceReport(query);
     }
 
     // 7. Weekly Attendance Queries
@@ -2710,11 +3649,11 @@ export default function ExecutiveAIChatbot({
         ? allLate.slice(0, 5).map((e) => `• **${e.name}** (${e.formattedIn} — *${e.lateDuration} late*)`).join("\n")
         : "• *All present staff punched in on time or within grace! 🎉*";
 
-      return `👑 **AJC Executive Briefing for MD Sir**\n• 📅 **Date**: ${new Date().toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}\n\n### ⏰ 1. Live Attendance Status:\n• 👥 **Total Staff**: **${total} employees** | ✅ **Present**: **${present.length}** (🌅 ${allEarly.length} early, 🟡 ${allWithinGrace.length} in grace)\n• ⏰ **Late Arrivals (> Grace)**: **${allLate.length}** | ❌ **Absent**: **${absent.length}** | 🏢 **Client Sites**: **${atClient.length}**\n${allLate.length > 0 ? `\n**Top Late Arrivals**:\n${lateList}\n` : ""}\n• 👔 **Seniors**: ${senior.present.length}/${senior.total} In | 🤝 **Partners**: ${partner.present.length}/${partner.total} In | 📚 **Articles**: ${article.present.length}/${article.total} In | 🏭 **Plant**: ${plant.present.length}/${plant.total} In\n\n### 📝 2. Daily Working Submission Status:\n• 📊 **Work Submitted Today**: **${workingKpis.workSubmitted} staff** (${workingKpis.submissionRate}% of present staff)\n• ⚠️ **Present on Punch but Work Pending**: **${workingKpis.presentWithoutWork.length} staff**\n• 🚨 **Historical Missing Dates Backlog**: **${workingKpis.withMissingDates.length} staff** (${workingKpis.totalMissingInstances} total instances)\n\n### 📑 3. Internal Audit FMS & PMS FMS Intelligence:\n• 🏢 **Internal Audit FMS**: **${internalAudits.length || 89} engagements** across 46 corporate groups (**17-Step FMS**)\n• 📋 **PMS FMS (Process Management)**: **${pmsRecords.length} active entries** tracked across the **17-Step PMS Workflow** (${pmsRecords.length === 0 ? "connect live sheet via ⚙️ API Config or add entries in PMS Form" : "synced with Portal/Sheet"})\n• 🏭 **Coverage Split**: Plant vs City assignments tracked by Partner & Lead CA\n\n### 🔍 4. Executive Audit Shortcuts:\n• Ask: *"Internal audit FMS status"* or *"PMS status"* or *"Explain 17 steps of PMS"*\n• Ask: *"Duplicacy in October"* for row-by-row 6-field duplicate task check\n• Ask: *"Uses of AI or Claude in daily working"*\n• Ask: *"Staff not filled daily working > 2 days"*\n\n👇 **Download Today's Executive Reports:**\n[DOWNLOAD_ALL_BUTTONS]`;
+      return `👑 **AJC Executive Briefing for MD Sir**\n• 📅 **Date**: ${new Date().toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}\n\n### ⏰ 1. Live Attendance Status:\n• 👥 **Total Staff**: **${total} employees** | ✅ **Present**: **${present.length}** (🌅 ${allEarly.length} early, 🟡 ${allWithinGrace.length} in grace)\n• ⏰ **Late Arrivals (> Grace)**: **${allLate.length}** | ❌ **Absent**: **${absent.length}** | 🏢 **Client Sites**: **${atClient.length}**\n${allLate.length > 0 ? `\n**Top Late Arrivals**:\n${lateList}\n` : ""}\n• 👔 **Seniors**: ${senior.present.length}/${senior.total} In | 🤝 **Partners**: ${partner.present.length}/${partner.total} In | 📚 **Articles**: ${article.present.length}/${article.total} In | 🏭 **Plant**: ${plant.present.length}/${plant.total} In\n\n### 🗂️ 2. Senior & Junior Delegation Live Snapshot:\n• 👔 **Senior Tasks**: **${seniorTaskAnalytics.overview.totalTasks.toLocaleString("en-IN")}** (${seniorTaskAnalytics.overview.dateRange}) | ✅ **${seniorTaskAnalytics.overview.doneCount.toLocaleString("en-IN")}** (${seniorTaskAnalytics.overview.completionRate}%) | ❌ **${seniorTaskAnalytics.overview.cancelledCount}** Cancelled | 🚨 **${seniorTaskAnalytics.overview.overdueCount}** Overdue\n• 🧑‍💻 **Junior Tasks**: **${juniorTaskAnalytics.overview.totalTasks.toLocaleString("en-IN")}** (${juniorTaskAnalytics.overview.dateRange}) | ✅ **${juniorTaskAnalytics.overview.doneCount.toLocaleString("en-IN")}** (${juniorTaskAnalytics.overview.completionRate}%) | ❌ **${juniorTaskAnalytics.overview.cancelledCount}** Cancelled | 🚨 **${juniorTaskAnalytics.overview.overdueCount}** Overdue\n${seniorTaskAnalytics.overview.topCancelledDoer ? `• 👤 **Most Cancelled Senior**: **${seniorTaskAnalytics.overview.topCancelledDoer.name}** (${seniorTaskAnalytics.overview.topCancelledDoer.cancelled} cancelled)\n` : ""}${juniorTaskAnalytics.overview.topCancelledDoer ? `• 👤 **Most Cancelled Junior**: **${juniorTaskAnalytics.overview.topCancelledDoer.name}** (${juniorTaskAnalytics.overview.topCancelledDoer.cancelled} cancelled)\n` : ""}\n### 📝 3. Daily Working Submission Status:\n• 📊 **Work Submitted Today**: **${workingKpis.workSubmitted} staff** (${workingKpis.submissionRate}% of present staff)\n• ⚠️ **Present on Punch but Work Pending**: **${workingKpis.presentWithoutWork.length} staff**\n• 🚨 **Historical Missing Dates Backlog**: **${workingKpis.withMissingDates.length} staff** (${workingKpis.totalMissingInstances} total instances)\n\n### 📑 4. Internal Audit FMS & PMS FMS Intelligence:\n• 🏢 **Internal Audit FMS**: **${internalAudits.length || 89} engagements** across 46 corporate groups (**18-Step FMS**)\n• 📋 **PMS FMS (Process Management)**: **${pmsRecords.length} active entries** tracked across the **17-Step PMS Workflow** (${pmsRecords.length === 0 ? "connect live sheet via ⚙️ API Config or add entries in PMS Form" : "synced with Portal/Sheet"})\n• 🏭 **Coverage Split**: Plant vs City assignments tracked by Partner & Lead CA\n\n### 🔍 5. Executive Audit Shortcuts:\n• Ask: *"Month-wise senior task report"* or *"Who cancelled the task most?"*\n• Ask: *"Internal audit FMS status"* or *"FMS target date blank"* or *"Which steps are missed in FMS"* or *"Explain 18 steps of FMS"*\n• Ask: *"Duplicacy in October"* for row-by-row 6-field duplicate task check\n• Ask: *"Uses of AI or Claude in daily working"*\n• Ask: *"Staff not filled daily working > 2 days"*\n\n👇 **Download Today's Executive Reports:**\n[DOWNLOAD_ALL_BUTTONS]`;
     }
 
     // Fallback friendly answer
-    return `🔍 **Executive Intelligence for "${query}"**:\n\n• **Total Registered Staff**: ${total}\n• **Present Today**: ${present.length} (🌅 ${allEarly.length} early, 🟡 ${allWithinGrace.length} in grace)\n• **Late Today**: ${allLate.length} (Counted from category grace time)\n• **Daily Working Submitted Today**: ${workingKpis.workSubmitted} staff\n• **Internal Audit Assignments**: ${internalAudits.length || 89} client engagements (17-Step FMS)\n• **PMS FMS Entries**: ${pmsRecords.length} active PMS entries (17-Step FMS)\n\n*💡 Try asking about specific audits:* \n- 📊 *"Internal audit FMS status"* or *"PMS FMS status"*\n- 📋 *"Explain the 17 steps of PMS"* or *"PMS blank actual and status"*\n- 👔 *"Audits assigned to CA Harsh Mittal"*\n- 🔍 *"Duplicacy in October"*\n- 🤖 *"AI or Claude usage"*\n- 🚨 *"Not filled > 2 days"*\n- ⏰ *"Who is late today?"*\n- 👤 *"Show 360 report for CA Harsh Mittal"*\n\n👇 **Download Reports:**\n[DOWNLOAD_ALL_BUTTONS]`;
+    return `🔍 **Executive Intelligence for "${query}"**:\n\n• **Total Registered Staff**: ${total}\n• **Present Today**: ${present.length} (🌅 ${allEarly.length} early, 🟡 ${allWithinGrace.length} in grace)\n• **Late Today**: ${allLate.length} (Counted from category grace time)\n• **Senior Tasks (Delegation)**: ${seniorTaskAnalytics.overview.totalTasks.toLocaleString("en-IN")} total (✅ ${seniorTaskAnalytics.overview.doneCount} Done, ❌ ${seniorTaskAnalytics.overview.cancelledCount} Cancelled)\n• **Junior Tasks (Delegation)**: ${juniorTaskAnalytics.overview.totalTasks.toLocaleString("en-IN")} total (✅ ${juniorTaskAnalytics.overview.doneCount} Done, ❌ ${juniorTaskAnalytics.overview.cancelledCount} Cancelled)\n• **Daily Working Submitted Today**: ${workingKpis.workSubmitted} staff\n• **Internal Audit Assignments**: ${internalAudits.length || 89} client engagements (18-Step FMS)\n• **PMS FMS Entries**: ${pmsRecords.length} active PMS entries (17-Step FMS)\n\n*💡 Try asking about specific audits:* \n- 🗂️ *"Month-wise senior task report"* or *"Who cancelled the task most?"*\n- ❌ *"How many tasks cancelled in August 2026?"* or *"Senior task overdue"*\n- 📊 *"Internal audit FMS status"* or *"FMS target date blank"* or *"Which steps are missed in FMS"*\n- 📋 *"Explain the 18 steps of FMS"* or *"PMS blank actual and status"*\n- 👔 *"Audits assigned to CA Harsh Mittal"*\n- 🔍 *"Duplicacy in October"*\n- 🤖 *"AI or Claude usage"*\n- ⏰ *"Who is late today?"*\n- 👤 *"Show 360 report for CA Harsh Mittal"*\n\n👇 **Download Reports:**\n[DOWNLOAD_ALL_BUTTONS]`;
   };
 
   // --- OPENAI API CALL (FALLS BACK TO LOCAL ON ERROR/TIMEOUT) ---
@@ -2722,15 +3661,31 @@ export default function ExecutiveAIChatbot({
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
+    const stOv = seniorTaskAnalytics.overview;
+    const jtOv = juniorTaskAnalytics.overview;
     const systemPrompt = `You are an AI Executive Assistant for Agrawal Jain & Co. (a Chartered Accountancy firm) for the Managing Director.
-You analyze real-time attendance report data, daily working submissions, duplicacy audits, missing date backlogs, statutory HR compliance, Internal Audit Flow Management System (FMS), and Process Management System (PMS FMS).
+You analyze real-time attendance report data, Senior & Junior Task (Delegation) analytics, daily working submissions, duplicacy audits, missing date backlogs, statutory HR compliance, Internal Audit Flow Management System (FMS), and Process Management System (PMS FMS).
+
+LIVE SENIOR TASK (DELEGATION) STATS:
+- Coverage: ${stOv.dateRange} (${stOv.monthCount} months)
+- Total Tasks: ${stOv.totalTasks} | Done: ${stOv.doneCount} (${stOv.completionRate}%) | Cancelled: ${stOv.cancelledCount} (${stOv.cancelRate}%) | Open: ${stOv.openCount} (Overdue: ${stOv.overdueCount}) | Total Revisions: ${stOv.totalRevisions}
+- Most Cancelled Senior: ${stOv.topCancelledDoer ? `${stOv.topCancelledDoer.name} (${stOv.topCancelledDoer.cancelled})` : "N/A"}
+- Top Cancelling Assignor: ${stOv.topCancelledAssignor ? `${stOv.topCancelledAssignor.name} (${stOv.topCancelledAssignor.cancelled})` : "N/A"}
+- Peak Cancellation Month: ${stOv.peakCancelledMonth ? `${stOv.peakCancelledMonth.monthLabel} (${stOv.peakCancelledMonth.cancelled})` : "N/A"}
+
+LIVE JUNIOR TASK (DELEGATION) STATS:
+- Coverage: ${jtOv.dateRange} (${jtOv.monthCount} months)
+- Total Tasks: ${jtOv.totalTasks} | Done: ${jtOv.doneCount} (${jtOv.completionRate}%) | Cancelled: ${jtOv.cancelledCount} (${jtOv.cancelRate}%) | Open: ${jtOv.openCount} (Overdue: ${jtOv.overdueCount}) | Total Revisions: ${jtOv.totalRevisions}
+- Most Cancelled Junior: ${jtOv.topCancelledDoer ? `${jtOv.topCancelledDoer.name} (${jtOv.topCancelledDoer.cancelled})` : "N/A"}
+- Top Cancelling Assignor: ${jtOv.topCancelledAssignor ? `${jtOv.topCancelledAssignor.name} (${jtOv.topCancelledAssignor.cancelled})` : "N/A"}
+- Peak Cancellation Month: ${jtOv.peakCancelledMonth ? `${jtOv.peakCancelledMonth.monthLabel} (${jtOv.peakCancelledMonth.cancelled})` : "N/A"}
 
 INTERNAL AUDIT FMS & PMS FMS PROTOCOL:
-- Internal Audit FMS: 89 client assignments across 46 corporate groups (City audits and Plant audits).
+- Internal Audit FMS: 89 client assignments across 46 corporate groups (City audits and Plant audits), tracked across the 18-Step FMS SOP.
 - PMS FMS: ${pmsRecords.length} loaded assignments in the 17-Step PMS Flow Management System (configurable live Google Apps Script API + in-portal PMS entries), tracking Group, Client/Company, Dept, Period, Partner, Senior/Lead CA, Assignment Type, Start & Target Dates, and 17 execution steps (Planned, Actual, Status, Delay).
 - Key Partners: CA Ankit Kumar Garg, CA Rupesh Vaid, CA Mukul Jain.
 - Key Seniors / Lead CAs: CA Harsh Mittal, CA Chandan Singh, CA Kanha Kedia, CA Pankaj Agrawal, CMA Akash Choubey, CMA Pratibha Agrawal, CA Drishti Chandnani, CA Vikas Goyal, etc.
-- 17-Step FMS SOP:
+- 18-Step FMS SOP:
   Step 1: Audit Scheduling & Planning / PMS Scheduling & Kickoff (Partners - Beginning of FY)
   Step 2: Client Intimation & Requisition (Senior - Before Audit)
   Step 3: Team Allocation & Alignment (Partners - 1 Week Before)
@@ -2748,6 +3703,7 @@ INTERNAL AUDIT FMS & PMS FMS PROTOCOL:
   Step 15: Benefit & Cost Savings Chart (Senior - Post Audit)
   Step 16: Billing, Invoicing & Collection (Accounts Dept - After Report)
   Step 17: Cost Sheet & Engagement Closure (HR Head - Final Closure)
+  Step 18: Client Feedback & Action Taken Report (ATR) (CRM / Senior - Post Closure)
 
 Answer concisely, factually, and professionally using markdown bullets and emojis.
 ${HR_LABOUR_LAW_SYSTEM_PROMPT}`;
@@ -2803,6 +3759,15 @@ ${HR_LABOUR_LAW_SYSTEM_PROMPT}`;
 
     try {
       let botResponse = "";
+
+      // Ensure multi-company audit records are loaded for completion reports
+      if (!companyAuditData) {
+        try {
+          const loadedCompanyData = await fetchAllCompanyAuditData();
+          if (loadedCompanyData) setCompanyAuditData(loadedCompanyData);
+        } catch (_) {}
+      }
+
       if (apiKey) {
         try {
           botResponse = await callOpenAI(textToSend);
@@ -2894,17 +3859,55 @@ ${HR_LABOUR_LAW_SYSTEM_PROMPT}`;
     const hasAllButtons = text.includes("[DOWNLOAD_ALL_BUTTONS]");
     const hasDailyButtons = text.includes("[DOWNLOAD_DAILY_BUTTONS]");
     const hasWeeklyButtons = text.includes("[DOWNLOAD_WEEKLY_BUTTONS]");
-    const hasMonthlyButtons = text.includes("[DOWNLOAD_MONTHLY_BUTTONS]");
+    const monthlyButtonsMatch = text.match(/\[DOWNLOAD_MONTHLY_BUTTONS(?::(.*?))?\]/);
+    const monthlyAttScope = monthlyButtonsMatch ? monthlyButtonsMatch[1] || "CURRENT" : null;
     const hasDailyWorkingButtons = text.includes("[DOWNLOAD_DAILY_WORKING_BUTTONS]");
+    const dailyWorkingMonthlyMatch = text.match(/\[DOWNLOAD_DAILY_WORKING_MONTHLY_EXCEL(?::(.*?))?\]/);
+    const dailyWorkingMonthlyScope = dailyWorkingMonthlyMatch ? dailyWorkingMonthlyMatch[1] || "ALL" : null;
     const hasAiUsageButton = text.includes("[DOWNLOAD_AI_REPORT_BUTTON]");
     const hasTwoDaysButton = text.includes("[DOWNLOAD_TWO_DAYS_DEFAULTERS_BUTTON]");
     const hasDefaultersButton = text.includes("[DOWNLOAD_DEFAULTERS_BUTTON]");
-    const hasInternalAuditButton = text.includes("[DOWNLOAD_INTERNAL_AUDIT_EXCEL]");
-    const hasBlankActualStatusButton = text.includes("[DOWNLOAD_BLANK_ACTUAL_STATUS_EXCEL]");
-    const hasPmsButton = text.includes("[DOWNLOAD_PMS_EXCEL]");
+    const iaButtonsMatch = text.match(/\[DOWNLOAD_INTERNAL_AUDIT_EXCEL(?::(.*?))?\]/);
+    const iaFmsScope = iaButtonsMatch ? iaButtonsMatch[1] || "ALL" : null;
+    const hasBlankActualStatusButton =
+      text.includes("[DOWNLOAD_BLANK_ACTUAL_STATUS_EXCEL]") ||
+      text.includes("[DOWNLOAD_INTERNAL_AUDIT_BLANK_ACTUAL_STATUS_EXCEL]") ||
+      text.includes("[DOWNLOAD_BLANK_ACTUAL_STATUS_PDF]");
+    const hasTargetDateBlankButton =
+      text.includes("[DOWNLOAD_FMS_TARGET_DATE_BLANK_EXCEL]") ||
+      text.includes("[DOWNLOAD_FMS_TARGET_DATE_BLANK_PDF]") ||
+      text.includes("[DOWNLOAD_TARGET_DATE_BLANK_EXCEL]");
+    const pmsButtonsMatch = text.match(/\[DOWNLOAD_PMS_EXCEL(?::(.*?))?\]/);
+    const pmsFmsScope = pmsButtonsMatch ? pmsButtonsMatch[1] || "ALL" : null;
     const hasPmsBlankActualStatusButton = text.includes("[DOWNLOAD_PMS_BLANK_ACTUAL_STATUS_EXCEL]");
-    const hasLessThanNineHoursButton = text.includes("[DOWNLOAD_LESS_THAN_9_HOURS_EXCEL]");
-    const hasCrossEmployeeDuplicatesButton = text.includes("[DOWNLOAD_CROSS_EMPLOYEE_DUPLICATES_EXCEL]");
+    const allModulesMonthlyMatch = text.match(/\[DOWNLOAD_ALL_MODULES_MONTHLY(?::(.*?))?\]/);
+    const allModulesMonthlyScope = allModulesMonthlyMatch ? allModulesMonthlyMatch[1] || "ALL" : null;
+    const companyAuditExcelMatch = text.match(/\[DOWNLOAD_COMPANY_AUDIT_EXCEL(?::(.*?))?\]/);
+    const companyAuditExcelScope = companyAuditExcelMatch ? companyAuditExcelMatch[1] || "ALL" : null;
+    const companyAuditPdfMatch = text.match(/\[DOWNLOAD_COMPANY_AUDIT_PDF(?::(.*?))?\]/);
+    const companyAuditPdfScope = companyAuditPdfMatch ? companyAuditPdfMatch[1] || "ALL" : null;
+    const delegationTierMatches = ["SENIOR_TASK", "JUNIOR_TASK"].map((prefix) => {
+      const tierKey = prefix === "JUNIOR_TASK" ? "junior" : "senior";
+      const hasMaster = text.includes(`[DOWNLOAD_${prefix}_EXCEL]`);
+      const cancelMatch = text.match(new RegExp(`\\[DOWNLOAD_${prefix}_CANCEL_EXCEL(?::(.*?))?\\]`));
+      const overdueMatch = text.match(new RegExp(`\\[DOWNLOAD_${prefix}_OVERDUE_EXCEL(?::(.*?))?\\]`));
+      const doneMatch = text.match(new RegExp(`\\[DOWNLOAD_${prefix}_DONE_EXCEL(?::(.*?))?\\]`));
+      const monthlyMatch = text.match(new RegExp(`\\[DOWNLOAD_${prefix}_MONTHLY_EXCEL(?::(.*?))?\\]`));
+      return {
+        tierKey,
+        meta: getDelegationMeta(tierKey),
+        hasMaster,
+        cancelScope: cancelMatch ? cancelMatch[1] || "ALL" : null,
+        overdueScope: overdueMatch ? overdueMatch[1] || "ALL" : null,
+        doneScope: doneMatch ? doneMatch[1] || "ALL" : null,
+        monthlyScope: monthlyMatch ? monthlyMatch[1] || "ALL" : null,
+      };
+    });
+
+    const lessThan9Match = text.match(/\[DOWNLOAD_LESS_THAN_9_HOURS_EXCEL(?::(.*?))?\]/);
+    const lessThan9Scope = lessThan9Match ? lessThan9Match[1] || "CURRENT" : null;
+    const crossEmpMatch = text.match(/\[DOWNLOAD_CROSS_EMPLOYEE_DUPLICATES_EXCEL(?::(.*?))?\]/);
+    const crossEmpScope = crossEmpMatch ? crossEmpMatch[1] || "CURRENT" : null;
 
     const dupeMatch = text.match(/\[DOWNLOAD_DUPLICACY_BUTTON:(.*?)\]/);
     const targetDupeMonth = dupeMatch ? dupeMatch[1] : null;
@@ -2916,17 +3919,31 @@ ${HR_LABOUR_LAW_SYSTEM_PROMPT}`;
       .replace(/\[DOWNLOAD_ALL_BUTTONS\]/g, "")
       .replace(/\[DOWNLOAD_DAILY_BUTTONS\]/g, "")
       .replace(/\[DOWNLOAD_WEEKLY_BUTTONS\]/g, "")
-      .replace(/\[DOWNLOAD_MONTHLY_BUTTONS\]/g, "")
+      .replace(/\[DOWNLOAD_MONTHLY_BUTTONS(?::.*?)?\]/g, "")
       .replace(/\[DOWNLOAD_DAILY_WORKING_BUTTONS\]/g, "")
+      .replace(/\[DOWNLOAD_DAILY_WORKING_MONTHLY_EXCEL(?::.*?)?\]/g, "")
       .replace(/\[DOWNLOAD_AI_REPORT_BUTTON\]/g, "")
       .replace(/\[DOWNLOAD_TWO_DAYS_DEFAULTERS_BUTTON\]/g, "")
       .replace(/\[DOWNLOAD_DEFAULTERS_BUTTON\]/g, "")
-      .replace(/\[DOWNLOAD_INTERNAL_AUDIT_EXCEL\]/g, "")
+      .replace(/\[DOWNLOAD_INTERNAL_AUDIT_EXCEL(?::.*?)?\]/g, "")
       .replace(/\[DOWNLOAD_BLANK_ACTUAL_STATUS_EXCEL\]/g, "")
-      .replace(/\[DOWNLOAD_PMS_EXCEL\]/g, "")
+      .replace(/\[DOWNLOAD_INTERNAL_AUDIT_BLANK_ACTUAL_STATUS_EXCEL\]/g, "")
+      .replace(/\[DOWNLOAD_BLANK_ACTUAL_STATUS_PDF\]/g, "")
+      .replace(/\[DOWNLOAD_FMS_TARGET_DATE_BLANK_EXCEL\]/g, "")
+      .replace(/\[DOWNLOAD_FMS_TARGET_DATE_BLANK_PDF\]/g, "")
+      .replace(/\[DOWNLOAD_TARGET_DATE_BLANK_EXCEL\]/g, "")
+      .replace(/\[DOWNLOAD_PMS_EXCEL(?::.*?)?\]/g, "")
       .replace(/\[DOWNLOAD_PMS_BLANK_ACTUAL_STATUS_EXCEL\]/g, "")
-      .replace(/\[DOWNLOAD_LESS_THAN_9_HOURS_EXCEL\]/g, "")
-      .replace(/\[DOWNLOAD_CROSS_EMPLOYEE_DUPLICATES_EXCEL\]/g, "")
+      .replace(/\[DOWNLOAD_ALL_MODULES_MONTHLY(?::.*?)?\]/g, "")
+      .replace(/\[DOWNLOAD_(?:SENIOR|JUNIOR)_TASK_EXCEL\]/g, "")
+      .replace(/\[DOWNLOAD_(?:SENIOR|JUNIOR)_TASK_CANCEL_EXCEL(?::.*?)?\]/g, "")
+      .replace(/\[DOWNLOAD_(?:SENIOR|JUNIOR)_TASK_OVERDUE_EXCEL(?::.*?)?\]/g, "")
+      .replace(/\[DOWNLOAD_(?:SENIOR|JUNIOR)_TASK_DONE_EXCEL(?::.*?)?\]/g, "")
+      .replace(/\[DOWNLOAD_(?:SENIOR|JUNIOR)_TASK_MONTHLY_EXCEL(?::.*?)?\]/g, "")
+      .replace(/\[DOWNLOAD_LESS_THAN_9_HOURS_EXCEL(?::.*?)?\]/g, "")
+      .replace(/\[DOWNLOAD_CROSS_EMPLOYEE_DUPLICATES_EXCEL(?::.*?)?\]/g, "")
+      .replace(/\[DOWNLOAD_COMPANY_AUDIT_EXCEL(?::.*?)?\]/g, "")
+      .replace(/\[DOWNLOAD_COMPANY_AUDIT_PDF(?::.*?)?\]/g, "")
       .replace(/\[DOWNLOAD_DUPLICACY_BUTTON:.*?\]/g, "")
       .replace(/\[ACTION_CHIPS:.*?\]/g, "")
       .trim();
@@ -3024,82 +4041,288 @@ ${HR_LABOUR_LAW_SYSTEM_PROMPT}`;
         )}
 
         {/* Internal Audit FMS Button */}
-        {hasInternalAuditButton && (
+        {iaFmsScope && (
           <div className="chat-inline-download-buttons">
             <button
               className="chat-dl-btn excel"
-              onClick={handleDownloadInternalAuditExcel}
+              onClick={() => handleDownloadInternalAuditExcel(iaFmsScope)}
               disabled={isExporting}
             >
-              📊 Download Internal Audit FMS Register (.xlsx)
+              📊 Download FMS Register{iaFmsScope !== "ALL" ? ` (${iaFmsScope})` : ""} (.xlsx)
             </button>
           </div>
         )}
 
-        {/* Blank Actual & Status Button */}
+        {/* Blank Actual & Status Buttons (Excel & PDF) */}
         {hasBlankActualStatusButton && (
-          <div className="chat-inline-download-buttons">
+          <div className="chat-inline-download-buttons" style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
             <button
               className="chat-dl-btn excel"
               onClick={handleDownloadBlankActualStatusExcel}
               disabled={isExporting}
             >
-              🚨 Download Blank Actual &amp; Status Report (.xlsx)
+              🚨 Download Blank Actual &amp; Status (Excel .xlsx)
+            </button>
+            <button
+              className="chat-dl-btn pdf"
+              style={{ background: "#dc2626", borderColor: "#dc2626", color: "#fff" }}
+              onClick={handleDownloadBlankActualStatusPdf}
+              disabled={isExporting}
+            >
+              📄 Download Blank Actual &amp; Status (PDF .pdf)
+            </button>
+          </div>
+        )}
+
+        {/* FMS Target Date Blank Buttons (Excel & PDF) */}
+        {hasTargetDateBlankButton && (
+          <div className="chat-inline-download-buttons" style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <button
+              className="chat-dl-btn excel"
+              style={{ background: "#b45309", borderColor: "#b45309", color: "#fff" }}
+              onClick={handleDownloadFmsTargetDateBlankExcel}
+              disabled={isExporting}
+            >
+              📅 Download Target Date Blank (Excel .xlsx)
+            </button>
+            <button
+              className="chat-dl-btn pdf"
+              style={{ background: "#d97706", borderColor: "#d97706", color: "#fff" }}
+              onClick={handleDownloadFmsTargetDateBlankPdf}
+              disabled={isExporting}
+            >
+              📄 Download Target Date Blank (PDF .pdf)
             </button>
           </div>
         )}
 
         {/* PMS FMS Button */}
-        {hasPmsButton && (
+        {pmsFmsScope && (
           <div className="chat-inline-download-buttons">
             <button
               className="chat-dl-btn excel"
               style={{ background: "#4338ca", borderColor: "#4338ca", color: "#fff" }}
-              onClick={handleDownloadPmsExcel}
+              onClick={() => handleDownloadPmsExcel(pmsFmsScope)}
               disabled={isExporting}
             >
-              📋 Download PMS FMS Register (.xlsx)
+              📋 Download PMS FMS{pmsFmsScope !== "ALL" ? ` (${pmsFmsScope})` : ""} (.xlsx)
             </button>
           </div>
         )}
 
         {/* PMS Blank Actual & Status Button */}
         {hasPmsBlankActualStatusButton && (
-          <div className="chat-inline-download-buttons">
+          <div className="chat-inline-download-buttons" style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
             <button
               className="chat-dl-btn excel"
               style={{ background: "#4338ca", borderColor: "#4338ca", color: "#fff" }}
               onClick={handleDownloadPmsBlankActualStatusExcel}
               disabled={isExporting}
             >
-              🚨 Download PMS Blank Actual &amp; Status Report (.xlsx)
+              🚨 Download PMS Blank Actual &amp; Status (Excel .xlsx)
+            </button>
+            <button
+              className="chat-dl-btn pdf"
+              style={{ background: "#dc2626", borderColor: "#dc2626", color: "#fff" }}
+              onClick={handleDownloadPmsBlankActualStatusPdf}
+              disabled={isExporting}
+            >
+              📄 Download PMS Blank Actual &amp; Status (PDF .pdf)
             </button>
           </div>
         )}
 
+        {/* Multi-Company Work Completion Download Buttons */}
+        {(companyAuditExcelScope || companyAuditPdfScope) && (
+          <div className="chat-inline-download-buttons" style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "8px" }}>
+            {companyAuditExcelScope && (
+              <button
+                className="chat-dl-btn excel"
+                style={{ background: "#047857", borderColor: "#047857", color: "#fff" }}
+                onClick={() => handleDownloadCompanyAuditExcel(companyAuditExcelScope)}
+                disabled={isExporting}
+              >
+                📊 Download Work Completion ({companyAuditExcelScope === "ALL" ? "All" : companyAuditExcelScope.replace(/_/g, " ")}) (Excel .xlsx)
+              </button>
+            )}
+            {companyAuditPdfScope && (
+              <button
+                className="chat-dl-btn pdf"
+                style={{ background: "#b91c1c", borderColor: "#b91c1c", color: "#fff" }}
+                onClick={() => handleDownloadCompanyAuditPdf(companyAuditPdfScope)}
+                disabled={isExporting}
+              >
+                📄 Download Work Completion Report (PDF .pdf)
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Senior & Junior Task (Delegation) Specialized Download Buttons */}
+        {delegationTierMatches.map((tm) => {
+          const { tierKey, meta, hasMaster, cancelScope, overdueScope, doneScope, monthlyScope } = tm;
+          if (!hasMaster && !cancelScope && !overdueScope && !doneScope && !monthlyScope) return null;
+          const activeScope = cancelScope || overdueScope || doneScope || monthlyScope || "ALL";
+          const taskBtns = [];
+
+          if (cancelScope) {
+            taskBtns.push({
+              key: `${tierKey}-cancel-primary`,
+              bg: "#be123c",
+              label: `❌ Download ${meta.shortLabel} Cancellation Report (.xlsx)`,
+              onClick: () => handleDownloadDelegationExcel(tierKey, "cancelled", cancelScope),
+            });
+          }
+          if (overdueScope) {
+            taskBtns.push({
+              key: `${tierKey}-overdue-primary`,
+              bg: "#c2410c",
+              label: `🚨 Download ${meta.shortLabel} Overdue Report (.xlsx)`,
+              onClick: () => handleDownloadDelegationExcel(tierKey, "overdue", overdueScope),
+            });
+          }
+          if (doneScope) {
+            taskBtns.push({
+              key: `${tierKey}-done-primary`,
+              bg: "#15803d",
+              label: `✅ Download ${meta.shortLabel} Done Report (.xlsx)`,
+              onClick: () => handleDownloadDelegationExcel(tierKey, "done", doneScope),
+            });
+          }
+          if (monthlyScope) {
+            taskBtns.push({
+              key: `${tierKey}-monthly-primary`,
+              bg: "#0f766e",
+              label: `📅 Download ${meta.shortLabel} Monthly Report (.xlsx)`,
+              onClick: () => handleDownloadDelegationExcel(tierKey, "monthly", monthlyScope),
+            });
+          }
+
+          if (hasMaster) {
+            taskBtns.push(
+              {
+                key: `${tierKey}-master`,
+                bg: "#6d28d9",
+                label: `🗂️ Download ${meta.label} AI Analytics (.xlsx)`,
+                onClick: () => handleDownloadDelegationExcel(tierKey, "master"),
+              },
+              {
+                key: `${tierKey}-monthly`,
+                bg: "#0f766e",
+                label: `📅 ${meta.shortLabel} Monthly Report (.xlsx)`,
+                onClick: () => handleDownloadDelegationExcel(tierKey, "monthly", "ALL"),
+              },
+              {
+                key: `${tierKey}-done`,
+                bg: "#15803d",
+                label: `✅ ${meta.shortLabel} Done Report (.xlsx)`,
+                onClick: () => handleDownloadDelegationExcel(tierKey, "done", "ALL"),
+              },
+              {
+                key: `${tierKey}-overdue`,
+                bg: "#c2410c",
+                label: `🚨 ${meta.shortLabel} Overdue Report (.xlsx)`,
+                onClick: () => handleDownloadDelegationExcel(tierKey, "overdue", "ALL"),
+              },
+              {
+                key: `${tierKey}-cancel`,
+                bg: "#be123c",
+                label: `❌ ${meta.shortLabel} Cancellation Report (.xlsx)`,
+                onClick: () => handleDownloadDelegationExcel(tierKey, "cancelled", "ALL"),
+              }
+            );
+          } else {
+            if (!monthlyScope) {
+              taskBtns.push({
+                key: `${tierKey}-monthly-companion`,
+                bg: "#0f766e",
+                label: `📅 ${meta.shortLabel} Monthly Report (.xlsx)`,
+                onClick: () => handleDownloadDelegationExcel(tierKey, "monthly", activeScope),
+              });
+            } else {
+              taskBtns.push(
+                {
+                  key: `${tierKey}-done-companion`,
+                  bg: "#15803d",
+                  label: `✅ ${meta.shortLabel} Done (.xlsx)`,
+                  onClick: () => handleDownloadDelegationExcel(tierKey, "done", monthlyScope),
+                },
+                {
+                  key: `${tierKey}-overdue-companion`,
+                  bg: "#c2410c",
+                  label: `🚨 ${meta.shortLabel} Overdue (.xlsx)`,
+                  onClick: () => handleDownloadDelegationExcel(tierKey, "overdue", monthlyScope),
+                },
+                {
+                  key: `${tierKey}-cancel-companion`,
+                  bg: "#be123c",
+                  label: `❌ ${meta.shortLabel} Cancelled (.xlsx)`,
+                  onClick: () => handleDownloadDelegationExcel(tierKey, "cancelled", monthlyScope),
+                }
+              );
+            }
+            taskBtns.push({
+              key: `${tierKey}-master-companion`,
+              bg: "#6d28d9",
+              label: `🗂️ Full ${meta.shortLabel} Analytics (.xlsx)`,
+              onClick: () => handleDownloadDelegationExcel(tierKey, "master"),
+            });
+          }
+
+          return (
+            <div key={`dl-${tierKey}`} className="chat-inline-download-buttons">
+              {taskBtns.map((btn) => (
+                <button
+                  key={btn.key}
+                  className="chat-dl-btn excel"
+                  style={{ background: btn.bg, borderColor: btn.bg, color: "#fff" }}
+                  onClick={btn.onClick}
+                  disabled={isExporting}
+                >
+                  {btn.label}
+                </button>
+              ))}
+            </div>
+          );
+        })}
+
         {/* Less Than 9 Hours Button */}
-        {hasLessThanNineHoursButton && (
+        {lessThan9Scope && (
           <div className="chat-inline-download-buttons">
             <button
               className="chat-dl-btn excel"
-              onClick={handleDownloadLessThan9HoursExcel}
+              onClick={() => handleDownloadLessThan9HoursExcel(lessThan9Scope)}
               disabled={isExporting}
             >
-              ⏱️ Download Employees &lt; 9 Hours Report (.xlsx)
+              ⏱️ Download Employees &lt; 9 Hours Report{lessThan9Scope !== "CURRENT" ? ` (${lessThan9Scope})` : ""} (.xlsx)
             </button>
           </div>
         )}
 
         {/* Cross-Employee Same Task Duplicate Button */}
-        {hasCrossEmployeeDuplicatesButton && (
+        {crossEmpScope && (
           <div className="chat-inline-download-buttons">
             <button
               className="chat-dl-btn excel"
               style={{ background: "#d97706", borderColor: "#d97706", color: "#fff" }}
-              onClick={() => handleDownloadCrossEmployeeDuplicatesExcel()}
+              onClick={() => handleDownloadCrossEmployeeDuplicatesExcel(crossEmpScope)}
               disabled={isExporting}
             >
-              👥 Download Same Task Across Employees Report (.xlsx)
+              👥 Download Same Task Across Employees{crossEmpScope !== "CURRENT" ? ` (${crossEmpScope})` : ""} (.xlsx)
+            </button>
+          </div>
+        )}
+
+        {/* Daily Working Monthly Button */}
+        {dailyWorkingMonthlyScope && (
+          <div className="chat-inline-download-buttons">
+            <button
+              className="chat-dl-btn excel"
+              style={{ background: "#0f766e", borderColor: "#0f766e", color: "#fff" }}
+              onClick={() => handleDownloadDailyWorkingMonthlyExcel(dailyWorkingMonthlyScope)}
+              disabled={isExporting}
+            >
+              📝 Download Daily Working Monthly Excel{dailyWorkingMonthlyScope !== "ALL" ? ` (${dailyWorkingMonthlyScope})` : ""} (.xlsx)
             </button>
           </div>
         )}
@@ -3141,14 +4364,111 @@ ${HR_LABOUR_LAW_SYSTEM_PROMPT}`;
         )}
 
         {/* Monthly Attendance Buttons */}
-        {hasMonthlyButtons && (
+        {monthlyAttScope && (
           <div className="chat-inline-download-buttons">
-            <button className="chat-dl-btn excel" onClick={handleDownloadMonthlyAttendanceExcel} disabled={isExporting}>
-              📈 Monthly Attendance Excel
+            <button
+              className="chat-dl-btn excel"
+              onClick={() => handleDownloadMonthlyAttendanceExcel(monthlyAttScope)}
+              disabled={isExporting}
+            >
+              📈 Monthly Attendance Excel{monthlyAttScope !== "CURRENT" ? ` (${monthlyAttScope})` : ""}
             </button>
-            <button className="chat-dl-btn pdf" onClick={handleDownloadMonthlyAttendancePDF} disabled={isExporting}>
-              📄 Monthly Attendance PDF
+            <button
+              className="chat-dl-btn pdf"
+              onClick={() => handleDownloadMonthlyAttendancePDF(monthlyAttScope)}
+              disabled={isExporting}
+            >
+              📄 Monthly Attendance PDF{monthlyAttScope !== "CURRENT" ? ` (${monthlyAttScope})` : ""}
             </button>
+          </div>
+        )}
+
+        {/* All 5 Modules Scoped Monthly Downloads Card */}
+        {allModulesMonthlyScope && (
+          <div className="chat-multi-download-card">
+            <div className="multi-dl-section">
+              <span className="multi-dl-title">
+                📅 Download {allModulesMonthlyScope === "ALL" ? "All Months" : allModulesMonthlyScope} Reports Across Every Module:
+              </span>
+              <div className="multi-dl-btns">
+                {[
+                  {
+                    label: "📊 Attendance Excel",
+                    cls: "excel",
+                    onClick: () => handleDownloadMonthlyAttendanceExcel(allModulesMonthlyScope),
+                  },
+                  {
+                    label: "📄 Attendance PDF",
+                    cls: "pdf",
+                    onClick: () => handleDownloadMonthlyAttendancePDF(allModulesMonthlyScope),
+                  },
+                  {
+                    label: "📝 Daily Working Excel",
+                    cls: "excel",
+                    onClick: () => handleDownloadDailyWorkingMonthlyExcel(allModulesMonthlyScope),
+                  },
+                  {
+                    label: "🛡️ Internal Audit FMS",
+                    cls: "excel",
+                    onClick: () => handleDownloadInternalAuditExcel(allModulesMonthlyScope),
+                  },
+                  {
+                    label: "📌 PMS FMS",
+                    cls: "excel",
+                    onClick: () => handleDownloadPmsExcel(allModulesMonthlyScope),
+                  },
+                  {
+                    label: "🗂️ Senior Delegation Monthly",
+                    cls: "excel",
+                    onClick: () => handleDownloadSeniorTaskMonthlyExcel(allModulesMonthlyScope),
+                  },
+                  {
+                    label: "✅ Senior Delegation Done",
+                    cls: "excel",
+                    onClick: () => handleDownloadSeniorTaskDoneExcel(allModulesMonthlyScope),
+                  },
+                  {
+                    label: "🚨 Senior Delegation Overdue",
+                    cls: "excel",
+                    onClick: () => handleDownloadSeniorTaskOverdueExcel(allModulesMonthlyScope),
+                  },
+                  {
+                    label: "❌ Senior Delegation Cancelled",
+                    cls: "excel",
+                    onClick: () => handleDownloadSeniorTaskCancelledExcel(allModulesMonthlyScope),
+                  },
+                  {
+                    label: "🧑‍💻 Junior Delegation Monthly",
+                    cls: "excel",
+                    onClick: () => handleDownloadDelegationExcel("junior", "monthly", allModulesMonthlyScope),
+                  },
+                  {
+                    label: "✅ Junior Delegation Done",
+                    cls: "excel",
+                    onClick: () => handleDownloadDelegationExcel("junior", "done", allModulesMonthlyScope),
+                  },
+                  {
+                    label: "🚨 Junior Delegation Overdue",
+                    cls: "excel",
+                    onClick: () => handleDownloadDelegationExcel("junior", "overdue", allModulesMonthlyScope),
+                  },
+                  {
+                    label: "❌ Junior Delegation Cancelled",
+                    cls: "excel",
+                    onClick: () => handleDownloadDelegationExcel("junior", "cancelled", allModulesMonthlyScope),
+                  },
+                ].map((btn) => (
+                  <button
+                    key={btn.label}
+                    className={`chat-dl-btn ${btn.cls}`}
+                    onClick={btn.onClick}
+                    disabled={isExporting}
+                  >
+                    {btn.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
@@ -3196,7 +4516,16 @@ ${HR_LABOUR_LAW_SYSTEM_PROMPT}`;
                   📊 FMS Register
                 </button>
                 <button className="chat-dl-btn excel" onClick={handleDownloadBlankActualStatusExcel} disabled={isExporting}>
-                  🚨 Blank Actual &amp; Status
+                  🚨 Blank Steps (Excel)
+                </button>
+                <button className="chat-dl-btn pdf" style={{ background: "#dc2626", borderColor: "#dc2626", color: "#fff" }} onClick={handleDownloadBlankActualStatusPdf} disabled={isExporting}>
+                  📄 Blank Steps (PDF)
+                </button>
+                <button className="chat-dl-btn excel" style={{ background: "#b45309", borderColor: "#b45309", color: "#fff" }} onClick={handleDownloadFmsTargetDateBlankExcel} disabled={isExporting}>
+                  📅 Target Date Blank (Excel)
+                </button>
+                <button className="chat-dl-btn pdf" style={{ background: "#d97706", borderColor: "#d97706", color: "#fff" }} onClick={handleDownloadFmsTargetDateBlankPdf} disabled={isExporting}>
+                  📄 Target Date Blank (PDF)
                 </button>
               </div>
             </div>
@@ -3207,7 +4536,97 @@ ${HR_LABOUR_LAW_SYSTEM_PROMPT}`;
                   📋 PMS Register
                 </button>
                 <button className="chat-dl-btn excel" onClick={handleDownloadPmsBlankActualStatusExcel} disabled={isExporting}>
-                  🚨 PMS Blank Actual &amp; Status
+                  🚨 PMS Blank Actual &amp; Status (Excel)
+                </button>
+                <button className="chat-dl-btn pdf" style={{ background: "#dc2626", borderColor: "#dc2626", color: "#fff" }} onClick={handleDownloadPmsBlankActualStatusPdf} disabled={isExporting}>
+                  📄 PMS Blank Actual &amp; Status (PDF)
+                </button>
+              </div>
+            </div>
+            <div className="multi-dl-section">
+              <span className="multi-dl-title">🗂️ Senior Task Delegation (Seniors Data):</span>
+              <div className="multi-dl-btns">
+                {[
+                  { label: "📅 Senior Monthly Report", onClick: () => handleDownloadSeniorTaskMonthlyExcel("ALL") },
+                  { label: "✅ Senior Done Report", onClick: () => handleDownloadSeniorTaskDoneExcel("ALL") },
+                  { label: "🚨 Senior Overdue Report", onClick: () => handleDownloadSeniorTaskOverdueExcel("ALL") },
+                  { label: "❌ Senior Cancellation Report", onClick: () => handleDownloadSeniorTaskCancelledExcel("ALL") },
+                  { label: "🗂️ Full Senior Task Analytics", onClick: handleDownloadSeniorTaskExcel },
+                ].map((item) => (
+                  <button
+                    key={item.label}
+                    className="chat-dl-btn excel"
+                    onClick={item.onClick}
+                    disabled={isExporting}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="multi-dl-section">
+              <span className="multi-dl-title">🧑‍💻 Junior Task Delegation (Juniors Data):</span>
+              <div className="multi-dl-btns">
+                {[
+                  { label: "📅 Junior Monthly Report", onClick: () => handleDownloadDelegationExcel("junior", "monthly", "ALL") },
+                  { label: "✅ Junior Done Report", onClick: () => handleDownloadDelegationExcel("junior", "done", "ALL") },
+                  { label: "🚨 Junior Overdue Report", onClick: () => handleDownloadDelegationExcel("junior", "overdue", "ALL") },
+                  { label: "❌ Junior Cancellation Report", onClick: () => handleDownloadDelegationExcel("junior", "cancelled", "ALL") },
+                  { label: "🗂️ Full Junior Task Analytics", onClick: () => handleDownloadDelegationExcel("junior", "master") },
+                ].map((item) => (
+                  <button
+                    key={item.label}
+                    className="chat-dl-btn excel"
+                    onClick={item.onClick}
+                    disabled={isExporting}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="multi-dl-section">
+              <span className="multi-dl-title">🏢 Multi-Company Work Completion (16 Companies):</span>
+              <div className="multi-dl-btns">
+                <button
+                  className="chat-dl-btn excel"
+                  style={{ background: "#047857", borderColor: "#047857", color: "#fff" }}
+                  onClick={() => handleDownloadCompanyAuditExcel("ALL")}
+                  disabled={isExporting}
+                >
+                  📊 All Companies Excel
+                </button>
+                <button
+                  className="chat-dl-btn excel"
+                  style={{ background: "#059669", borderColor: "#059669", color: "#fff" }}
+                  onClick={() => handleDownloadCompanyAuditExcel("ON_DATE")}
+                  disabled={isExporting}
+                >
+                  🎯 Completed On Date
+                </button>
+                <button
+                  className="chat-dl-btn excel"
+                  style={{ background: "#2563eb", borderColor: "#2563eb", color: "#fff" }}
+                  onClick={() => handleDownloadCompanyAuditExcel("BEFORE_TARGET")}
+                  disabled={isExporting}
+                >
+                  ⚡ Before Target Date
+                </button>
+                <button
+                  className="chat-dl-btn excel"
+                  style={{ background: "#b91c1c", borderColor: "#b91c1c", color: "#fff" }}
+                  onClick={() => handleDownloadCompanyAuditExcel("AFTER_TARGET")}
+                  disabled={isExporting}
+                >
+                  ⚠️ After Target Date
+                </button>
+                <button
+                  className="chat-dl-btn pdf"
+                  style={{ background: "#991b1b", borderColor: "#991b1b", color: "#fff" }}
+                  onClick={() => handleDownloadCompanyAuditPdf("ALL")}
+                  disabled={isExporting}
+                >
+                  📄 Multi-Company PDF
                 </button>
               </div>
             </div>
@@ -3300,6 +4719,13 @@ ${HR_LABOUR_LAW_SYSTEM_PROMPT}`;
                         <small>Complete staff task diary submissions</small>
                       </div>
                     </button>
+                    <button className="export-dropdown-item excel" onClick={() => handleDownloadDailyWorkingMonthlyExcel("ALL")} disabled={isExporting}>
+                      <span className="export-item-icon">📅</span>
+                      <div className="export-item-info">
+                        <strong>Daily Working Month-Wise (.xlsx)</strong>
+                        <small>Month-by-month hours, tasks &amp; staff summary</small>
+                      </div>
+                    </button>
                     <button className="export-dropdown-item excel" onClick={() => handleDownloadDuplicacyExcel("CURRENT")} disabled={isExporting}>
                       <span className="export-item-icon">🔍</span>
                       <div className="export-item-info">
@@ -3341,14 +4767,35 @@ ${HR_LABOUR_LAW_SYSTEM_PROMPT}`;
                       <span className="export-item-icon">📊</span>
                       <div className="export-item-info">
                         <strong>Internal Audit Register (.xlsx)</strong>
-                        <small>89 client engagements &amp; 17 FMS steps SOP</small>
+                        <small>89 client engagements &amp; 18 FMS steps SOP</small>
                       </div>
                     </button>
                     <button className="export-dropdown-item excel" onClick={handleDownloadBlankActualStatusExcel} disabled={isExporting}>
                       <span className="export-item-icon">🚨</span>
                       <div className="export-item-info">
-                        <strong>Blank Actual &amp; Status Report (.xlsx)</strong>
-                        <small>Employees with pending fieldwork &amp; FMS updates</small>
+                        <strong>Blank Steps &amp; Status Report (.xlsx)</strong>
+                        <small>Deficiency matrix &amp; missed steps breakdown</small>
+                      </div>
+                    </button>
+                    <button className="export-dropdown-item pdf" onClick={handleDownloadBlankActualStatusPdf} disabled={isExporting}>
+                      <span className="export-item-icon">📄</span>
+                      <div className="export-item-info">
+                        <strong>Blank Steps &amp; Status Report (.pdf)</strong>
+                        <small>Printable PDF detailing missed steps</small>
+                      </div>
+                    </button>
+                    <button className="export-dropdown-item excel" onClick={handleDownloadFmsTargetDateBlankExcel} disabled={isExporting}>
+                      <span className="export-item-icon">📅</span>
+                      <div className="export-item-info">
+                        <strong>Target Date Blank Report (.xlsx)</strong>
+                        <small>Engagements missing target completion dates</small>
+                      </div>
+                    </button>
+                    <button className="export-dropdown-item pdf" onClick={handleDownloadFmsTargetDateBlankPdf} disabled={isExporting}>
+                      <span className="export-item-icon">📄</span>
+                      <div className="export-item-info">
+                        <strong>Target Date Blank Report (.pdf)</strong>
+                        <small>Printable PDF of engagements with blank targets</small>
                       </div>
                     </button>
 
@@ -3364,7 +4811,128 @@ ${HR_LABOUR_LAW_SYSTEM_PROMPT}`;
                       <span className="export-item-icon">🚨</span>
                       <div className="export-item-info">
                         <strong>PMS Blank Actual &amp; Status (.xlsx)</strong>
-                        <small>PMS assignments with blank actual &amp; status</small>
+                        <small>PMS assignments with blank actual &amp; status (Excel)</small>
+                      </div>
+                    </button>
+                    <button className="export-dropdown-item pdf" onClick={handleDownloadPmsBlankActualStatusPdf} disabled={isExporting}>
+                      <span className="export-item-icon">📄</span>
+                      <div className="export-item-info">
+                        <strong>PMS Blank Actual &amp; Status (.pdf)</strong>
+                        <small>Printable PDF of pending PMS assignments</small>
+                      </div>
+                    </button>
+
+                    {[
+                      { tier: "senior", title: "🗂️ Senior Task Delegation (Seniors Data)", ana: seniorTaskAnalytics },
+                      { tier: "junior", title: "🧑‍💻 Junior Task Delegation (Juniors Data)", ana: juniorTaskAnalytics },
+                    ].map(({ tier, title, ana }) => {
+                      const label = tier === "junior" ? "Junior" : "Senior";
+                      return (
+                        <React.Fragment key={tier}>
+                          <div className="export-menu-section-title">{title}</div>
+                          {[
+                            {
+                              icon: "📅",
+                              title: `${label} Monthly Tasks Report (.xlsx)`,
+                              sub: `${ana.monthly.length} months • ${label}s Done, Open, Overdue & Cancelled`,
+                              onClick: () => handleDownloadDelegationExcel(tier, "monthly", "ALL"),
+                            },
+                            {
+                              icon: "✅",
+                              title: `${label} Done Tasks Report (.xlsx)`,
+                              sub: `${ana.overview.doneCount} done (${ana.overview.completionRate}%) • On-Time vs Late`,
+                              onClick: () => handleDownloadDelegationExcel(tier, "done", "ALL"),
+                            },
+                            {
+                              icon: "🚨",
+                              title: `${label} Overdue Tasks Report (.xlsx)`,
+                              sub: `${ana.overview.overdueCount} open overdue + ${ana.overview.doneLateCount} late completions`,
+                              onClick: () => handleDownloadDelegationExcel(tier, "overdue", "ALL"),
+                            },
+                            {
+                              icon: "❌",
+                              title: `${label} Cancelled Tasks Report (.xlsx)`,
+                              sub: `${ana.overview.cancelledCount} cancelled • Top ${label} Doers & Assignors`,
+                              onClick: () => handleDownloadDelegationExcel(tier, "cancelled", "ALL"),
+                            },
+                            {
+                              icon: "🗂️",
+                              title: `${label} Task AI Analytics (.xlsx)`,
+                              sub: `${ana.overview.totalTasks.toLocaleString("en-IN")} ${label.toLowerCase()} tasks & complete multi-tab workbook`,
+                              onClick: () => handleDownloadDelegationExcel(tier, "master"),
+                            },
+                          ].map((item) => (
+                            <button
+                              key={`${tier}-${item.title}`}
+                              className="export-dropdown-item excel"
+                              onClick={item.onClick}
+                              disabled={isExporting}
+                            >
+                              <span className="export-item-icon">{item.icon}</span>
+                              <div className="export-item-info">
+                                <strong>{item.title}</strong>
+                                <small>{item.sub}</small>
+                              </div>
+                            </button>
+                          ))}
+                        </React.Fragment>
+                      );
+                    })}
+
+                    <div className="export-menu-section-title">🏢 Multi-Company Work Completion (16 Companies)</div>
+                    <button
+                      className="export-dropdown-item excel"
+                      onClick={() => handleDownloadCompanyAuditExcel("ALL")}
+                      disabled={isExporting}
+                    >
+                      <span className="export-item-icon">📊</span>
+                      <div className="export-item-info">
+                        <strong>All Companies Completion Register (.xlsx)</strong>
+                        <small>{companyAuditData?.allTasks?.length || 1230} audit tasks across 16 client groups</small>
+                      </div>
+                    </button>
+                    <button
+                      className="export-dropdown-item excel"
+                      onClick={() => handleDownloadCompanyAuditExcel("ON_DATE")}
+                      disabled={isExporting}
+                    >
+                      <span className="export-item-icon">🎯</span>
+                      <div className="export-item-info">
+                        <strong>Completed ON Target Date (.xlsx)</strong>
+                        <small>Tasks finished with 0 delay (exact on-time execution)</small>
+                      </div>
+                    </button>
+                    <button
+                      className="export-dropdown-item excel"
+                      onClick={() => handleDownloadCompanyAuditExcel("BEFORE_TARGET")}
+                      disabled={isExporting}
+                    >
+                      <span className="export-item-icon">⚡</span>
+                      <div className="export-item-info">
+                        <strong>Completed BEFORE Target Date (.xlsx)</strong>
+                        <small>Tasks finished ahead of schedule</small>
+                      </div>
+                    </button>
+                    <button
+                      className="export-dropdown-item excel"
+                      onClick={() => handleDownloadCompanyAuditExcel("AFTER_TARGET")}
+                      disabled={isExporting}
+                    >
+                      <span className="export-item-icon">⚠️</span>
+                      <div className="export-item-info">
+                        <strong>Completed AFTER Target Date (.xlsx)</strong>
+                        <small>Delayed tasks finished past deadline</small>
+                      </div>
+                    </button>
+                    <button
+                      className="export-dropdown-item pdf"
+                      onClick={() => handleDownloadCompanyAuditPdf("ALL")}
+                      disabled={isExporting}
+                    >
+                      <span className="export-item-icon">📄</span>
+                      <div className="export-item-info">
+                        <strong>Multi-Company Completion Report (.pdf)</strong>
+                        <small>Corporate printable audit summary</small>
                       </div>
                     </button>
                   </div>
@@ -3498,6 +5066,30 @@ ${HR_LABOUR_LAW_SYSTEM_PROMPT}`;
             >
               📋 PMS: <b>{pmsRecords.length}</b> Entries / <b>17</b> Steps
             </span>
+            <span
+              className="executive-metric-tag senior-task"
+              onClick={() => handleSend("Senior task status")}
+              title="Senior Task Delegation Live Metrics"
+            >
+              👔 Senior: <b>{seniorTaskAnalytics.overview.totalTasks.toLocaleString("en-IN")}</b> Total /{" "}
+              <b>{seniorTaskAnalytics.overview.cancelledCount}</b> Cancelled
+            </span>
+            <span
+              className="executive-metric-tag senior-task"
+              onClick={() => handleSend("Junior task status")}
+              title="Junior Task Delegation Live Metrics"
+            >
+              🧑‍💻 Junior: <b>{juniorTaskAnalytics.overview.totalTasks.toLocaleString("en-IN")}</b> Total /{" "}
+              <b>{juniorTaskAnalytics.overview.cancelledCount}</b> Cancelled
+            </span>
+            <span
+              className="executive-metric-tag company-audit"
+              style={{ background: "#ecfdf5", color: "#065f46", borderColor: "#a7f3d0" }}
+              onClick={() => handleSend("Overall work completion analysis")}
+              title="Multi-Company Audit Work Completion Live Intelligence"
+            >
+              🏢 Audits: <b>{companyAuditData?.allTasks?.length || 1230}</b> Tasks / <b>{companyAuditData?.companySummaries?.filter((s) => s.status === "LIVE").length || 11}</b> Live Cos
+            </span>
           </div>
 
           {/* Messages Area */}
@@ -3533,6 +5125,70 @@ ${HR_LABOUR_LAW_SYSTEM_PROMPT}`;
             }}
           >
             <button
+              onClick={() => handleSend("Work completion on date report")}
+              className="chip-btn chip-highlight"
+              style={{ background: "#059669", color: "#fff", borderColor: "#047857" }}
+            >
+              🎯 Completed On Date
+            </button>
+            <button
+              onClick={() => handleSend("Work completion before target date report")}
+              className="chip-btn chip-highlight"
+              style={{ background: "#2563eb", color: "#fff", borderColor: "#1d4ed8" }}
+            >
+              ⚡ Before Target Date
+            </button>
+            <button
+              onClick={() => handleSend("Work completion after target date report")}
+              className="chip-btn chip-danger"
+              style={{ background: "#dc2626", color: "#fff", borderColor: "#b91c1c" }}
+            >
+              ⚠️ After Target Date
+            </button>
+            <button
+              onClick={() => handleSend("Overall work completion analysis")}
+              className="chip-btn chip-audit"
+              style={{ background: "#0f766e", color: "#fff", borderColor: "#115e59" }}
+            >
+              🏢 All 16 Companies
+            </button>
+            <button
+              onClick={() => handleSend("SKY Alloy PMS report")}
+              className="chip-btn chip-audit"
+            >
+              🏭 SKY Alloy PMS
+            </button>
+            <button
+              onClick={() => handleSend("Real Ispat and Power Limited PMS report")}
+              className="chip-btn chip-audit"
+            >
+              🏭 Real Ispat PMS
+            </button>
+            <button
+              onClick={() => handleSend("Month-wise senior task report")}
+              className="chip-btn chip-highlight"
+            >
+              📅 Task Month Report
+            </button>
+            <button
+              onClick={() => handleSend("Month-wise done tasks report")}
+              className="chip-btn chip-highlight"
+            >
+              ✅ Task Done Report
+            </button>
+            <button
+              onClick={() => handleSend("Month-wise overdue tasks report")}
+              className="chip-btn chip-audit"
+            >
+              🚨 Task Overdue Report
+            </button>
+            <button
+              onClick={() => handleSend("Month-wise cancelled tasks report and who cancelled most")}
+              className="chip-btn chip-danger"
+            >
+              ❌ Task Cancellations
+            </button>
+            <button
               onClick={() => handleSend("PMS FMS status")}
               className="chip-btn chip-audit"
             >
@@ -3557,10 +5213,22 @@ ${HR_LABOUR_LAW_SYSTEM_PROMPT}`;
               📊 Internal Audit FMS
             </button>
             <button
-              onClick={() => handleSend("Explain the 17 steps of internal audit FMS")}
+              onClick={() => handleSend("Explain the 18 steps of internal audit FMS")}
               className="chip-btn chip-audit"
             >
-              📋 17 FMS Steps
+              📋 18 FMS Steps
+            </button>
+            <button
+              onClick={() => handleSend("FMS target date blank")}
+              className="chip-btn chip-audit"
+            >
+              📅 Target Date Blank
+            </button>
+            <button
+              onClick={() => handleSend("Which steps are missed in FMS")}
+              className="chip-btn chip-audit"
+            >
+              🚨 Missed Steps Report
             </button>
             <button
               onClick={() => handleSend("Show internal audits for CA Harsh Mittal")}
@@ -3736,13 +5404,29 @@ ${HR_LABOUR_LAW_SYSTEM_PROMPT}`;
             >
               🚨 PMS Blank Actual &amp; Status Excel
             </button>
+            {[
+              { label: "📅 Senior Monthly Excel", onClick: () => handleDownloadDelegationExcel("senior", "monthly", "ALL") },
+              { label: "✅ Senior Done Excel", onClick: () => handleDownloadDelegationExcel("senior", "done", "ALL") },
+              { label: "🚨 Senior Overdue Excel", onClick: () => handleDownloadDelegationExcel("senior", "overdue", "ALL") },
+              { label: "❌ Senior Cancelled Excel", onClick: () => handleDownloadDelegationExcel("senior", "cancelled", "ALL") },
+              { label: "🗂️ Senior Task Excel", onClick: () => handleDownloadDelegationExcel("senior", "master") },
+              { label: "🧑‍💻 Junior Monthly Excel", onClick: () => handleDownloadDelegationExcel("junior", "monthly", "ALL") },
+              { label: "✅ Junior Done Excel", onClick: () => handleDownloadDelegationExcel("junior", "done", "ALL") },
+              { label: "🚨 Junior Overdue Excel", onClick: () => handleDownloadDelegationExcel("junior", "overdue", "ALL") },
+              { label: "❌ Junior Cancelled Excel", onClick: () => handleDownloadDelegationExcel("junior", "cancelled", "ALL") },
+              { label: "🗂️ Junior Task Excel", onClick: () => handleDownloadDelegationExcel("junior", "master") },
+            ].map((chip) => (
+              <button key={chip.label} onClick={chip.onClick} className="chip-btn chip-dl">
+                {chip.label}
+              </button>
+            ))}
           </div>
 
           {/* Input Box */}
           <div className="executive-input-container">
             <input
               type="text"
-              placeholder="Ask about PMS FMS, Internal Audit FMS, 17 steps, duplicacy, AI usage, attendance..."
+              placeholder="Ask about Senior Tasks, cancelled tasks, month-wise reports, PMS/IA FMS, attendance..."
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyPress}

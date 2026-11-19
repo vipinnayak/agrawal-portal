@@ -20,7 +20,10 @@ import {
 import {
   MONTHLY_GOOGLE_SHEET_URL,
   fetchMonthlyAttendance,
+  resolveMonthlyAttendanceSlice,
+  cacheMonthlyAttendanceSafely,
 } from "../utils/monthlyAttendanceService";
+import { parseTargetMonthFromQuery } from "../utils/dailyWorkingService";
 import {
   getHRLabourLawAnswer,
   HR_LABOUR_LAW_SYSTEM_PROMPT,
@@ -257,9 +260,7 @@ export default function AttendanceChatbot({
           if (!isMounted || !res) return;
           if (!monthlyData && res.monthlySummaries && res.monthlySummaries.length > 0) {
             setInternalMonthlyData(res);
-            try {
-              localStorage.setItem("ajc_cached_monthly_attendance", JSON.stringify(res));
-            } catch (_) {}
+            cacheMonthlyAttendanceSafely(res);
           }
           if (!weeklyData && res.weeklySummaries && res.weeklySummaries.length > 0) {
             const wData = {
@@ -890,11 +891,27 @@ export default function AttendanceChatbot({
   };
 
   // Download Monthly Excel (.xlsx)
-  const handleDownloadMonthlyExcel = async () => {
+  const handleDownloadMonthlyExcel = async (scopeOrEvent = "CURRENT") => {
+    const scope = typeof scopeOrEvent === "string" && scopeOrEvent.trim() ? scopeOrEvent.trim() : "CURRENT";
+    const resolved = resolveMonthlyAttendanceSlice(activeMonthlyData, scope);
+    if (!resolved.ready || !resolved.found || !resolved.slice) {
+      const avail = (resolved.availableMonths || []).map((m) => m.monthName).join(", ");
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          sender: "bot",
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          text: `⚠️ **Monthly Excel for ${resolved.requestedLabel || scope} is not available in loaded records.**\n\n• **Available Months**: ${avail || "Syncing from sheet..."}`,
+        },
+      ]);
+      return;
+    }
+
     try {
       setIsExporting(true);
       await exportMonthlyAttendanceToExcel({
-        monthlyData: activeMonthlyData,
+        monthlyData: resolved.slice,
         shiftPolicies,
         messages,
       });
@@ -905,7 +922,7 @@ export default function AttendanceChatbot({
           id: Date.now(),
           sender: "bot",
           time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          text: `📊 **Monthly Excel Register Downloaded!**\n\n• **Format**: Microsoft Excel Workbook (\`.xlsx\`)\n• **Source**: [Monthly Google Sheet](${MONTHLY_GOOGLE_SHEET_URL})\n• **Includes**: Full monthly attendance register, working days count, attendance rates %, and daily punch logs for the month.`,
+          text: `📊 **Monthly Excel Register Downloaded (${resolved.slice.monthName || resolved.slice.calendarMonth?.monthName || scope})!**\n\n• **Format**: Microsoft Excel Workbook (\`.xlsx\`)\n• **Source**: [Monthly Google Sheet](${MONTHLY_GOOGLE_SHEET_URL})\n• **Includes**: Scoped monthly attendance register, working days count, attendance rates %, and daily punch logs.`,
         },
       ]);
     } catch (err) {
@@ -917,11 +934,27 @@ export default function AttendanceChatbot({
   };
 
   // Download Monthly PDF (.pdf)
-  const handleDownloadMonthlyPDF = () => {
+  const handleDownloadMonthlyPDF = (scopeOrEvent = "CURRENT") => {
+    const scope = typeof scopeOrEvent === "string" && scopeOrEvent.trim() ? scopeOrEvent.trim() : "CURRENT";
+    const resolved = resolveMonthlyAttendanceSlice(activeMonthlyData, scope);
+    if (!resolved.ready || !resolved.found || !resolved.slice) {
+      const avail = (resolved.availableMonths || []).map((m) => m.monthName).join(", ");
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          sender: "bot",
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          text: `⚠️ **Monthly PDF for ${resolved.requestedLabel || scope} is not available in loaded records.**\n\n• **Available Months**: ${avail || "Syncing from sheet..."}`,
+        },
+      ]);
+      return;
+    }
+
     try {
       setIsExporting(true);
       exportMonthlyAttendanceToPDF({
-        monthlyData: activeMonthlyData,
+        monthlyData: resolved.slice,
         shiftPolicies,
       });
       setShowExportMenu(false);
@@ -931,7 +964,7 @@ export default function AttendanceChatbot({
           id: Date.now(),
           sender: "bot",
           time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          text: `📄 **Monthly PDF Register Downloaded!**\n\n• **Format**: Executive Landscape Document (\`.pdf\`)\n• **Source**: [Monthly Google Sheet](${MONTHLY_GOOGLE_SHEET_URL})\n• **Includes**: Monthly executive summary KPIs and employee attendance compliance table.`,
+          text: `📄 **Monthly PDF Register Downloaded (${resolved.slice.monthName || resolved.slice.calendarMonth?.monthName || scope})!**\n\n• **Format**: Executive Landscape Document (\`.pdf\`)\n• **Source**: [Monthly Google Sheet](${MONTHLY_GOOGLE_SHEET_URL})\n• **Includes**: Scoped monthly executive summary KPIs and employee attendance compliance table.`,
         },
       ]);
     } catch (err) {
@@ -1247,9 +1280,17 @@ export default function AttendanceChatbot({
         return `📥 **Weekly Attendance Report Download (${activeWeeklyData?.weekRange || "Past 7 Days"})**:\n\nYou can download the complete weekly attendance summary in both **Excel (.xlsx)** and **PDF (.pdf)** formats:\n\n• 👥 **Active Staff**: ${activeWeeklyData?.list?.length || 0} employees\n• 📈 **Average Compliance**: ${Math.round((activeWeeklyData?.list || []).reduce((acc, cur) => acc + (cur.attendancePct || 0), 0) / ((activeWeeklyData?.list?.length) || 1))}%\n• 🗓️ **Includes**: Weekly attendance rate %, days present, late instances & hours worked.\n\n👇 **Download Weekly Attendance Report:**\n[DOWNLOAD_WEEKLY_BUTTONS]`;
       }
 
-      // If user asks specifically for Monthly
-      if (asksMonthly && !asksDaily && !asksWeekly) {
-        return `📥 **Monthly Attendance Register Download (${activeMonthlyData?.monthName || "Current Month"})**:\n\nYou can download the full monthly attendance register in both **Excel (.xlsx)** and **PDF (.pdf)** formats:\n\n• 👥 **Total Evaluated**: ${activeMonthlyData?.monthlySummaries?.length || 0} employees\n• 🗓️ **Working Days**: ${activeMonthlyData?.workingDaysCount || 27} days\n• 🔗 **Source**: Google Sheet Register\n\n👇 **Download Monthly Attendance Register:**\n[DOWNLOAD_MONTHLY_BUTTONS]`;
+      // If user asks specifically for Monthly (including a named month like October, September, August, July)
+      const requestedMonthDl = parseTargetMonthFromQuery(q);
+      if ((asksMonthly || requestedMonthDl) && !asksDaily && !asksWeekly) {
+        const resolvedDl = resolveMonthlyAttendanceSlice(activeMonthlyData, requestedMonthDl || "CURRENT");
+        if (requestedMonthDl && !resolvedDl.found) {
+          const avail = (resolvedDl.availableMonths || []).map((m) => `\`${m.monthName}\``).join(", ");
+          return `📥 **Monthly Attendance Download — ${requestedMonthDl.label}**\n\n• ⚠️ No attendance records found for **${requestedMonthDl.label}**.\n• 📅 **Available Months**: ${avail || "Syncing..."}`;
+        }
+        const dlSlice = resolvedDl.slice || activeMonthlyData;
+        const dlScope = requestedMonthDl ? dlSlice?.monthKey || requestedMonthDl.key : "CURRENT";
+        return `📥 **Monthly Attendance Register Download (${dlSlice?.monthName || requestedMonthDl?.label || "Current Month"})**:\n\nYou can download the monthly attendance register in both **Excel (.xlsx)** and **PDF (.pdf)** formats:\n\n• 👥 **Total Evaluated**: ${dlSlice?.monthlySummaries?.length || 0} employees\n• 🗓️ **Working Days**: ${dlSlice?.workingDaysCount || 26} days\n• 🔗 **Source**: Google Sheet Register\n\n👇 **Download Monthly Attendance Register:**\n[DOWNLOAD_MONTHLY_BUTTONS:${dlScope}]`;
       }
 
       // General download card (all periods)
@@ -1259,8 +1300,12 @@ export default function AttendanceChatbot({
     // ============================================================
     // 1.5 PERIOD-AWARE CHECK: Monthly & Weekly Queries
     // ============================================================
+    const requestedMonth = parseTargetMonthFromQuery(q);
+    const wantsAllMonths = /\b(all\s+months|month[\s-]*wise|every\s+month|comparison)\b/i.test(q);
     const isMonthlyQuery =
-      /\b(monthly|month|october|this month|current month|whole month|entire month)\b/i.test(q) ||
+      Boolean(requestedMonth) ||
+      wantsAllMonths ||
+      /\b(monthly|month|this month|current month|whole month|entire month)\b/i.test(q) ||
       /\b(in\s+month|for\s+the\s+month|month's)\b/i.test(q);
 
     const isWeeklyQuery =
@@ -1292,8 +1337,21 @@ export default function AttendanceChatbot({
         return `📊 **Monthly Attendance Register is connecting to Google Sheet...**\n\nSyncing latest biometric and sheet records. Please try again in 2-3 seconds or visit the **Attendance Report** page.`;
       }
 
-      const summaries = activeMonthlyData.monthlySummaries;
-      const workingDays = activeMonthlyData.workingDaysCount || 26;
+      const resolved = resolveMonthlyAttendanceSlice(
+        activeMonthlyData,
+        requestedMonth || (wantsAllMonths ? "ALL" : "CURRENT")
+      );
+      if (requestedMonth && (!resolved.ready || !resolved.found || !resolved.slice)) {
+        const avail = (resolved.availableMonths || []).map((m) => `\`${m.monthName}\` (${m.avgPct}%)`).join(", ");
+        return `📊 **Monthly Attendance Register — ${requestedMonth.label}**\n\n• ⚠️ **No attendance records found for ${requestedMonth.label}.**\n• 📅 **Available Months in Google Sheet**: ${avail || "None"}`;
+      }
+
+      const slice = resolved.slice;
+      const monthTitle = slice.monthName || slice.calendarMonth?.monthName || "Current Month";
+      const scopeKey = requestedMonth ? (slice.monthKey || requestedMonth.key) : wantsAllMonths ? "ALL" : (slice.monthKey || "CURRENT");
+
+      const summaries = slice.monthlySummaries;
+      const workingDays = slice.workingDaysCount || 26;
       const totalStaff = summaries.length;
       const avgPct = Math.round(summaries.reduce((acc, cur) => acc + (cur.attendancePct || 0), 0) / (totalStaff || 1));
       const totalLateLogs = summaries.reduce((acc, cur) => acc + (cur.lateDays || 0), 0);
@@ -1359,22 +1417,22 @@ export default function AttendanceChatbot({
         const dAvg = Math.round(dList.reduce((acc, c) => acc + (c.attendancePct || 0), 0) / (dList.length || 1));
 
         if (asksLate && !asksAbsent) {
-          return `⏰ **Monthly Late Staff: ${dConf.icon} ${dConf.label}**:\n\n• **Total Staff**: ${dList.length}\n• ⏰ **Staff With Late Days**: **${dLate.length}**\n\n${formatLateSection(dList, dConf.label, dConf.icon)}\n\n👇 **Download Monthly Register:**\n[DOWNLOAD_MONTHLY_BUTTONS]`;
+          return `⏰ **Monthly Late Staff (${monthTitle}): ${dConf.icon} ${dConf.label}**:\n\n• **Total Staff**: ${dList.length}\n• ⏰ **Staff With Late Days**: **${dLate.length}**\n\n${formatLateSection(dList, dConf.label, dConf.icon)}\n\n👇 **Download ${monthTitle} Register:**\n[DOWNLOAD_MONTHLY_BUTTONS:${scopeKey}]`;
         }
         if (asksAbsent && !asksLate) {
-          return `❌ **Monthly Absent Staff: ${dConf.icon} ${dConf.label}**:\n\n• **Total Staff**: ${dList.length}\n• ❌ **Staff With Absences**: **${dAbsent.length}**\n\n${formatAbsentSection(dList, dConf.label, dConf.icon)}\n\n👇 **Download Monthly Register:**\n[DOWNLOAD_MONTHLY_BUTTONS]`;
+          return `❌ **Monthly Absent Staff (${monthTitle}): ${dConf.icon} ${dConf.label}**:\n\n• **Total Staff**: ${dList.length}\n• ❌ **Staff With Absences**: **${dAbsent.length}**\n\n${formatAbsentSection(dList, dConf.label, dConf.icon)}\n\n👇 **Download ${monthTitle} Register:**\n[DOWNLOAD_MONTHLY_BUTTONS:${scopeKey}]`;
         }
-        return `📊 **Monthly Attendance: ${dConf.icon} ${dConf.label}**:\n\n• 👥 **Total Staff**: ${dList.length}\n• 📈 **Average Compliance**: **${dAvg}%**\n• ⏰ **Staff With Late Arrivals**: **${dLate.length}**\n• ❌ **Staff With Absences**: **${dAbsent.length}**\n\n━━━━━━━━━━━━━━━━━━━━\n⏰ **Late Arrivals This Month**:\n${formatLateSection(dList, dConf.label, dConf.icon)}\n\n━━━━━━━━━━━━━━━━━━━━\n❌ **Absences This Month**:\n${formatAbsentSection(dList, dConf.label, dConf.icon)}\n\n👇 **Download Monthly Register:**\n[DOWNLOAD_MONTHLY_BUTTONS]`;
+        return `📊 **Monthly Attendance (${monthTitle}): ${dConf.icon} ${dConf.label}**:\n\n• 👥 **Total Staff**: ${dList.length}\n• 📈 **Average Compliance**: **${dAvg}%**\n• ⏰ **Staff With Late Arrivals**: **${dLate.length}**\n• ❌ **Staff With Absences**: **${dAbsent.length}**\n\n━━━━━━━━━━━━━━━━━━━━\n⏰ **Late Arrivals (${monthTitle})**:\n${formatLateSection(dList, dConf.label, dConf.icon)}\n\n━━━━━━━━━━━━━━━━━━━━\n❌ **Absences (${monthTitle})**:\n${formatAbsentSection(dList, dConf.label, dConf.icon)}\n\n👇 **Download ${monthTitle} Register:**\n[DOWNLOAD_MONTHLY_BUTTONS:${scopeKey}]`;
       }
 
       // 2. User specifically asks for Monthly LATE arrivals
       if (asksLate && !asksAbsent) {
-        return `⏰ **Monthly Late Arrivals Report & Department Breakdown (October 2026)**:\n\n• 👥 **Total Employees with Late Logs**: **${allLateStaff.length}** out of ${totalStaff} staff (${Math.round((allLateStaff.length / totalStaff) * 100)}%)\n• ⏰ **Total Late Punch Instances**: **${totalLateLogs} logs** recorded across ${workingDays} working days\n• 🔗 **Source**: [Monthly Google Sheet](${MONTHLY_GOOGLE_SHEET_URL})\n\n━━━━━━━━━━━━━━━━━━━━\n📌 **Department-Wise Late Staff List**:\n\n${lateBreakdownText}\n\n👇 **Download Full Monthly Register:**\n[DOWNLOAD_MONTHLY_BUTTONS]`;
+        return `⏰ **Monthly Late Arrivals Report & Department Breakdown (${monthTitle})**:\n\n• 👥 **Total Employees with Late Logs**: **${allLateStaff.length}** out of ${totalStaff} staff (${Math.round((allLateStaff.length / (totalStaff || 1)) * 100)}%)\n• ⏰ **Total Late Punch Instances**: **${totalLateLogs} logs** recorded across ${workingDays} working days\n• 🔗 **Source**: [Monthly Google Sheet](${MONTHLY_GOOGLE_SHEET_URL})\n\n━━━━━━━━━━━━━━━━━━━━\n📌 **Department-Wise Late Staff List**:\n\n${lateBreakdownText}\n\n👇 **Download ${monthTitle} Register:**\n[DOWNLOAD_MONTHLY_BUTTONS:${scopeKey}]`;
       }
 
       // 3. User specifically asks for Monthly ABSENT employees
       if (asksAbsent && !asksLate) {
-        return `❌ **Monthly Absent Employees Report & Department Breakdown (October 2026)**:\n\n• 👥 **Total Employees with Absences**: **${allAbsentStaff.length}** out of ${totalStaff} staff\n• ❌ **Total Absent Days Recorded**: **${totalAbsentDays} days** across ${workingDays} working days\n• 📈 **Firm Average Attendance Rate**: **${avgPct}%**\n• 🔗 **Source**: [Monthly Google Sheet](${MONTHLY_GOOGLE_SHEET_URL})\n\n━━━━━━━━━━━━━━━━━━━━\n📋 **Department-Wise Absent Staff List**:\n\n${absentBreakdownText}\n\n👇 **Download Full Monthly Register:**\n[DOWNLOAD_MONTHLY_BUTTONS]`;
+        return `❌ **Monthly Absent Employees Report & Department Breakdown (${monthTitle})**:\n\n• 👥 **Total Employees with Absences**: **${allAbsentStaff.length}** out of ${totalStaff} staff\n• ❌ **Total Absent Days Recorded**: **${totalAbsentDays} days** across ${workingDays} working days\n• 📈 **Firm Average Attendance Rate**: **${avgPct}%**\n• 🔗 **Source**: [Monthly Google Sheet](${MONTHLY_GOOGLE_SHEET_URL})\n\n━━━━━━━━━━━━━━━━━━━━\n📋 **Department-Wise Absent Staff List**:\n\n${absentBreakdownText}\n\n👇 **Download ${monthTitle} Register:**\n[DOWNLOAD_MONTHLY_BUTTONS:${scopeKey}]`;
       }
 
       // 4. General Monthly Attendance Report
@@ -1383,7 +1441,18 @@ export default function AttendanceChatbot({
         .map((e, idx) => `  ${idx + 1}. **${e.employee}** [${e.categoryShort}] — **${e.attendancePct}%** (${e.daysPresent} present / ${e.totalDays} days • ${e.totalWorkingHours})`)
         .join("\n");
 
-      return `📊 **Monthly Attendance Register Overview (${workingDays} Working Days)**:\n\n• 👥 **Total Staff Evaluated**: **${totalStaff} employees**\n• 📈 **Firm Average Attendance Rate**: **${avgPct}%**\n• ⏰ **Total Late Logs Recorded**: **${totalLateLogs}**\n• ❌ **Total Absent Days Recorded**: **${totalAbsentDays}**\n• 🔗 **Source**: [Monthly Google Sheet](${MONTHLY_GOOGLE_SHEET_URL})\n\n━━━━━━━━━━━━━━━━━━━━\n⏰ **Department-Wise Late Arrivals (This Month)**:\n${lateBreakdownText}\n\n━━━━━━━━━━━━━━━━━━━━\n❌ **Department-Wise Absent Employees (This Month)**:\n${absentBreakdownText}\n\n━━━━━━━━━━━━━━━━━━━━\n🏆 **Top Consistent Employees This Month**:\n${topStr}\n\n👇 **Download Monthly Reports:**\n[DOWNLOAD_MONTHLY_BUTTONS]`;
+      const availMonths = activeMonthlyData.availableMonths || [];
+      const monthCompText =
+        availMonths.length > 1 && (!requestedMonth || wantsAllMonths)
+          ? `\n\n━━━━━━━━━━━━━━━━━━━━\n📅 **All Recorded Months Comparison**:\n${availMonths
+              .map(
+                (m) =>
+                  `• **${m.monthName}**: **${m.avgPct}%** avg | ${m.totalStaff} staff | ${m.workingDaysCount} working days | ${m.totalLateLogs} late | ${m.totalAbsentDays} absent`
+              )
+              .join("\n")}`
+          : "";
+
+      return `📊 **Monthly Attendance Register — ${monthTitle} (${workingDays} Working Days)**:\n\n• 👥 **Total Staff Evaluated**: **${totalStaff} employees**\n• 📈 **Firm Average Attendance Rate**: **${avgPct}%**\n• ⏰ **Total Late Logs Recorded**: **${totalLateLogs}**\n• ❌ **Total Absent Days Recorded**: **${totalAbsentDays}**\n• 🔗 **Source**: [Monthly Google Sheet](${MONTHLY_GOOGLE_SHEET_URL})\n\n━━━━━━━━━━━━━━━━━━━━\n⏰ **Department-Wise Late Arrivals (${monthTitle})**:\n${lateBreakdownText}\n\n━━━━━━━━━━━━━━━━━━━━\n❌ **Department-Wise Absent Employees (${monthTitle})**:\n${absentBreakdownText}\n\n━━━━━━━━━━━━━━━━━━━━\n🏆 **Top Consistent Employees (${monthTitle})**:\n${topStr}${monthCompText}\n\n👇 **Download ${monthTitle} Reports:**\n[DOWNLOAD_MONTHLY_BUTTONS:${scopeKey}]`;
     }
 
     // --- B. WEEKLY REPORT & ATTENDANCE INTELLIGENCE ---
@@ -2159,14 +2228,15 @@ ${HR_LABOUR_LAW_SYSTEM_PROMPT}`;
     const hasDownloadButtons = text.includes("[DOWNLOAD_BUTTONS]") || text.includes("[DOWNLOAD_ALL_BUTTONS]");
     const hasDailyButtons = text.includes("[DOWNLOAD_DAILY_BUTTONS]");
     const hasWeeklyButtons = text.includes("[DOWNLOAD_WEEKLY_BUTTONS]");
-    const hasMonthlyButtons = text.includes("[DOWNLOAD_MONTHLY_BUTTONS]");
+    const monthlyButtonsMatch = text.match(/\[DOWNLOAD_MONTHLY_BUTTONS(?::(.*?))?\]/);
+    const monthlyAttScope = monthlyButtonsMatch ? monthlyButtonsMatch[1] || "CURRENT" : null;
 
     const cleanText = text
       .replace("[DOWNLOAD_BUTTONS]", "")
       .replace("[DOWNLOAD_ALL_BUTTONS]", "")
       .replace("[DOWNLOAD_DAILY_BUTTONS]", "")
       .replace("[DOWNLOAD_WEEKLY_BUTTONS]", "")
-      .replace("[DOWNLOAD_MONTHLY_BUTTONS]", "")
+      .replace(/\[DOWNLOAD_MONTHLY_BUTTONS(?::.*?)?\]/g, "")
       .trim();
 
     return (
@@ -2305,23 +2375,23 @@ ${HR_LABOUR_LAW_SYSTEM_PROMPT}`;
           </div>
         )}
 
-        {hasMonthlyButtons && (
+        {monthlyAttScope && (
           <div className="chat-inline-download-buttons">
             <button
               className="chat-dl-btn excel"
-              onClick={handleDownloadMonthlyExcel}
+              onClick={() => handleDownloadMonthlyExcel(monthlyAttScope)}
               disabled={isExporting}
               title="Download Monthly Register as Excel (.xlsx)"
             >
-              📊 Download Monthly Excel (.xlsx)
+              📊 Download Monthly Excel{monthlyAttScope !== "CURRENT" ? ` (${monthlyAttScope})` : ""} (.xlsx)
             </button>
             <button
               className="chat-dl-btn pdf"
-              onClick={handleDownloadMonthlyPDF}
+              onClick={() => handleDownloadMonthlyPDF(monthlyAttScope)}
               disabled={isExporting}
               title="Download Monthly Register as PDF (.pdf)"
             >
-              📄 Download Monthly PDF (.pdf)
+              📄 Download Monthly PDF{monthlyAttScope !== "CURRENT" ? ` (${monthlyAttScope})` : ""} (.pdf)
             </button>
           </div>
         )}

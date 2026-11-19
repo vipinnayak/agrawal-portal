@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import ExecutiveAIChatbot from "../components/ExecutiveAIChatbot";
 
 
 export default function AdminMD() {
@@ -220,11 +219,6 @@ export default function AdminMD() {
 </div>
 
       </div>
-
-      {/* Unified Executive AI Chatbot for Admin MD (Attendance + Daily Working) */}
-      <ExecutiveAIChatbot />
-
-
     </div>
 
   );

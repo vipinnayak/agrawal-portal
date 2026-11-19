@@ -817,107 +817,45 @@ export const parseAppsScriptAttendanceRows = (
     const statusCol =
       keys.find((k) => /^(status|in[-/_]?out|attendance|state)$/i.test(k.trim())) || "Status";
 
-    // 1. Identify all months in dataset and choose latest active month (e.g. 10/2026)
-    const ymMap = {};
-    rawRows.forEach((r) => {
-      const d = (r[dateCol] || "").trim();
-      if (d && d.includes("/")) {
+    // 1. Identify all valid months in dataset (strictly validating MM/YYYY or YYYY-MM dates)
+    const extractDateMonthInfo = (rawDate) => {
+      const d = String(rawDate || "").trim();
+      if (!d) return null;
+      if (d.includes("/")) {
         const parts = d.split("/");
         if (parts.length === 3) {
-          const ym = `${parts[1]}/${parts[2]}`;
-          ymMap[ym] = (ymMap[ym] || 0) + 1;
+          const day = Number(parts[0]);
+          const mon = Number(parts[1]);
+          const yr = Number(parts[2].slice(0, 4));
+          if (day >= 1 && day <= 31 && mon >= 1 && mon <= 12 && yr >= 2020 && yr <= 2035) {
+            return { ym: `${String(mon).padStart(2, "0")}/${yr}`, dateNorm: `${String(day).padStart(2, "0")}/${String(mon).padStart(2, "0")}/${yr}` };
+          }
+        }
+      } else if (/^\d{4}-\d{2}-\d{2}/.test(d)) {
+        const [yrStr, monStr, dayStr] = d.slice(0, 10).split("-");
+        const mon = Number(monStr);
+        const yr = Number(yrStr);
+        if (mon >= 1 && mon <= 12 && yr >= 2020 && yr <= 2035) {
+          return { ym: `${monStr}/${yrStr}`, dateNorm: `${dayStr}/${monStr}/${yrStr}` };
         }
       }
+      return null;
+    };
+
+    const rowsByYm = {};
+    rawRows.forEach((r) => {
+      const info = extractDateMonthInfo(r[dateCol]);
+      if (!info) return;
+      if (!rowsByYm[info.ym]) rowsByYm[info.ym] = [];
+      rowsByYm[info.ym].push({ ...r, __normalizedDate: info.dateNorm });
     });
 
-    const sortedYm = Object.keys(ymMap).sort((a, b) => {
+    const sortedYm = Object.keys(rowsByYm).sort((a, b) => {
       const [ma, ya] = a.split("/").map(Number);
       const [mb, yb] = b.split("/").map(Number);
       return ya * 12 + ma - (yb * 12 + mb);
     });
 
-    const activeYm = sortedYm.length > 0 ? sortedYm[sortedYm.length - 1] : "";
-
-    // 2. Filter rows for active month
-    const monthRows = activeYm
-      ? rawRows.filter((r) => (r[dateCol] || "").trim().endsWith("/" + activeYm))
-      : rawRows;
-
-    // 3. Find unique dates in this month
-    const allUniqueDates = Array.from(
-      new Set(monthRows.map((r) => (r[dateCol] || "").trim()).filter(Boolean))
-    ).sort((a, b) => {
-      const [da, ma, ya] = a.split("/").map(Number);
-      const [db, mb, yb] = b.split("/").map(Number);
-      return new Date(ya, ma - 1, da) - new Date(yb, mb - 1, db);
-    });
-
-    // Accurate calendar info for active month & current calendar week
-    const now = new Date();
-    let activeDate = now;
-    if (activeYm && activeYm.includes("/")) {
-      const [mNum, yNum] = activeYm.split("/").map(Number);
-      if (!isNaN(mNum) && !isNaN(yNum)) {
-        if (yNum === now.getFullYear() && mNum === now.getMonth() + 1) {
-          // Current active month: elapsed days match today
-          activeDate = now;
-        } else if (
-          yNum < now.getFullYear() ||
-          (yNum === now.getFullYear() && mNum < now.getMonth() + 1)
-        ) {
-          // Historical month: all days in month have elapsed
-          activeDate = new Date(yNum, mNum, 0);
-        } else {
-          // Future month: 0 days elapsed
-          activeDate = new Date(yNum, mNum - 1, 1);
-        }
-      }
-    }
-    const calendarMonth = getCalendarMonthInfo(activeDate);
-    const calendarWeek = getCalendarWeekInfo(now);
-
-    // CRITICAL: Sundays are Weekly Off (NOT Working Days, NOT Absent)!
-    const workingUniqueDates = allUniqueDates.filter((dStr) => !isSundayDateStr(dStr));
-    // Accurate calendar working days for month capacity (e.g. 27 for Oct 2026)
-    const monthCapacityDays = calendarMonth.totalWorkingDays;
-    // Working days elapsed so far: only days up to today or dates present in the sheet
-    // NEVER count future unworked days as absent!
-    const monthWorkingDaysCount = Math.min(
-      calendarMonth.elapsedWorkingDays,
-      workingUniqueDates.length > 0 ? workingUniqueDates.length : calendarMonth.elapsedWorkingDays
-    );
-
-    // Filter dates falling strictly in the current calendar week: Monday to Saturday
-    const weekWorkingDates = workingUniqueDates.filter((dStr) => {
-      let dt = null;
-      if (dStr.includes("/")) {
-        const [d, m, y] = dStr.split("/").map(Number);
-        dt = new Date(y, m - 1, d);
-      } else if (dStr.includes("-")) {
-        const [y, m, d] = dStr.split("-").map(Number);
-        dt = new Date(y, m - 1, d);
-      } else {
-        dt = new Date(dStr);
-      }
-      return dt >= calendarWeek.monday && dt <= calendarWeek.saturday;
-    });
-
-    // If dataset doesn't have current week punches yet (e.g. historical sheet), fallback to the latest week's Monday-Saturday
-    const effectiveWeekDates =
-      weekWorkingDates.length > 0
-        ? weekWorkingDates
-        : workingUniqueDates.slice(-calendarWeek.elapsedWorkingDays);
-    const weekWorkingDateSet = new Set(effectiveWeekDates);
-    // Standard working week capacity has 6 working days (Monday to Saturday)
-    const weekCapacityDays = 6;
-    // Working days elapsed so far in the current week (e.g. 2 on Tuesday, Oct 27)
-    // NEVER count future week days (Wed, Thu, Fri, Sat) as absent!
-    const weekWorkingDaysCount = Math.min(
-      calendarWeek.elapsedWorkingDays,
-      weekWorkingDates.length > 0 ? weekWorkingDates.length : calendarWeek.elapsedWorkingDays
-    );
-
-    // Known spelling typos / case variations in biometric punch machines
     const KNOWN_NAME_ALIASES = {
       "nitish sindhe": "Nitish Shende",
       "bhavika namdev": "Bhavika Namdeo",
@@ -937,290 +875,363 @@ export const parseAppsScriptAttendanceRows = (
       return KNOWN_NAME_ALIASES[lower] || trimmed;
     };
 
-    // 4. Group punches by (employee, date)
-    const empDailyPunches = {};
-    const seenEmps = new Set();
+    const buildBucketForYm = (targetYm, monthRows) => {
+      const allUniqueDates = Array.from(
+        new Set(monthRows.map((r) => r.__normalizedDate || (r[dateCol] || "").trim()).filter(Boolean))
+      ).sort((a, b) => {
+        const [da, ma, ya] = a.split("/").map(Number);
+        const [db, mb, yb] = b.split("/").map(Number);
+        return new Date(ya, ma - 1, da) - new Date(yb, mb - 1, db);
+      });
 
-    monthRows.forEach((row) => {
-      const rawName = (row[nameKey] || "").trim();
-      if (!rawName) return;
-      const empName = getCanonicalEmpName(rawName);
-      seenEmps.add(empName);
-
-      const dStr = (row[dateCol] || "").trim();
-      if (!dStr) return;
-
-      if (!empDailyPunches[empName]) {
-        empDailyPunches[empName] = {};
-      }
-      if (!empDailyPunches[empName][dStr]) {
-        empDailyPunches[empName][dStr] = {
-          ins: [],
-          outs: [],
-          allTimes: [],
-        };
-      }
-
-      const tStr = (row[timeCol] || "").trim();
-      const sRaw = (row[statusCol] || "").trim().toUpperCase();
-
-      if (tStr) {
-        if (sRaw === "IN") {
-          empDailyPunches[empName][dStr].ins.push(tStr);
-        } else if (sRaw === "OUT") {
-          empDailyPunches[empName][dStr].outs.push(tStr);
+      const now = new Date();
+      let activeDate = now;
+      let mNum = now.getMonth() + 1;
+      let yNum = now.getFullYear();
+      if (targetYm && targetYm.includes("/")) {
+        const [parsedM, parsedY] = targetYm.split("/").map(Number);
+        if (!isNaN(parsedM) && !isNaN(parsedY)) {
+          mNum = parsedM;
+          yNum = parsedY;
+          if (yNum === now.getFullYear() && mNum === now.getMonth() + 1) {
+            activeDate = now;
+          } else if (
+            yNum < now.getFullYear() ||
+            (yNum === now.getFullYear() && mNum < now.getMonth() + 1)
+          ) {
+            activeDate = new Date(yNum, mNum, 0);
+          } else {
+            activeDate = new Date(yNum, mNum - 1, 1);
+          }
         }
-        empDailyPunches[empName][dStr].allTimes.push(tStr);
       }
-    });
+      const calendarMonth = getCalendarMonthInfo(activeDate);
+      const calendarWeek = getCalendarWeekInfo(now);
 
-    // 5. Aggregate for each employee
-    const monthlySummaries = [];
-    const weeklySummaries = [];
-    const monthlyLogs = [];
-    const weeklyLogs = [];
-
-    Array.from(seenEmps)
-      .filter((name) => Boolean(name && typeof name === "string" && name.trim()))
-      .forEach((empName) => {
-      const empDates = empDailyPunches[empName] || {};
-      const catInfo = getEmployeeCategoryInfo(
-        empName,
-        {},
-        dynamicDeptMap,
-        shiftPolicies
+      const workingUniqueDates = allUniqueDates.filter((dStr) => !isSundayDateStr(dStr));
+      const monthCapacityDays = calendarMonth.totalWorkingDays;
+      const monthWorkingDaysCount = Math.min(
+        calendarMonth.elapsedWorkingDays,
+        workingUniqueDates.length > 0 ? workingUniqueDates.length : calendarMonth.elapsedWorkingDays
       );
 
-      // Monthly metrics
-      let daysPresent = 0;
-      let lateDays = 0;
-      let halfDays = 0;
-      let totalWorkedMinutes = 0;
+      const weekWorkingDates = workingUniqueDates.filter((dStr) => {
+        let dt = null;
+        if (dStr.includes("/")) {
+          const [d, m, y] = dStr.split("/").map(Number);
+          dt = new Date(y, m - 1, d);
+        } else if (dStr.includes("-")) {
+          const [y, m, d] = dStr.split("-").map(Number);
+          dt = new Date(y, m - 1, d);
+        } else {
+          dt = new Date(dStr);
+        }
+        return dt >= calendarWeek.monday && dt <= calendarWeek.saturday;
+      });
 
-      // Weekly metrics
-      let weekPresent = 0;
-      let weekLate = 0;
-      let weekHalf = 0;
-      let weekWorkedMinutes = 0;
+      const effectiveWeekDates =
+        weekWorkingDates.length > 0
+          ? weekWorkingDates
+          : workingUniqueDates.slice(-calendarWeek.elapsedWorkingDays);
+      const weekWorkingDateSet = new Set(effectiveWeekDates);
+      const weekCapacityDays = 6;
+      const weekWorkingDaysCount = Math.min(
+        calendarWeek.elapsedWorkingDays,
+        weekWorkingDates.length > 0 ? weekWorkingDates.length : calendarWeek.elapsedWorkingDays
+      );
 
-      allUniqueDates.forEach((dateStr) => {
-        const isSunday = isSundayDateStr(dateStr);
-        const dayPunch = empDates[dateStr];
-        const isPresent = !!dayPunch;
-        const isWeekly = weekWorkingDateSet.has(dateStr);
+      const empDailyPunches = {};
+      const seenEmps = new Set();
 
-        let inTime = "";
-        let outTime = "";
-        let isLate = false;
-        let dayMinutes = 0;
-        let isHalf = false;
+      monthRows.forEach((row) => {
+        const rawName = (row[nameKey] || "").trim();
+        if (!rawName) return;
+        const empName = getCanonicalEmpName(rawName);
+        seenEmps.add(empName);
 
-        if (isPresent) {
-          if (!isSunday) {
-            daysPresent++;
-            if (isWeekly) weekPresent++;
-          }
+        const dStr = (row.__normalizedDate || row[dateCol] || "").trim();
+        if (!dStr) return;
 
-          // Determine In Time & Out Time
-          if (dayPunch.ins && dayPunch.ins.length > 0) {
-            inTime = [...dayPunch.ins].sort()[0];
-          } else if (dayPunch.allTimes && dayPunch.allTimes.length > 0) {
-            inTime = [...dayPunch.allTimes].sort()[0];
-          }
+        if (!empDailyPunches[empName]) empDailyPunches[empName] = {};
+        if (!empDailyPunches[empName][dStr]) {
+          empDailyPunches[empName][dStr] = { ins: [], outs: [], allTimes: [] };
+        }
 
-          if (dayPunch.outs && dayPunch.outs.length > 0) {
-            outTime = [...dayPunch.outs].sort().reverse()[0];
-          } else if (dayPunch.allTimes && dayPunch.allTimes.length > 1) {
-            outTime = [...dayPunch.allTimes].sort().reverse()[0];
-          }
+        const tStr = (row[timeCol] || "").trim();
+        const sRaw = (row[statusCol] || "").trim().toUpperCase();
 
-          // Evaluate Late punch against category policy (grace time strictly respected)
-          if (inTime) {
-            const timeParts = inTime.split(":");
-            if (timeParts.length >= 2) {
-              const punchHour = parseInt(timeParts[0], 10);
-              const punchMin = parseInt(timeParts[1], 10);
-              const punchTotalMins = punchHour * 60 + punchMin;
+        if (tStr) {
+          if (sRaw === "IN") empDailyPunches[empName][dStr].ins.push(tStr);
+          else if (sRaw === "OUT") empDailyPunches[empName][dStr].outs.push(tStr);
+          empDailyPunches[empName][dStr].allTimes.push(tStr);
+        }
+      });
 
-              const graceStr = catInfo.grace || catInfo.graceTime || "10:05";
-              const graceParts = graceStr.split(":");
-              const graceTotalMins =
-                parseInt(graceParts[0], 10) * 60 + parseInt(graceParts[1], 10);
+      const monthlySummaries = [];
+      const weeklySummaries = [];
+      const monthlyLogs = [];
+      const weeklyLogs = [];
 
-              if (punchTotalMins > graceTotalMins && !isSunday) {
-                isLate = true;
-                lateDays++;
-                if (isWeekly) weekLate++;
+      Array.from(seenEmps)
+        .filter((name) => Boolean(name && typeof name === "string" && name.trim()))
+        .forEach((empName) => {
+          const empDates = empDailyPunches[empName] || {};
+          const catInfo = getEmployeeCategoryInfo(empName, {}, dynamicDeptMap, shiftPolicies);
+
+          let daysPresent = 0;
+          let lateDays = 0;
+          let halfDays = 0;
+          let totalWorkedMinutes = 0;
+
+          let weekPresent = 0;
+          let weekLate = 0;
+          let weekHalf = 0;
+          let weekWorkedMinutes = 0;
+
+          allUniqueDates.forEach((dateStr) => {
+            const isSunday = isSundayDateStr(dateStr);
+            const dayPunch = empDates[dateStr];
+            const isPresent = !!dayPunch;
+            const isWeekly = weekWorkingDateSet.has(dateStr);
+
+            let inTime = "";
+            let outTime = "";
+            let isLate = false;
+            let dayMinutes = 0;
+            let isHalf = false;
+
+            if (isPresent) {
+              if (!isSunday) {
+                daysPresent++;
+                if (isWeekly) weekPresent++;
+              }
+
+              if (dayPunch.ins && dayPunch.ins.length > 0) {
+                inTime = [...dayPunch.ins].sort()[0];
+              } else if (dayPunch.allTimes && dayPunch.allTimes.length > 0) {
+                inTime = [...dayPunch.allTimes].sort()[0];
+              }
+
+              if (dayPunch.outs && dayPunch.outs.length > 0) {
+                outTime = [...dayPunch.outs].sort().reverse()[0];
+              } else if (dayPunch.allTimes && dayPunch.allTimes.length > 1) {
+                outTime = [...dayPunch.allTimes].sort().reverse()[0];
+              }
+
+              if (inTime) {
+                const timeParts = inTime.split(":");
+                if (timeParts.length >= 2) {
+                  const punchTotalMins = parseInt(timeParts[0], 10) * 60 + parseInt(timeParts[1], 10);
+                  const graceStr = catInfo.grace || catInfo.graceTime || "10:05";
+                  const graceParts = graceStr.split(":");
+                  const graceTotalMins = parseInt(graceParts[0], 10) * 60 + parseInt(graceParts[1], 10);
+
+                  if (punchTotalMins > graceTotalMins && !isSunday) {
+                    isLate = true;
+                    lateDays++;
+                    if (isWeekly) weekLate++;
+                  }
+                }
+              }
+
+              if (inTime && outTime && inTime !== outTime) {
+                const [ih, im] = inTime.split(":").map(Number);
+                const [oh, om] = outTime.split(":").map(Number);
+                const diff = oh * 60 + om - (ih * 60 + im);
+                dayMinutes = diff > 0 ? diff : 510;
+              } else {
+                dayMinutes = 510;
+              }
+
+              if (dayMinutes < 300 && !isSunday) {
+                isHalf = true;
+                halfDays++;
+                if (isWeekly) weekHalf++;
+              }
+
+              if (!isSunday) {
+                totalWorkedMinutes += dayMinutes;
+                if (isWeekly) weekWorkedMinutes += dayMinutes;
               }
             }
-          }
 
-          // Compute worked hours
-          if (inTime && outTime && inTime !== outTime) {
-            const [ih, im] = inTime.split(":").map(Number);
-            const [oh, om] = outTime.split(":").map(Number);
-            const diff = oh * 60 + om - (ih * 60 + im);
-            dayMinutes = diff > 0 ? diff : 510;
-          } else {
-            dayMinutes = 510; // Standard 8.5 hrs
-          }
+            let status = "Present";
+            let isAbsent = false;
+            if (isSunday) {
+              if (isPresent) {
+                status = "Present (Sunday)";
+              } else {
+                status = "Weekly Off";
+              }
+            } else {
+              if (isPresent) {
+                status = isHalf ? "Half Day" : isLate ? "Late" : "Present";
+              } else {
+                status = "Absent";
+                isAbsent = true;
+              }
+            }
 
-          if (dayMinutes < 300 && !isSunday) {
-            isHalf = true;
-            halfDays++;
-            if (isWeekly) weekHalf++;
-          }
+            const categoryKey = catInfo?.categoryKey || catInfo?.key || "BACK_OFFICE";
+            const categoryLabel = catInfo?.label || catInfo?.categoryLabel || "Back Office Staff";
+            const categoryShort = catInfo?.shortLabel || catInfo?.categoryShort || "Back Office";
+            const categoryIcon = catInfo?.icon || catInfo?.categoryIcon || "🏢";
+            const categoryBadgeClass = catInfo?.badgeClass || catInfo?.categoryBadgeClass || "badge-office";
 
-          if (!isSunday) {
-            totalWorkedMinutes += dayMinutes;
-            if (isWeekly) weekWorkedMinutes += dayMinutes;
-          }
-        }
+            const logItem = {
+              date: dateStr,
+              dayName: isSunday ? "Sun (Off)" : "",
+              employee: empName,
+              inTime,
+              outTime,
+              isPresent,
+              isAbsent,
+              isSundayOff: isSunday && !isPresent,
+              status,
+              isLate,
+              isEarly: false,
+              isHalfDay: isHalf,
+              workedMinutes: dayMinutes,
+              workingHoursFormatted: formatWorkingHours(dayMinutes),
+              categoryKey,
+              categoryLabel,
+              categoryShort,
+              categoryIcon,
+              categoryBadgeClass,
+              department: catInfo?.department || categoryLabel,
+            };
 
-        // Sunday is OFF, NOT absent!
-        let status = "Present";
-        let isAbsent = false;
+            monthlyLogs.push(logItem);
+            if (isWeekly) weeklyLogs.push(logItem);
+          });
 
-        if (isSunday) {
-          if (isPresent) {
-            status = "Present (Sunday)";
-            isAbsent = false;
-          } else {
-            status = "Weekly Off";
-            isAbsent = false; // SUNDAYS ARE OFF, NEVER ABSENT!
-          }
-        } else {
-          if (isPresent) {
-            status = isHalf ? "Half Day" : isLate ? "Late" : "Present";
-            isAbsent = false;
-          } else {
-            status = "Absent";
-            isAbsent = true; // Only unpunched weekdays count as absent!
-          }
-        }
+          const daysAbsent = Math.max(0, monthWorkingDaysCount - daysPresent);
+          const attendancePct = monthWorkingDaysCount > 0
+            ? Math.min(100, Math.round(((daysPresent + halfDays * 0.5) / monthWorkingDaysCount) * 100))
+            : 100;
+          const avgMinutes = daysPresent > 0 ? Math.round(totalWorkedMinutes / daysPresent) : 0;
 
-        const categoryKey = catInfo?.categoryKey || catInfo?.key || "BACK_OFFICE";
-        const categoryLabel = catInfo?.label || catInfo?.categoryLabel || "Back Office Staff";
-        const categoryShort = catInfo?.shortLabel || catInfo?.categoryShort || "Back Office";
-        const categoryIcon = catInfo?.icon || catInfo?.categoryIcon || "🏢";
-        const categoryBadgeClass = catInfo?.badgeClass || catInfo?.categoryBadgeClass || "badge-office";
+          const categoryKey = catInfo?.categoryKey || catInfo?.key || "BACK_OFFICE";
+          const categoryLabel = catInfo?.label || catInfo?.categoryLabel || "Back Office Staff";
+          const categoryShort = catInfo?.shortLabel || catInfo?.categoryShort || "Back Office";
+          const categoryIcon = catInfo?.icon || catInfo?.categoryIcon || "🏢";
+          const categoryBadgeClass = catInfo?.badgeClass || catInfo?.categoryBadgeClass || "badge-office";
 
-        const logItem = {
-          date: dateStr,
-          dayName: isSunday ? "Sun (Off)" : "",
-          employee: empName,
-          inTime,
-          outTime,
-          isPresent,
-          isAbsent,
-          isSundayOff: isSunday && !isPresent,
-          status,
-          isLate,
-          isEarly: false,
-          isHalfDay: isHalf,
-          workedMinutes: dayMinutes,
-          workingHoursFormatted: formatWorkingHours(dayMinutes),
-          categoryKey,
-          categoryLabel,
-          categoryShort,
-          categoryIcon,
-          categoryBadgeClass,
-          department: catInfo?.department || categoryLabel,
-        };
+          monthlySummaries.push({
+            employee: empName,
+            categoryKey,
+            categoryLabel,
+            categoryShort,
+            categoryIcon,
+            categoryBadgeClass,
+            department: catInfo?.department || categoryLabel,
+            totalDays: monthWorkingDaysCount,
+            monthCapacityDays,
+            daysPresent,
+            daysAbsent,
+            lateDays,
+            halfDays,
+            totalWorkingHours: formatWorkingHours(totalWorkedMinutes),
+            avgWorkingHours: formatWorkingHours(avgMinutes),
+            attendancePct,
+            records: [],
+          });
 
-        monthlyLogs.push(logItem);
-        if (isWeekly) weeklyLogs.push(logItem);
-      });
+          const weekAbsent = Math.max(0, weekWorkingDaysCount - weekPresent);
+          const weekPct = weekWorkingDaysCount > 0
+            ? Math.min(100, Math.round(((weekPresent + weekHalf * 0.5) / weekWorkingDaysCount) * 100))
+            : 100;
+          const weekAvgMinutes = weekPresent > 0 ? Math.round(weekWorkedMinutes / weekPresent) : 0;
 
-      // SUNDAYS DO NOT COUNT IN ABSENT DAYS (Sunday is OFF, not absent)
-      // Absence is evaluated strictly across ELAPSED working days so far!
-      // Future days (Oct 28-31) are NEVER counted as absent!
-      const daysAbsent = Math.max(0, monthWorkingDaysCount - daysPresent);
-      const attendancePct = monthWorkingDaysCount > 0
-        ? Math.min(100, Math.round(((daysPresent + halfDays * 0.5) / monthWorkingDaysCount) * 100))
-        : 100;
-      const avgMinutes = daysPresent > 0 ? Math.round(totalWorkedMinutes / daysPresent) : 0;
+          weeklySummaries.push({
+            employee: empName,
+            categoryKey,
+            categoryLabel,
+            categoryShort,
+            categoryIcon,
+            categoryBadgeClass,
+            department: catInfo?.department || categoryLabel,
+            totalDays: weekWorkingDaysCount,
+            weekCapacityDays,
+            daysPresent: weekPresent,
+            daysAbsent: weekAbsent,
+            lateDays: weekLate,
+            halfDays: weekHalf,
+            totalWorkingHours: formatWorkingHours(weekWorkedMinutes),
+            avgWorkingHours: formatWorkingHours(weekAvgMinutes),
+            attendancePct: weekPct,
+            records: [],
+          });
+        });
 
-      const categoryKey = catInfo?.categoryKey || catInfo?.key || "BACK_OFFICE";
-      const categoryLabel = catInfo?.label || catInfo?.categoryLabel || "Back Office Staff";
-      const categoryShort = catInfo?.shortLabel || catInfo?.categoryShort || "Back Office";
-      const categoryIcon = catInfo?.icon || catInfo?.categoryIcon || "🏢";
-      const categoryBadgeClass = catInfo?.badgeClass || catInfo?.categoryBadgeClass || "badge-office";
+      const order = { MD: 1, PARTNER: 2, SENIOR: 3, PLANT_AUDIT: 4, ARTICLE: 5, BACK_OFFICE: 6 };
+      const sortFn = (a, b) => {
+        const ordA = order[a?.categoryKey] || 99;
+        const ordB = order[b?.categoryKey] || 99;
+        if (ordA !== ordB) return ordA - ordB;
+        return (a?.employee || "").localeCompare(b?.employee || "");
+      };
 
-      monthlySummaries.push({
-        employee: empName,
-        categoryKey,
-        categoryLabel,
-        categoryShort,
-        categoryIcon,
-        categoryBadgeClass,
-        department: catInfo?.department || categoryLabel,
-        totalDays: monthWorkingDaysCount,
+      monthlySummaries.sort(sortFn);
+      weeklySummaries.sort(sortFn);
+
+      const monthKey = `${yNum}-${String(mNum).padStart(2, "0")}`;
+      const avgPct = monthlySummaries.length
+        ? Math.round(monthlySummaries.reduce((acc, cur) => acc + (cur.attendancePct || 0), 0) / monthlySummaries.length)
+        : 0;
+      const totalLateLogs = monthlySummaries.reduce((acc, cur) => acc + (cur.lateDays || 0), 0);
+      const totalAbsentDays = monthlySummaries.reduce((acc, cur) => acc + (cur.daysAbsent || 0), 0);
+
+      return {
+        monthKey,
+        ym: targetYm,
+        month: mNum,
+        year: yNum,
+        monthName: calendarMonth.monthName,
+        monthlySummaries,
+        weeklySummaries,
+        workingDaysCount: monthWorkingDaysCount,
         monthCapacityDays,
-        daysPresent,
-        daysAbsent,
-        lateDays,
-        halfDays,
-        totalWorkingHours: formatWorkingHours(totalWorkedMinutes),
-        avgWorkingHours: formatWorkingHours(avgMinutes),
-        attendancePct,
-        records: [],
-      });
+        weeklyRange: calendarWeek.weekRange,
+        calendarMonth,
+        calendarWeek,
+        monthlyLogs,
+        weeklyLogs,
+        totalStaff: monthlySummaries.length,
+        avgPct,
+        totalLateLogs,
+        totalAbsentDays,
+      };
+    };
 
-      // Weekly summary strictly across elapsed working days this week
-      const weekAbsent = Math.max(0, weekWorkingDaysCount - weekPresent);
-      const weekPct = weekWorkingDaysCount > 0
-        ? Math.min(100, Math.round(((weekPresent + weekHalf * 0.5) / weekWorkingDaysCount) * 100))
-        : 100;
-      const weekAvgMinutes = weekPresent > 0 ? Math.round(weekWorkedMinutes / weekPresent) : 0;
-
-      weeklySummaries.push({
-        employee: empName,
-        categoryKey,
-        categoryLabel,
-        categoryShort,
-        categoryIcon,
-        categoryBadgeClass,
-        department: catInfo?.department || categoryLabel,
-        totalDays: weekWorkingDaysCount,
-        weekCapacityDays,
-        daysPresent: weekPresent,
-        daysAbsent: weekAbsent,
-        lateDays: weekLate,
-        halfDays: weekHalf,
-        totalWorkingHours: formatWorkingHours(weekWorkedMinutes),
-        avgWorkingHours: formatWorkingHours(weekAvgMinutes),
-        attendancePct: weekPct,
-        records: [],
+    const monthlyByMonth = {};
+    const availableMonths = [];
+    sortedYm.forEach((ym) => {
+      const bucket = buildBucketForYm(ym, rowsByYm[ym] || []);
+      monthlyByMonth[bucket.monthKey] = bucket;
+      availableMonths.push({
+        key: bucket.monthKey,
+        ym: bucket.ym,
+        month: bucket.month,
+        year: bucket.year,
+        monthName: bucket.monthName,
+        workingDaysCount: bucket.workingDaysCount,
+        totalStaff: bucket.totalStaff,
+        avgPct: bucket.avgPct,
+        totalLateLogs: bucket.totalLateLogs,
+        totalAbsentDays: bucket.totalAbsentDays,
       });
     });
 
-    // Sort order: MD -> Partner -> Senior -> Plant -> Article -> Office
-    const order = { MD: 1, PARTNER: 2, SENIOR: 3, PLANT_AUDIT: 4, ARTICLE: 5, BACK_OFFICE: 6 };
-    const sortFn = (a, b) => {
-      const ordA = order[a?.categoryKey] || 99;
-      const ordB = order[b?.categoryKey] || 99;
-      if (ordA !== ordB) return ordA - ordB;
-      const nameA = a?.employee || "";
-      const nameB = b?.employee || "";
-      return nameA.localeCompare(nameB);
-    };
-
-    monthlySummaries.sort(sortFn);
-    weeklySummaries.sort(sortFn);
-
-    const weekRangeStr = calendarWeek.weekRange;
+    const activeYm = sortedYm.length > 0 ? sortedYm[sortedYm.length - 1] : "";
+    const activeBucket = activeYm
+      ? monthlyByMonth[`${activeYm.split("/")[1]}-${activeYm.split("/")[0]}`]
+      : buildBucketForYm("", rawRows);
 
     return {
-      monthlySummaries,
-      weeklySummaries,
-      workingDaysCount: monthWorkingDaysCount,
-      monthCapacityDays,
-      weeklyRange: weekRangeStr,
-      calendarMonth,
-      calendarWeek,
-      monthlyLogs,
-      weeklyLogs,
+      ...activeBucket,
+      monthlyByMonth,
+      availableMonths,
     };
   }
 };
@@ -1291,9 +1302,14 @@ export const fetchMonthlyAttendance = async ({
               source: "Google Apps Script Web App",
               webAppUrl,
               googleSheetUrl: MONTHLY_GOOGLE_SHEET_URL,
+              monthKey: parsed.monthKey || "",
+              monthName: parsed.monthName || parsed.calendarMonth?.monthName || "",
+              calendarMonth: parsed.calendarMonth,
               monthlySummaries: parsed.monthlySummaries,
               monthlyLogs: parsed.monthlyLogs || [],
               workingDaysCount: parsed.workingDaysCount || 26,
+              monthlyByMonth: parsed.monthlyByMonth || {},
+              availableMonths: parsed.availableMonths || [],
               weeklySummaries: parsed.weeklySummaries,
               weeklyRange: parsed.weeklyRange || "Past 7 Days",
               weeklyLogs: parsed.weeklyLogs || [],
@@ -1340,18 +1356,147 @@ export const fetchMonthlyAttendance = async ({
 
   const monthlySummaries = aggregateMonthlySummaries(simulated.monthlyLogs, simulated.workingDaysCount);
   const weeklyResult = aggregateWeeklySummaries(simulated.monthlyLogs);
+  const nowCal = getCalendarMonthInfo(new Date());
+  const simMonthKey = `${nowCal.year}-${String(nowCal.month + 1).padStart(2, "0")}`;
 
   return {
     isLive,
     source: connectionSource,
     webAppUrl: webAppUrl || "",
     googleSheetUrl: MONTHLY_GOOGLE_SHEET_URL,
+    monthKey: simMonthKey,
+    monthName: nowCal.monthName,
+    calendarMonth: nowCal,
     monthlySummaries,
     monthlyLogs: simulated.monthlyLogs,
     workingDaysCount: simulated.workingDaysCount,
+    monthlyByMonth: {
+      [simMonthKey]: {
+        monthKey: simMonthKey,
+        month: nowCal.month + 1,
+        year: nowCal.year,
+        monthName: nowCal.monthName,
+        calendarMonth: nowCal,
+        monthlySummaries,
+        monthlyLogs: simulated.monthlyLogs,
+        workingDaysCount: simulated.workingDaysCount,
+      },
+    },
+    availableMonths: [
+      {
+        key: simMonthKey,
+        month: nowCal.month + 1,
+        year: nowCal.year,
+        monthName: nowCal.monthName,
+        workingDaysCount: simulated.workingDaysCount,
+        totalStaff: monthlySummaries.length,
+        avgPct: monthlySummaries.length
+          ? Math.round(monthlySummaries.reduce((a, c) => a + (c.attendancePct || 0), 0) / monthlySummaries.length)
+          : 0,
+        totalLateLogs: monthlySummaries.reduce((a, c) => a + (c.lateDays || 0), 0),
+        totalAbsentDays: monthlySummaries.reduce((a, c) => a + (c.daysAbsent || 0), 0),
+      },
+    ],
     weeklySummaries: weeklyResult.list,
     weeklyRange: weeklyResult.weekRange,
     weeklyLogs: weeklyResult.weeklyLogs,
     parsedSheetData: parsedData,
   };
+};
+
+/**
+ * Resolves a specific month attendance dataset (e.g. "2026-10") or All-Months overview from monthlyData.
+ */
+export const resolveMonthlyAttendanceSlice = (monthlyData = null, targetSpec = null) => {
+  if (!monthlyData || !monthlyData.monthlySummaries) {
+    return { ready: false, found: false, availableMonths: [] };
+  }
+
+  const byMonth = monthlyData.monthlyByMonth || {};
+  const availableMonths = monthlyData.availableMonths || [];
+  const rawScope = typeof targetSpec === "string" ? targetSpec.trim() : "";
+
+  if (!targetSpec || rawScope.toUpperCase() === "CURRENT") {
+    return {
+      ready: true,
+      found: true,
+      isAllMonths: availableMonths.length > 1 && rawScope.toUpperCase() !== "CURRENT",
+      slice: monthlyData,
+      availableMonths,
+    };
+  }
+
+  if (rawScope.toUpperCase() === "ALL" || targetSpec?.isAllMonths) {
+    return {
+      ready: true,
+      found: true,
+      isAllMonths: true,
+      slice: {
+        ...monthlyData,
+        allMonthsComparison: availableMonths,
+      },
+      availableMonths,
+    };
+  }
+
+  const key = /^\d{4}-\d{2}$/.test(rawScope) ? rawScope : targetSpec?.key;
+  if (key && byMonth[key]) {
+    return {
+      ready: true,
+      found: true,
+      isAllMonths: false,
+      slice: {
+        ...byMonth[key],
+        isSingleMonthScope: true,
+        googleSheetUrl: monthlyData.googleSheetUrl,
+      },
+      availableMonths,
+    };
+  }
+
+  // Fallback check if single active month matches requested key
+  if (key && monthlyData.monthKey === key) {
+    return {
+      ready: true,
+      found: true,
+      isAllMonths: false,
+      slice: {
+        ...monthlyData,
+        isSingleMonthScope: true,
+      },
+      availableMonths,
+    };
+  }
+
+  return {
+    ready: true,
+    found: false,
+    requestedLabel: targetSpec?.label || rawScope,
+    requestedKey: key,
+    availableMonths,
+  };
+};
+
+/**
+ * Persists monthly attendance summaries to localStorage while stripping heavy punch log arrays.
+ */
+export const cacheMonthlyAttendanceSafely = (res) => {
+  if (!res || typeof localStorage === "undefined") return;
+  try {
+    const strippedByMonth = {};
+    if (res.monthlyByMonth && typeof res.monthlyByMonth === "object") {
+      Object.entries(res.monthlyByMonth).forEach(([k, bucket]) => {
+        if (bucket && typeof bucket === "object") {
+          strippedByMonth[k] = { ...bucket, monthlyLogs: [] };
+        }
+      });
+    }
+    const slimPayload = {
+      ...res,
+      monthlyLogs: Array.isArray(res.monthlyLogs) ? res.monthlyLogs.slice(-500) : [],
+      monthlyByMonth: strippedByMonth,
+      parsedSheetData: null,
+    };
+    localStorage.setItem("ajc_cached_monthly_attendance", JSON.stringify(slimPayload));
+  } catch (_) {}
 };
