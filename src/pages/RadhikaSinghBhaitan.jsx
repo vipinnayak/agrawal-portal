@@ -6,7 +6,8 @@ export default function RadhikaSinghBhaitan() {
 
   return (
 
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Radhika%20Singh%20Bhatia")}>
 
       {/* HEADER */}
 

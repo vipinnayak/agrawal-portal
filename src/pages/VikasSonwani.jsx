@@ -9,7 +9,8 @@ export default function VikasSonwani() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Vikas%20Sonwani")}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>

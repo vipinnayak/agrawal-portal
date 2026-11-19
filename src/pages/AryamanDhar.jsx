@@ -9,7 +9,8 @@ export default function AryamanDhar() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Aryaman%20Dhar%20Badgaiyan")}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>

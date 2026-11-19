@@ -9,7 +9,8 @@ export default function HarshGupta() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Harsh%20Kumar%20Gupta")}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>

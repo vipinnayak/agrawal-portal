@@ -48,7 +48,6 @@ export default function Login() {
     "yogita123@gmail.com":"yogita123",
     "sarika123@gmail.com":"sarika123",
     "rajni123@gmail.com":"rajni123",
-    "vansh123@gmail.com":"vansh123",
     "amit123@gmail.com":"amit123",
     "vaishali123@gmail.com":"vaishali123",
     "vicky123@gmail.com":"vicky123",
@@ -95,8 +94,6 @@ export default function Login() {
     "manviroy123@gmail.com":"manvi123",
     "radhikasingh123@gmail.com":"radhika123",
     "khushalisahu123@gmail.com":"khushali123",
-    "lakhanlal123@gmail.com":"lakhanlal123",
-    "mohitagrawal123@gmail.com":"mohit123"
 
   };
 
@@ -166,8 +163,6 @@ export default function Login() {
         navigate("/meenu");
       }else if (emp === "rajni123@gmail.com") {
         navigate("/rajni");
-      }else if (emp === "vansh123@gmail.com") {
-        navigate("/vansh");
       }else if (emp === "amit123@gmail.com") {
         navigate("/amit");
       }else if (emp === "vaishali123@gmail.com") {
@@ -264,10 +259,6 @@ export default function Login() {
         navigate("/radhika-singh");
       }else if (emp === "khushalisahu123@gmail.com") {
         navigate("/khushali-sahu");
-      }else if (emp === "lakhanlal123@gmail.com") {
-        navigate("/lakhanlal");
-      }else if (emp === "mohitagrawal123@gmail.com") {
-        navigate("/mohitagrawal");
       }
 
     } else {

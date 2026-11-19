@@ -45,16 +45,39 @@ function DaMuktiPathak() {
           <p>Agrawal Jain & Co.</p>
         </div>
 
-        <button
+        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+          <button
+            className="dw-attendance-btn"
+            style={{ background: "#059669" }}
+            onClick={() => navigate("/employee-daily-working/Mukti%20Pathak")}
+          >
+            💼 Daily Working
+          </button>
+          <button
           className="dw-attendance-btn"
           onClick={() => navigate("/attendance-form")}
         >
           Mark Attendance
         </button>
+        </div>
 
       </div>
 
       <div className="dw-four-grid">
+        {/* DAILY WORKING CARD */}
+        <div
+          className="dw-stat-card dw-green"
+          style={{ background: "linear-gradient(135deg, #059669 0%, #047857 100%)", color: "#ffffff", cursor: "pointer" }}
+          onClick={() => navigate("/employee-daily-working/Mukti%20Pathak")}
+        >
+          <div className="dw-card-center">
+            <h2 className="dw-big-number" style={{ fontSize: "28px", color: "#ffffff" }}>
+              Daily Working
+            </h2>
+          </div>
+          <p style={{ color: "#d1fae5" }}>Fill &amp; View Past Records</p>
+        </div>
+
 
 
         {/* Pending Attendance */}

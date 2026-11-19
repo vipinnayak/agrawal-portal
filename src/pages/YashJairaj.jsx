@@ -6,7 +6,8 @@ export default function YashJairaj() {
 
   return (
 
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Yash%20Jairaj")}>
 
       {/* HEADER */}
 

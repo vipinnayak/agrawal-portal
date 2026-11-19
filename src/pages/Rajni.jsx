@@ -6,7 +6,8 @@ export default function Meenu() {
 
   return (
 
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Rajnee%20Barvekar")}>
 
       {/* HEADER */}
 

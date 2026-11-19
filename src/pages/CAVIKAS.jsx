@@ -9,7 +9,8 @@ export default function CAVIKAS() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/CA%20Vikas%20Goyal")}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>

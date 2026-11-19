@@ -6,7 +6,8 @@ export default function AmitChandrakar() {
 
   return (
 
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Amit%20Chandrakar")}>
 
       {/* HEADER */}
 

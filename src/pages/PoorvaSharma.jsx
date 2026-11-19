@@ -9,7 +9,8 @@ export default function PoorvaSharma() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Poorva%20Sharma")}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>

@@ -9,7 +9,8 @@ export default function KhemlalSahu() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Khemlal%20Sahu")}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>

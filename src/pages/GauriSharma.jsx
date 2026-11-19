@@ -9,7 +9,8 @@ export default function GauriSharma() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Gaurishankar%20Sharma")}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>

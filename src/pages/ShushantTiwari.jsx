@@ -9,7 +9,8 @@ export default function ShushantTiwari() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Sushant%20Tiwari")}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>

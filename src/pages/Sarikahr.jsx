@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import AttendanceChatbot from "../components/AttendanceChatbot";
 
 export default function Sarikahr() {
 

@@ -6,7 +6,8 @@ export default function Vimal() {
 
   return (
 
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Vimal%20Mahilange")}>
 
       {/* HEADER */}
 

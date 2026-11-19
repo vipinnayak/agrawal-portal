@@ -9,7 +9,8 @@ export default function SonalMeghani() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Sonal%20Meghani")}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>

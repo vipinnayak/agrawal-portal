@@ -9,7 +9,8 @@ export default function NikhilDawani() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Nikhil%20Dawani")}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>

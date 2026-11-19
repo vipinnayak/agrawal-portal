@@ -352,7 +352,10 @@ function AttendanceForm() {
               type="time"
               name="time"
               value={formData.time}
+              min="00:00"
+              max={currentTime}
               onChange={handleChange}
+              required
             />
           </div>
 
@@ -415,7 +418,9 @@ function AttendanceForm() {
           {/* SUBMIT BUTTON */}
           <button
             type="submit"
-            className={`submit-btn ${loading ? "loading-btn" : ""}`}
+            className={`submit-btn ${
+              loading ? "loading-btn" : ""
+            }`}
             disabled={loading}
           >
             {loading ? "Submitting..." : "Mark Attendance"}

@@ -9,7 +9,8 @@ export default function ChetnaAgrawal() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Chetna%20Agrawal")}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>

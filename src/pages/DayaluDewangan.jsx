@@ -9,7 +9,8 @@ export default function DayaluDewangan() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Dayalu%20Dewangan")}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>

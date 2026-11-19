@@ -9,7 +9,8 @@ export default function MuktiPathak() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Mukti%20Pathak")}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>

@@ -6,7 +6,8 @@ export default function Vicky() {
 
   return (
 
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Vikky%20Soni")}>
 
       {/* HEADER */}
 

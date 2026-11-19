@@ -9,7 +9,8 @@ export default function NitishShende() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Nitish%20Shende")}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>

@@ -9,7 +9,8 @@ export default function CACHANDAN() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/CA%20Chandan%20Singh")}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>

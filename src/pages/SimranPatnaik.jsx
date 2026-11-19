@@ -9,7 +9,8 @@ export default function SimranPatnaik() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Simran%20Patnaik")}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>

@@ -9,7 +9,8 @@ export default function AkashYadav() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Akash%20Yadav")}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>

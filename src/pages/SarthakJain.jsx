@@ -9,7 +9,8 @@ export default function SarthakJain() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Sarthak%20Jain")}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>

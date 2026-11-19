@@ -9,7 +9,8 @@ export default function SanidhyaNahar() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page}
+          onClick={() => navigate("/employee-daily-working/Sanidhya%20Nahar")}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>
