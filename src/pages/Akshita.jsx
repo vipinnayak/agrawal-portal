@@ -6,8 +6,7 @@ export default function Akshita() {
 
   return (
 
-    <div style={styles.page}
-          onClick={() => navigate("/employee-daily-working/Akshita")}>
+    <div style={styles.page}>
 
       {/* HEADER */}
 

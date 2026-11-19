@@ -6,8 +6,7 @@ export default function Amit() {
 
   return (
 
-    <div style={styles.page}
-          onClick={() => navigate("/employee-daily-working/Amit")}>
+    <div style={styles.page}>
 
       {/* HEADER */}
 

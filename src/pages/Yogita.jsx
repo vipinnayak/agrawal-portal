@@ -6,8 +6,7 @@ export default function Yogita() {
 
   return (
 
-    <div style={styles.page}
-          onClick={() => navigate("/employee-daily-working/Yogita%20Sinha")}>
+    <div style={styles.page}>
 
       {/* HEADER */}
 

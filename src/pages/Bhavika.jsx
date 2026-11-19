@@ -6,8 +6,7 @@ export default function Bhavika() {
 
   return (
 
-    <div style={styles.page}
-          onClick={() => navigate("/employee-daily-working/Bhavika%20Namdev")}>
+    <div style={styles.page}>
 
       {/* HEADER */}
 

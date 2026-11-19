@@ -46,21 +46,12 @@
 //           <p>Agrawal Jain & Co.</p>
 //         </div>
 
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-          <button
-            className="dw-attendance-btn"
-            style={{ background: "#059669" }}
-            onClick={() => navigate("/employee-daily-working/Vipin%20Nayak")}
-          >
-            💼 Daily Working
-          </button>
-          <button
+        <button
           className="dw-attendance-btn"
           onClick={() => navigate("/attendance-form")}
         >
           Mark Attendance
         </button>
-        </div>
 
 //       </div>
 

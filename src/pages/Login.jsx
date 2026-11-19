@@ -228,7 +228,7 @@ export default function Login() {
       }else if (emp === "nikhildawani123@gmail.com") {
         navigate("/nikhil");
       }else if (emp === "akshitaagrawal123@gmail.com") {
-        navigate("/akshita");
+        navigate("/akshitaA");
       }else if (emp === "sarthakjain123@gmail.com") {
         navigate("/sarthak");
       }else if (emp === "mahakjain123@gmail.com") {

@@ -9,8 +9,7 @@ export default function CAPRATIBHA() {
   };
 
   return (
-    <div style={styles.page}
-          onClick={() => navigate("/employee-daily-working/CMA%20Pratibha%20Agrawal")}>
+    <div style={styles.page}>
       {/* HEADER */}
       <div style={styles.header}>
         <div style={styles.headerTop}>
