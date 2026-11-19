@@ -1,6 +1,6 @@
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import ExecutiveAIChatbot from "../components/ExecutiveAIChatbot";
 import "./da.css";
 
 function DailyAttendanceMDSIR() {
@@ -54,68 +54,80 @@ function DailyAttendanceMDSIR() {
           >
             💼 Daily Working
           </button>
+
           <button
-          className="dw-attendance-btn"
-          onClick={() => navigate("/attendance-form")}
-        >
-          Mark Attendance
-        </button>
+            className="dw-attendance-btn"
+            onClick={() => navigate("/attendance-form")}
+          >
+            Mark Attendance
+          </button>
         </div>
 
       </div>
 
       <div className="dw-four-grid">
+
         {/* DAILY WORKING CARD */}
         <div
           className="dw-stat-card dw-green"
-          style={{ background: "linear-gradient(135deg, #059669 0%, #047857 100%)", color: "#ffffff", cursor: "pointer" }}
+          style={{
+            background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
+            color: "#ffffff",
+            cursor: "pointer"
+          }}
           onClick={() => navigate("/employee-daily-working/CA%20Rajesh%20Agrawal")}
         >
           <div className="dw-card-center">
-            <h2 className="dw-big-number" style={{ fontSize: "28px", color: "#ffffff" }}>
+            <h2
+              className="dw-big-number"
+              style={{ fontSize: "28px", color: "#ffffff" }}
+            >
               Daily Working
             </h2>
           </div>
-          <p style={{ color: "#d1fae5" }}>Fill &amp; View Past Records</p>
+
+          <p style={{ color: "#d1fae5" }}>
+            Fill &amp; View Past Records
+          </p>
         </div>
 
-
-
-        {/* Pending Attendance */}
-
+        {/* PENDING ATTENDANCE */}
         <div className="dw-stat-card dw-blue">
 
           <div className="dw-card-scroll">
 
-          {pendingAttendance.length > 0 ? (
-  pendingAttendance.map((item, index) => {
-    let value = item;
+            {pendingAttendance.length > 0 ? (
+              pendingAttendance.map((item, index) => {
+                let value = item;
 
-    // Excel serial number
-    if (!isNaN(item) && item !== "") {
-      value = new Date((Number(item) - 25569) * 86400 * 1000)
-        .toLocaleDateString("en-GB");
-    }
+                // Excel serial number
+                if (!isNaN(item) && item !== "") {
+                  value = new Date(
+                    (Number(item) - 25569) * 86400 * 1000
+                  ).toLocaleDateString("en-GB");
+                }
 
-    // Date string
-    else if (!isNaN(Date.parse(item))) {
-      value = new Date(item).toLocaleDateString("en-GB");
-    }
+                // Date string
+                else if (!isNaN(Date.parse(item))) {
+                  value = new Date(item).toLocaleDateString("en-GB");
+                }
 
-    // Text (No Pending Attendance)
-    else {
-      value = item;
-    }
+                // Text (No Pending Attendance)
+                else {
+                  value = item;
+                }
 
-    return (
-      <div key={index} className="dw-scroll-item">
-        {value}
-      </div>
-    );
-  })
-) : (
-  <div className="dw-scroll-item">No Pending Attendance</div>
-)}
+                return (
+                  <div key={index} className="dw-scroll-item">
+                    {value}
+                  </div>
+                );
+              })
+            ) : (
+              <div className="dw-scroll-item">
+                No Pending Attendance
+              </div>
+            )}
 
           </div>
 
@@ -123,55 +135,46 @@ function DailyAttendanceMDSIR() {
 
         </div>
 
-        {/* Leave */}
-
+        {/* LEAVE */}
         <div className="dw-stat-card dw-purple">
 
           <div className="dw-card-center">
-
             <h2 className="dw-big-number">
               {leaveData.length > 0 ? leaveData[0] : 0}
             </h2>
-
           </div>
 
           <p>Leave</p>
 
         </div>
 
-        {/* Half Day */}
-
+        {/* HALF DAY */}
         <div className="dw-stat-card dw-orange">
 
           <div className="dw-card-center">
-
             <h2 className="dw-big-number">
               {halfDayData.length > 0 ? halfDayData[0] : 0}
             </h2>
-
           </div>
 
           <p>Half Day</p>
 
         </div>
 
-        {/* Late Days */}
-
+        {/* LATE DAYS */}
         <div className="dw-stat-card dw-red">
 
           <div className="dw-card-center">
-
             <h2 className="dw-big-number">
               {lateDaysData.length > 0 ? lateDaysData[0] : 0}
             </h2>
-
           </div>
 
           <p>Late Days</p>
 
         </div>
 
-            </div>
+      </div>
     </div>
   );
 }

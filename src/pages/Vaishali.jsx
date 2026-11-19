@@ -1,5 +1,5 @@
+
 import { useNavigate } from "react-router-dom";
-import DailyWorkingChatbot from "../components/DailyWorkingChatbot";
 
 export default function Vaishali() {
 
@@ -212,7 +212,7 @@ export default function Vaishali() {
 
         </div>
 
-            </div>
+      </div>
     </div>
   );
 }

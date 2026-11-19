@@ -1,5 +1,5 @@
+
 import { useNavigate } from "react-router-dom";
-import AttendanceChatbot from "../components/AttendanceChatbot";
 
 export default function KhushaliSahuHr() {
 
@@ -205,7 +205,7 @@ export default function KhushaliSahuHr() {
 
         </div>
 
-            </div>
+      </div>
     </div>
   );
 }
@@ -214,13 +214,9 @@ const styles = {
 
   page:{
     minHeight:"100vh",
-
     background:"#eef2f7",
-
     padding:"35px",
-
     fontFamily:"Inter, sans-serif",
-
     overflowY:"auto",
   },
 
@@ -230,71 +226,48 @@ const styles = {
 
   heading:{
     fontSize:"52px",
-
     fontWeight:"800",
-
     color:"#0f172a",
-
     margin:"0",
   },
 
   subHeading:{
     marginTop:"10px",
-
     color:"#64748b",
-
     fontSize:"20px",
   },
 
   grid:{
     display:"grid",
-
     gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",
-
     gap:"28px",
   },
 
   card:{
     borderRadius:"28px",
-
     padding:"32px",
-
     color:"#ffffff",
-
     minHeight:"210px",
-
     display:"flex",
-
     flexDirection:"column",
-
     justifyContent:"space-between",
-
     cursor:"pointer",
-
     boxShadow:"0 12px 24px rgba(15,23,42,0.08)",
-
     transition:"0.3s",
-
     boxSizing:"border-box",
   },
 
   cardTitle:{
     fontSize:"34px",
-
     fontWeight:"800",
-
     lineHeight:"42px",
-
     margin:"0",
   },
 
   cardText:{
     fontSize:"19px",
-
     opacity:"0.92",
-
     lineHeight:"32px",
-
     margin:"0",
   },
 
